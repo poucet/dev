@@ -40,7 +40,7 @@ deferred, the landed index, and row hygiene in the other ops documents. The
 human's primary view; a board that is right within seconds is worth more than
 one that is beautiful within a batch.
 
-**The dispatcher guarantees you are alone.** `patchbay` never runs a `scribe`
+**The dispatcher guarantees you are alone.** `co-developer` never runs a `scribe`
 and an `integrator` at the same time. That is one agent getting one thing right,
 rather than two agents getting a locking protocol right — which is why there is
 no lock here.

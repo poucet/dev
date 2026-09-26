@@ -59,4 +59,4 @@ if the team already keeps one.
 `coder` · `researcher` · `tech-lead` · `designer` build in their own workspaces
 and never move trunk. `integrator` works in the default workspace and is the only
 one that lands. `scribe` keeps `BOARD.md` true, also in the default workspace and never at the
-same time as `integrator`. `patchbay` holds the conversation and the briefs.
+same time as `integrator`. `co-developer` holds the conversation and the briefs.

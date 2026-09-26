@@ -33,7 +33,7 @@ a section of the board, and the `scribe` no longer waits for you. When you land
 a chain, say so in your report; keeping the live status current is the scribe's
 job, not yours.
 
-**The dispatcher guarantees you are alone.** `patchbay` never runs a `scribe`
+**The dispatcher guarantees you are alone.** `co-developer` never runs a `scribe`
 and an `integrator` at the same time. That is one agent getting one thing right,
 rather than two agents getting a locking protocol right — which is why there is
 no lock here.
