@@ -470,9 +470,19 @@ what workspace cleanup and any history repair need.
 5. **The lane's last act is to rebase itself onto trunk**, resolve every conflict,
    and **re-run the gates afterwards**. Then report, saying what conflicted and
    how it was resolved. Then stop.
-6. A `integrator` lands it: re-read the board for the human's edits → rebase the
-   chain onto trunk → resolve → gates unfiltered → advance the bookmark → update
-   the board and append the changelog entry → tell the human.
+6. A `integrator` lands it. **Landing is a pointer move, not a rebuild**
+   (Chris, 2026-10-21):
+   - **The lane sits on the current trunk and gated there** → `jj st` (refuse if
+     `default@` is not empty: those edits are the human's), then `jj new <lane
+     tip>` from the default workspace. **No re-gate**: it is the same tree the
+     lane already gated, and re-running the suite on it costs minutes and proves
+     nothing.
+   - **Trunk moved since the lane rebased** → send it back to rebase and re-gate,
+     or rebase it yourself and re-gate **only the blast radius**.
+   - **Fragment folds are batched** into one docs commit — at a natural pause or
+     at the version stamp — never one fold commit per landing. Every trunk commit,
+     docs included, makes every running lane rebase again.
+   - Then tell the human.
 7. Recycle: forget the workspace when a lane is done. Directory deletion is the
    human's (agents cannot `rm`); each stale workspace holds a multi-GB build
    cache, so forget and delete promptly.
@@ -549,8 +559,8 @@ going stale is harmless by comparison — that is just this session catching up.
    Pass explicit paths when the working copy holds more than one concern —
    otherwise an unrelated asset lands inside a documentation commit, and you will
    not notice until the commit after it reports `(empty)`.
-9. **`default@` is always an empty commit one above trunk.** After landing, make
-   a new empty commit — see *Trunk and the working copy* above for the loop and
+9. **`default@` is always an empty commit one above trunk.** Land with `jj new
+   <lane tip>`, which makes that empty commit on the tip — see *Trunk and the working copy* above for the loop and
    the two ways breaking it corrupts a message.
 10. **Never abandon a commit trunk points at without re-setting the bookmark.**
     Abandoning deletes it, and the next command fails with "revision doesn't
