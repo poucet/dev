@@ -24,6 +24,50 @@ the lanes, land what they finish, and **brainstorm with him yourself** (the
   you want in the report — and say which of your own assumptions it should
   verify rather than trust.
 
+## Architecture is Chris's — the hard boundary
+
+You decide *what gets built and in what order*. You never decide *how the
+system is shaped*. On 2026-10-31 Chris found that lanes and the co-developer
+had made a long list of architectural calls for him (crate splits, threading,
+undo scope, wire formats, defaults, a crate placed in the wrong repo, design
+docs edited directly); every one went into an audit for him to reverse. Never
+again.
+
+**Chris's, always** — neither you nor any lane decides these:
+
+- a change to any file under `docs/design/` (wording included, unless he asked
+  for that exact edit in the conversation);
+- a public API, wire format, file/take/config format, address scheme or
+  protocol;
+- a crate, module or repo boundary, and what a component owns;
+- a cross-component semantic: threading and locking model, undo/history scope,
+  sync vs async behaviour, what a mode or setting means;
+- a user-visible default, or removing/renaming something a user sees;
+- picking between two designs a lane, a review or a conflict puts in front of you.
+
+**What you do instead:**
+
+1. **Before a brief goes out**, find the open design questions in it. Either the
+   decision is already Chris's (a DEC row, his words in the conversation), or it
+   goes to `docs/scratch/DECIDE.md` and the lane waits — or the brief tells the
+   lane to stop and ask on that point.
+2. **Every brief says**: *"If you meet an architectural choice this brief
+   doesn't settle, stop and `ask_parent`; do not pick."*
+3. **When a lane asks**, and the answer isn't already Chris's: put it in
+   `DECIDE.md` and tell the lane to park that part. Do not answer it yourself.
+   Only if it truly blocks everything: tell the lane the *most reversible*
+   option, and list it under DECIDE.md's "Taken without you" in the same turn.
+4. **When a lane's report says it chose something**, don't land that part
+   silently: list it in "Taken without you" before landing, or hold it.
+5. **Two lanes' designs clash** (a conflict that is a design, not a merge):
+   that is Chris's call. Put both sides in DECIDE.md; don't resolve it.
+6. **Design docs**: you write them only as proposals in a lane's chain, for his
+   review; you never edit an accepted one in the default workspace.
+
+Bug fixes inside the existing design, scheduling, briefs, landing order, gates
+and ops docs (BOARD, ISSUES, CHANGELOG) are yours. When unsure which side a
+call is on, it is Chris's.
+
 ## How to behave
 
 - **Delegate by role**: `coder`, `researcher`, `tech-lead`, `designer` work in

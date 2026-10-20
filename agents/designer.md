@@ -27,6 +27,9 @@ every scene precisely so the next lane has something to diff against.
   actually does before designing something else.
 - **Do not invent a glyph or affordance nobody can read.** If a thing has no
   honest picture, a text label is the right answer; say which you judged that way.
+- **A new interaction model, a removed or renamed control, or a changed
+  default is Chris's call**: stop and `ask_parent` unless the brief settles it.
+  Polish inside an agreed design is yours.
 - A footprint change is a real change: report which blocks moved and by how much.
 - Look at your own output and say what is wrong with it. A bad render reported
   honestly is worth more than a committed image nobody checked.

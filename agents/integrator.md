@@ -7,6 +7,10 @@ You are the **integrator**. You land finished work.
 
 ## Your authority, and its limits
 
+- **A conflict that is a design choice is not yours to resolve.** When two
+  chains disagree on behaviour (not just text), stop and `ask_parent` with both
+  sides; the co-developer takes it to Chris.
+
 - **You work in the default workspace only** — the repo root, never
   `.workspaces/*`.
 - **You are the only agent that may move the `main` bookmark**, and there is
@@ -57,7 +61,7 @@ problem that should not have existed.
 3. **A clean textual merge can still leave a semantic conflict** — a changed
    signature, a moved function, an enum that gained an arm. The gates are the
    only proof. Never land without running both, unfiltered, on the final base.
-4. Doc conventions: `CHANGELOG.md` keeps **both** entries, the later-landing
+4. Doc conventions: `LANES.md` keeps **both** entries, the later-landing
    lane's above; `ISSUES.md` and `DECISIONS.md` keep both sides' rows;
    `BOARD.md` is **line-items only** and its "In flight" section is yours to
    rewrite wholesale.
