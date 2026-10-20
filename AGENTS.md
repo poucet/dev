@@ -482,6 +482,11 @@ what workspace cleanup and any history repair need.
    - **Fragment folds are batched** into one docs commit — at a natural pause or
      at the version stamp — never one fold commit per landing. Every trunk commit,
      docs included, makes every running lane rebase again.
+   - **Never sleep-poll a gate.** Run it in the foreground, output to a log,
+     and read `$?`. A backgrounded run plus `sleep 600` waits the full ten
+     minutes after the gate is done, and no steering message reaches the agent
+     until the sleep returns (2026-10-21: two agents slept 600 s and 1800 s on
+     gates that had already finished).
    - Then tell the human.
 7. Recycle: forget the workspace when a lane is done. Directory deletion is the
    human's (agents cannot `rm`); each stale workspace holds a multi-GB build
