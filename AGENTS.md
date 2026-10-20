@@ -486,7 +486,8 @@ what workspace cleanup and any history repair need.
      and read `$?`. A backgrounded run plus `sleep 600` waits the full ten
      minutes after the gate is done, and no steering message reaches the agent
      until the sleep returns (2026-10-21: two agents slept 600 s and 1800 s on
-     gates that had already finished).
+     gates that had already finished). If a run must be backgrounded, wait on it
+     with `while kill -0 <pid>; do sleep 5; done`, which returns the moment it ends.
    - Then tell the human.
 7. Recycle: forget the workspace when a lane is done. Directory deletion is the
    human's (agents cannot `rm`); each stale workspace holds a multi-GB build
