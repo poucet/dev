@@ -18,8 +18,8 @@ overwrites).
 | `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks | yes |
 | `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no (machine path) |
 | `CHANGELOG.md` | user-facing, at the root | yes |
-| `changelog.d/` | lanes' changelog fragments until folded in | yes |
-| `docs/{design,research,guides,reference,archive}/` | the tracked doc web | yes |
+| `changelog.d/` | lanes' changelog fragments until folded in; appears with the first one | yes |
+| `docs/{design,research,guides,reference}/` | the tracked doc web; not made empty, a folder appears with its first file | yes |
 | `docs/ops/` | BOARD, ISSUES, DECISIONS, IDEAS, ROADMAP: working state | no: its own `.gitignore` holds `*` |
 | `docs/scratch/` | STATUS, DECIDE, ASKS, drafts | no: its own `.gitignore` holds `*` |
 | `.workspaces/`, `.trash/`, `.screenshots/` | lane workspaces, discarded files, renders | no: each has its own `.gitignore` holding `*` |

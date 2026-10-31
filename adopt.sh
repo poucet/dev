@@ -15,10 +15,12 @@
 #                                       trusted project)
 #        Claude Code  .claude/agents   (subagents)
 #   3. lays out the doc web per AGENTS.md §3:
-#        CHANGELOG.md  changelog.d/   at the root, tracked
+#        CHANGELOG.md at the root, tracked (changelog.d/ appears with the
+#        first lane fragment)
 #        docs/ops/        BOARD ISSUES IDEAS ROADMAP DECISIONS  (untracked
 #                         working state, gitignored)
-#        docs/{design,research,guides,reference,archive}/  (.gitkeep)
+#        (docs/{design,research,guides,reference}/ are not made: a folder
+#        appears when there is something to put in it)
 #        docs/scratch/       (gitignored)
 #        .workspaces/  .screenshots/  .trash/   (gitignored)
 #      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
@@ -74,8 +76,6 @@ esac
 # Create a directory (and parents) if absent.
 ensure_dir() { mkdir -p -- "$1"; }
 
-# Ensure dir contains a .gitkeep so an empty tree survives in git.
-ensure_gitkeep() { ensure_dir "$1"; [ -e "$1/.gitkeep" ] || touch "$1/.gitkeep"; }
 
 # Ensure dir contains a .gitignore with wild card to ignore that directory.
 ensure_untracked_dir() { ensure_dir "$1"; [ -e "$1/.gitignore" ] || echo '*' > "$1/.gitignore"; }
@@ -144,7 +144,6 @@ it is folded in here on landing.
 
 ## Unreleased
 EOF
-ensure_gitkeep "$PROJECT/changelog.d"
 
 # docs/ops/ is untracked working state in the default workspace.
 OPS="$PROJECT/docs/ops"
@@ -239,11 +238,6 @@ both a clock and the jj change id (AGENTS.md §2).
 |---|---|---|
 EOF
 
-# The decay-free doc kinds: empty, gitkeep'd.
-for kind in design research guides reference archive; do
-	ensure_gitkeep "$PROJECT/docs/$kind"
-done
-
 # The scratch, workspaces and screenshots directories.
 ensure_untracked_dir "$PROJECT/docs/scratch"
 ensure_untracked_dir "$PROJECT/.workspaces"
@@ -257,8 +251,8 @@ echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done
-echo "  CHANGELOG.md, changelog.d/ (tracked)"
-echo "  docs/ops/ (untracked), docs/{design,research,guides,reference,archive}/, docs/scratch/"
+echo "  CHANGELOG.md (tracked)"
+echo "  docs/ops/, docs/scratch/ (untracked)"
 echo "  .workspaces/, .screenshots/, .trash/"
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
 	echo

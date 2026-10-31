@@ -282,11 +282,10 @@ decision it waits on lives where it can still be answered — a board row's
 priority field, an ideas note, or a decisions row once it is answered. When it
 lands it moves into the design document.
 
-### `docs/guides/` · `docs/reference/` · `docs/archive/`
+### `docs/guides/` · `docs/reference/`
 
 How to do a thing — build, run, release, use a tool. Generated references say so
-and are **regenerated, not edited**. Historical material is archived rather than
-deleted.
+and are **regenerated, not edited**.
 
 
 ### The human channel — gitignored
@@ -327,7 +326,8 @@ Ideally only one or 2 key ones remain"*):
   together, by the coordinator, in the default workspace;
 - **`CHANGELOG.md` sits at the repo root**, tracked, with its `changelog.d/`
   fragments: the one decaying document that ships with the code;
-- everything else lives by kind: design, research, guides, reference, archive.
+- everything else lives by kind: design, research, guides, reference. A folder
+  appears when there is something to put in it; nothing is laid down empty.
 
 Documentation lives in the docs tree, **never inside the source tree**.
 
@@ -423,7 +423,6 @@ coordinator assigns the id when it records it.
       research/                investigations and measurements
       guides/                  how-to
       reference/               generated — regenerate, don't edit
-      archive/                 historical
       scratch/                 gitignored human channel: DECIDE.md ASKS.md STATUS.md
     spikes/<name>/             experiments, each its own build workspace, on a lane's chain
     .workspaces/<lane>/        one per lane, gitignored, INSIDE the repo
