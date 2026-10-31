@@ -116,6 +116,19 @@ describes.
 | **Work in progress** | | | |
 | `drafts/` | proposals before they become a design doc, review aids, triage | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or answered → `.trash/` |
 
+**Rows in the record** start with a short id, then **one** emoji status column,
+then the description; any other column (date, source, size) comes after it. Ids
+are zero-padded so the first two columns line up when a human scans, stable,
+never reused, and assigned by the coordinator. The prefixes live here and only
+here:
+
+| Doc | Id | Status legend | Row |
+|---|---|---|---|
+| `ISSUES.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
+| `DECISIONS.md` | `D-042` | ✅ in force · ♻️ superseded · ❓ reopened | `\| D-042 \| ✅ \| decision \| rationale \| when · change id \|` |
+| `IDEAS.md` | `N-012` | 💡 open · 🔶 partly answered · 🎯 next up · 📋 queued · 🔄 in flight · 🔬 researched · ✅ shipped · 🗑️ declined | `\| N-012 \| 💡 \| idea \| notes \| added \|` |
+| `ROADMAP.md` | `R-12` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| R-12 \| 📋 \| item \| size \| ideas \|` |
+
 - **Lanes read `docs/ops/` by the default workspace's absolute path** (their own
   workspace has none) and **never write it**.
 - **A lane reports; the coordinator records.** Issues found and closed,
@@ -796,9 +809,9 @@ his disk.
   after it was sent, so frequent steers land on work that has moved on. Give the
   whole brief up front; send a running lane only a correction that would
   otherwise make its result wrong. Everything else waits for its report.
-- **Markdown tables**: fixed-width columns first — status (emoji), date,
-  priority — then tag or name, then free-text description last. Keeps columns
-  aligned in the human's editor.
+- **Markdown tables**: short fixed-width columns first — an id, one emoji
+  status — then the free-text description, then anything else (date, source,
+  size). Keeps columns aligned in the human's editor (*Rows in the record*, §2).
 - **When a bookkeeping loop repeats, script it.** Chris, 2026-08-29: *"are there
   any things you do repeatedly that could be ops/scripts"* — nine lanes × eight
   shell calls each turned out to be most of a context window spent on

@@ -1,8 +1,9 @@
 # Issues
 
-> What belongs here, and what does not: @AGENTS.md §2.
-> 🐞 open · 🔬 triaged (cause known, fix specced) · 🔄 being fixed ·
-> ✅ fixed · 🗑️ won't fix / not a bug. Sizes: S ≈ a session · M ≈ a lane.
+> What belongs here, and what does not: @AGENTS.md §2. Rows: id (prefix in AGENTS.md §2), one
+> status, then what is wrong; other columns after.
+> 🐛 open defect · 🔧 open rough edge · 🔬 triaged (cause known, fix specced) ·
+> 🔄 being fixed · ✅ fixed · 🗑️ won't fix / not a bug.
 
-| Status | Found | What | Verdict |
-|---|---|---|---|
+| Id | St | What is wrong | Found | Verdict |
+|---|---|---|---|---|

@@ -1,6 +1,7 @@
 # Roadmap
 
-> What belongs here, and what does not: @AGENTS.md §2. 
+> What belongs here, and what does not: @AGENTS.md §2. Rows: id (prefix in AGENTS.md §2), one
+> status, then the item; other columns after.
 
 Each horizon is one **story line** from @docs/ops/IDEAS.md carried to a usable
 state, ordered so every phase makes the next cheaper. Phases are themes, not
@@ -11,5 +12,5 @@ is on the board, otherwise ask and it gets specced.
 > @docs/ops/BOARD.md · 🔶 partly shipped (the account is in the changelog; what
 > is left is in the row) · 🎯 next up · ⬜ open, not scheduled
 
-| St | Size | Item | Ideas |
-|---|---|---|---|
+| Id | St | Item | Size | Ideas |
+|---|---|---|---|---|
