@@ -617,6 +617,16 @@ the message is wrong within hours and stays wrong forever (Chris, 2026-08-29:
 *"calling out for 'needs review' in commit messages is silly, that's what
 BOARD.md is for"*). No co-author lines.
 
+**No internal ops references.** Issue ids, decision ids, lane names, board or
+landed-index rows (`I-106`, `N8`, `DEC-42`, `LANE-x`, `ops: … landed`) mean
+nothing to a reader of the history, and nothing at all in a public repo. The
+subject says, in plain words, what changed and why it matters; the body may
+explain more, still in plain words (Chris, 2026-10-31, on
+`docs(ops): I-106 closed (N8–N11, N13); N12 filed as I-107; landed-index row`:
+*"random internal ops docs references as commit messages, they are
+meaningless"*). A commit that only updates ops docs says what it records
+("record the VST3 inactive-parameter fix as done"), not which rows moved.
+
 ### Survival
 
 - **Commit early and often.** A WIP commit in your own workspace costs nothing.
