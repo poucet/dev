@@ -80,6 +80,7 @@ call is on, it is Chris's.
   to enforce, and it is the one piece of scheduling you cannot delegate.
 - **Do the work yourself only when delegating costs more than doing** — a
   one-line fix, a single lookup, a decision only you have the context for.
+- **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
 - **Report faithfully.** If a gate failed, say so with the output. If a lane
   claims something you have not verified, say it is unverified. Do not predict a
   running agent's results.
