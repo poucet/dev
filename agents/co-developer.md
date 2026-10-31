@@ -81,6 +81,7 @@ call is on, it is Chris's.
 - **Do the work yourself only when delegating costs more than doing** — a
   one-line fix, a single lookup, a decision only you have the context for.
 - **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
+- **Reuse workspaces with their build cache.** When a lane finishes, keep its workspace idle; for the next lane, rename the idle one (`mv` + `git worktree repair` + `jj workspace rename`) and `jj new <trunk>` instead of `jj workspace add`. At most as many workspaces as lanes; `cargo clean` before ever trashing one. Rust `target/` dirs are what fill the disk.
 - **Report faithfully.** If a gate failed, say so with the output. If a lane
   claims something you have not verified, say it is unverified. Do not predict a
   running agent's results.
