@@ -11,8 +11,8 @@ directory the coding harness in use reads them from (Claude Code:
 This will create the necessary starter docs, link AGENTS.md (relative, to dev's)
 with an `AGENTS.project.md` beside it, and symlink the agents.
 
-Every rule below was paid for. Where a rule carries a date or a quote, that is
-the scar it came from; keep it, because a rule with a scar gets followed.
+Every rule below came from a real failure. Where a rule carries its reason or a
+quote, keep it with the rule: a rule whose reason is stated gets followed.
 
 **A project's own rules.** A project may keep its own rules in
 `AGENTS.project.md` at its root. It is binding and is read right after this
@@ -42,11 +42,11 @@ That is the whole model. Full definitions are in `agents/`.
 so a name invented for one task is always a session late. There are eight roles,
 they are permanent, and they are always available.
 
-**The human is not one of the six.** He sets direction and priorities, reviews,
+**The human developer is not one of the eight.** They set direction and priorities, review,
 and **edits the board and the ideas inbox freely at any time** — so an agent
 re-reads those documents before acting on them rather than trusting a copy it
-read earlier. He launches the application himself; agents never do (it steals his
-screen focus).
+read earlier. They launch the application themselves; agents never do (it steals
+their screen focus).
 
 Two rules hold the model together.
 
@@ -57,14 +57,14 @@ up with conflicted commits inside its own history.
 
 **Trunk holds still while lanes are rebasing onto it.** Moving it underneath a
 running lane corrupts nothing, but it silently invalidates that lane's gate run,
-and green on a base nobody will integrate is not evidence. On 2026-08-29 one lane
-rebased three times and re-resolved the same conflict twice because this was
-ignored. Batch integrator commits; land them after lanes report.
+and green on a base nobody will integrate is not evidence: the lane rebases again
+and re-resolves the same conflicts. Batch integrator commits; land them after
+lanes report.
 
 **Anything over ~15 minutes of engineering leaves the conversation.** The
 coordinator that talks to the human stays free; long serial work done inline is
-dead time for him (*"you're doing too much stuff in main agent, I am blocked by
-you linearizing all this work"*). Spawn first, then do the small residue.
+dead time for them ([simply-chris](https://simplychris.ai): *"you're doing too
+much stuff in main agent, I am blocked by you linearizing all this work"*). Spawn first, then do the small residue.
 
 **Architecture is the human's.** Neither a lane nor the coordinator decides a
 design-doc change, a public API or a wire or file format, a crate or repo
@@ -73,8 +73,7 @@ scope, what a mode means), or a user-visible default. A lane that meets one
 **stops and asks** its coordinator, unless its brief settles it. The coordinator
 **puts it in the decisions file** (*The human channel*, §2) **and waits**; if it
 blocks work, it takes the most reversible option and lists it there as *taken
-without you*. Bug fixes inside an existing design are not architecture (Chris,
-2026-10-31).
+without you*. Bug fixes inside an existing design are not architecture.
 
 ---
 
@@ -86,7 +85,7 @@ belong as well as what does.
 
 **These documents carry no policy of their own.** What belongs in each, and what
 does not, is stated once — here — and a document that restates it drifts from
-this list and pollutes the content it exists to hold (Chris, 2026-08-29: *"the
+this list and pollutes the content it exists to hold ([simply-chris](https://simplychris.ai): *"the
 operational sections at the top of what belongs in which doc … belong in
 AGENTS.md and pollute those docs"*). Each opens with one pointer line and, where
 its rows carry status marks, the legend for reading them: a key belongs beside
@@ -105,7 +104,7 @@ describes.
 | **The human's view** | | | |
 | `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands |
 | `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
-| `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once he has run it |
+| `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once they have run it |
 | **The record** | | | |
 | `ISSUES.md` | defects and rough edges, not scheduled | coordinator, from lane reports | fixed → a one-line verdict |
 | `DECISIONS.md` | settled decisions with their rationale | coordinator | never: a later row supersedes |
@@ -143,9 +142,8 @@ The concept matters more than the file. It is a **shared, live document that
 every agent reads before acting and writes when its state changes**, and it is
 the human's primary view of what is happening and what needs them.
 
-- **Line-items only.** Prose is what lanes collide on: when eight lanes each
-  edited the same narrative paragraph, every one of them conflicted. Removing the
-  prose took one board from 404 lines to 233 and the collisions stopped.
+- **Line-items only.** Prose is what lanes collide on: every lane that edits the
+  same narrative paragraph conflicts with every other, and line items don't.
 - **Lanes never write the board**, and no role owns a section of it: the
   `integrator` writes none of it, so the `scribe` never waits for one.
 - **Keep it short.** It exists to show the *live* work.
@@ -163,22 +161,21 @@ the human's primary view of what is happening and what needs them.
 
 **Edit it by hand, not by script** — read the file and write the intended
 result, then re-read the section you touched. It is one file, prose plus tables,
-and the file everyone navigates by. Being untracked, it never conflicts; the
-scars of the days it was merged are under *Landing*, rule 3.
+and the file everyone navigates by. Being untracked, it never conflicts; what
+goes wrong when a shared document is merged is under *Landing*, rule 3.
 
 **A label is something the human types.** Never strike a label through — a
 `~~LABEL~~` cannot be typed to fire a lane, tildes are awkward to reach, and a
 struck row reads as *present but crossed out* when what is meant is *gone*. A
 landed lane's row is **deleted**, its record is the changelog; a superseded one is deleted and its successor says what it replaced.
 Status lives in the status column and in which section the row is in, never in
-the label (Chris, 2026-08-29: *"please don't use tildes in names, not sure why
-you're doing that, tildes are hard to type"*).
+the label.
 
 ### `STATUS.md` — the churny half of the board
 
 The board splits in two, because its halves change at different speeds.
 
-- **`BOARD.md` is for the human**: what runs, what is next, what waits on him.
+- **`BOARD.md` is for the human**: what runs, what is next, what waits on them.
 - **`STATUS.md` is the coordinator's live notes**: lane ids, chains ready and
   unintegrated, where trunk is, side lines. It changes hourly.
 
@@ -203,7 +200,7 @@ with the default workspace's absolute path.
 ### `CHANGELOG.md` — tracked, at the repo root
 
 What got added, per landing, dated and tied to versions — *"what got added, not
-all the analysis and story"* (Chris, 2026-08-29). What a capability now is, what
+all the analysis and story"* ([simply-chris](https://simplychris.ai)). What a capability now is, what
 changed in behaviour — especially anything that alters saved files or an API —
 and what was fixed, in a line. A few lines an entry. In a merge, **both** entries
 survive, the later landing above the earlier.
@@ -218,14 +215,13 @@ row. **An entry that reads as a narrative is in the wrong document.**
 
 ### Dating an entry — clock *and* change id
 
-A date alone is not enough granularity. Thirteen lanes landed on one date in this
-project's history, and two changelog entries had to be reordered by hand because
-nothing in the text said which came first.
+A date alone is not enough granularity: many lanes land on one date, and nothing
+in a dated text says which of them came first.
 
 Every `CHANGELOG.md` entry and every `DECISIONS.md` row carries **both**:
 
-    #### A preset that describes itself (`LIBFIN`) · 2026-08-29 20:15 · oplmqxmn
-    | 2026-08-29 20:15 · uvzmuvkl | **The analysis toolkit is a separate crate family…** |
+    #### A preset that describes itself (`LIBFIN`) · YYYY-MM-DD HH:MM · oplmqxmn
+    | YYYY-MM-DD HH:MM · uvzmuvkl | **The analysis toolkit is a separate crate family…** |
 
 - **The clock** is for a human skimming: roughly when this happened. A lane
   writes it in its changelog fragment at commit time, because the lane is the
@@ -285,10 +281,9 @@ unreviewed outlives the review.
 **Changing a design needs review; recording that it was built does not.** Once a
 design is approved, a lane marking its own stage as built, correcting a sketch to
 match the code, or adding a finding the design did not predict is **reporting,
-not proposing**, and does not wait on a second review. Gating those turned an
-approved document into one that read as pending for hours after it had been
-signed off, in the document the human would look at to check (Chris, 2026-08-29:
-*"why is SEQUENCER.md still waiting"*). A lane that wants to *change* what was
+not proposing**, and does not wait on a second review. Gating those makes an
+approved document read as pending long after it was signed off, in the very
+document the human looks at to check. A lane that wants to *change* what was
 decided says so in its report, not as a banner on the file.
 
 If a design's section numbers are cited from source code, **they are never
@@ -300,9 +295,10 @@ Investigations and measurements. A number with its method beside it settles an
 argument; a paragraph of plausibility does not. Also **the argument behind
 anything designed but not built**.
 
-**There is no register of unlanded designs** (dissolved 2026-08-29, Chris: *"I
+**There is no register of unlanded designs** ([simply-chris](https://simplychris.ai): *"I
 kind of feel like DESIGN.md as a doc should not exist unless there are things
-that don't fit into the docs I just mentioned"* — nothing in it did). An unlanded
+that don't fit into the docs I just mentioned"*: everything such a register would
+hold fits elsewhere). An unlanded
 design is **a research note plus a queue row**: the note holds the argument and
 the measurements, the row holds what a lane would do and what it costs, and the
 decision it waits on lives where it can still be answered — a board row's
@@ -329,12 +325,12 @@ a commit message** — chat scrolls away while lanes report:
 - **`ASKS.md`**: things for the human to run.
 
 The coordinator writes both; a lane puts its questions in its report. A lane
-never writes them, so it cannot reserve a row id there: two lanes once numbered
-their rows from their own counts and collided.
+never writes them, so it cannot reserve a row id there: lanes that number rows
+from their own counts collide.
 
 The asks file holds **commands only the human can run**, with the context to
 judge each one. `rm` is denied to agents, so deletions land here rather than in a chat
-message (Chris, 2026-08-29: *"copy paste from Claude Code is terrible"*). **A
+message ([simply-chris](https://simplychris.ai): *"copy paste from Claude Code is terrible"*). **A
 block that names paths names them explicitly** — an *"everything except…"* filter
 is evaluated when the human runs it, in a world the agent could not see, which is
 how a cleanup deletes a lane started after it was written.
@@ -342,8 +338,8 @@ how a cleanup deletes a lane started after it was written.
 
 ### Where they live
 
-Reshaped 2026-08-29 (Chris: *"where should the remaining top-level docs go?
-Ideally only one or 2 key ones remain"*):
+As few top-level documents as possible ([simply-chris](https://simplychris.ai): *"where
+should the remaining top-level docs go? Ideally only one or 2 key ones remain"*):
 
 - **the repo root** holds `AGENTS.md`, and the project's `AGENTS.project.md` if it
   has one, and nothing else of this kind;
@@ -418,7 +414,7 @@ goes wherever the changelog lives — in `repo/` if the team keeps one there.
   clause at the end, never the opening.
 - **A design document needs its human's review before a commit changes it.** A lane reports the correction; it does not make it.
 - **Fix it, do not file it.** A small defect found in passing is closed in the
-  lane. Chris, 2026-09-07: *"I hate that issues keep piling up instead of getting resolved."*
+  lane. [simply-chris](https://simplychris.ai): *"I hate that issues keep piling up instead of getting resolved."*
 
 **Why fragments rather than direct edits.** Two lanes editing one changelog is
 a merge conflict in prose, which a resolver settles by picking a side rather
@@ -429,8 +425,8 @@ correctly, and deletes them. The cost is one step that must not be skipped:
 commit that folds it, or the next fold reads it as unlanded work.
 
 **Ids are the coordinator's.** A lane cannot reserve an issue or decision id:
-it cannot see another lane's work in flight, which is how five lanes once picked
-the same id from their own counts. A lane names what it found in words; the
+it cannot see another lane's work in flight, so lanes counting on their own pick
+the same id. A lane names what it found in words; the
 coordinator assigns the id when it records it.
 
 ---
@@ -479,13 +475,13 @@ is a sibling on purpose. See *A repo you don't own* above.
 
 **Verify the bookmark against the actual tip.** After a history operation — an
 `op restore`, an undo, a rebase someone else ran — a bookmark can be left
-pointing at an old commit while the real work sits above it. One was found **152
-commits behind** the tip that `git log` agreed with. Nothing warns you; every
+pointing at an old commit, many commits behind, while the real work sits above
+it, and `git log` agrees with the stale bookmark. Nothing warns you; every
 rebase you then run is onto the wrong base. Check first, every session.
 
 **Know what is actually unintegrated, from a query, not from memory.** Ask the
-repo — in `jj`, `ancestors(<workspace>@) ~ ::<trunk> ~ empty()` — and count. Two
-lanes were recorded as landed on a board when neither had been. A workspace whose
+repo — in `jj`, `ancestors(<workspace>@) ~ ::<trunk> ~ empty()` — and count. A
+board can record a lane as landed when it has not been. A workspace whose
 working copy is *empty* is normal and means nothing: a finished lane's work sits
 in the ancestors, not in `@`.
 
@@ -495,20 +491,17 @@ workspace removes the only thing keeping that chain visible.
 **One workspace, one writer — the default workspace included.** While an
 `integrator` is landing, nobody else writes in the default workspace, and that
 includes whoever is dispatching. This is the sibling of *trunk holds still while
-lanes are rebasing onto it*, and it was broken within the hour of that one being
-written: on 2026-08-29 the dispatcher created a symlink and edited a tracked
-ignore file in the default working copy mid-integration. The integrator found
-unexplained changes in its own working copy, could not tell whose they were, and
-had to park them as a side commit to keep `@` clean. Nothing was lost, but it
-spent its judgement on an archaeology problem that should not have existed. If
+lanes are rebasing onto it*. An integrator that finds unexplained changes in its
+own working copy cannot tell whose they are, has to park them as a side commit to
+keep `@` clean, and spends its judgement on archaeology instead of landing. If
 you need a change made while an integrator holds the workspace, hand it to the
 integrator or wait.
 
 ### Trunk and the working copy
 
 **`default@` is always an empty commit one above trunk.** The integrator's
-working copy is scratch, never the thing that ships. The loop is Chris's
-(2026-08-29):
+working copy is scratch, never the thing that ships. The loop
+([simply-chris](https://simplychris.ai)):
 
     jj new                      # @ is an empty child of main
     …edit…
@@ -521,14 +514,14 @@ there is no window in which `@` is a described commit waiting to be pointed at.
 go wrong when the loop is broken, and both are invisible until someone reads the
 log:
 
-- an edit made while `@` *is* trunk silently joins the last commit — which is how
-  two unrelated changes ended up sharing a message three times in one day;
+- an edit made while `@` *is* trunk silently joins the last commit, so two
+  unrelated changes end up sharing a message;
 - a `jj describe` on a commit the bookmark already points at **overwrites** its
-  message rather than starting a new one — which is how a landed lane's account
-  was replaced by the next thing typed.
+  message rather than starting a new one, so a landed lane's account is replaced
+  by the next thing typed.
 
 **The integrator does not run into a version.** When the last lane of a milestone
-lands, stop and hand back rather than continuing to the tag (Chris, 2026-08-29:
+lands, stop and hand back rather than continuing to the tag ([simply-chris](https://simplychris.ai):
 *"don't go there automatically, let's take the opportunity for a human review and
 cleaning up old workspaces"*). Every lane was reviewed against its own brief and
 nobody has read the result as one thing; a version boundary is the natural place
@@ -549,13 +542,12 @@ what workspace cleanup and any history repair need.
    final commit, and in its report the board substance — what it finished, the
    follow-up work it discovered with a priority, issues and decisions. The
    coordinator records it from the report instead of reconstructing every lane's
-   state by hand, which does not scale past a handful of lanes and is where
-   tracking once broke down (Chris, 2026-08-28).
+   state by hand, which does not scale past a handful of lanes.
 5. **The lane's last act is to rebase itself onto trunk**, resolve every conflict,
    and **re-run the gates afterwards**. Then report, saying what conflicted and
    how it was resolved. Then stop.
 6. A `integrator` lands it. **Landing is a pointer move, not a rebuild**
-   (Chris, 2026-10-21):
+   ([simply-chris](https://simplychris.ai)):
    - **The lane sits on the current trunk and gated there** → `jj st` (refuse if
      `default@` is not empty: those edits are the human's), then `jj new <lane
      tip>` from the default workspace. **No re-gate**: it is the same tree the
@@ -569,22 +561,20 @@ what workspace cleanup and any history repair need.
    - **Never sleep-poll a gate.** Run it in the foreground, output to a log,
      and read `$?`. A backgrounded run plus `sleep 600` waits the full ten
      minutes after the gate is done, and no steering message reaches the agent
-     until the sleep returns (2026-10-21: two agents slept 600 s and 1800 s on
-     gates that had already finished). If a run must be backgrounded, wait on it
+     until the sleep returns. If a run must be backgrounded, wait on it
      with `while kill -0 <pid>; do sleep 5; done`, which returns the moment it ends.
    - Then tell the human.
 7. Recycle: forget the workspace when a lane is done and move its directory to
    `.trash/` (agents cannot `rm`). Its build cache goes to the next lane, not to
    the bin: see *Spare the disk* below.
 
-**Why the rebase belongs to the lane and not the integrator** (Chris, 2026-08-29):
+**Why the rebase belongs to the lane and not the integrator** ([simply-chris](https://simplychris.ai)):
 
 - **The lane knows what its own change meant.** The integrator resolving someone
   else's conflict is guessing at intent, and a wrong guess in a union merge is
-  silent — it produces a plausible document nobody wrote. That has happened more
-  than once: a merged board entry lost its opening line, an entry's body was
-  reattached to the wrong heading, and a changelog account ended up describing
-  another lane's work.
+  silent — it produces a plausible document nobody wrote: an entry loses its
+  opening line, a body is reattached to the wrong heading, a changelog account
+  ends up describing another lane's work.
 - **A rebase can break a lane that merged cleanly.** Another lane may have
   changed the API this one calls, so a conflict-free rebase is not a green one.
 - **Resolving at the tip is not resolving.** See below.
@@ -592,11 +582,10 @@ what workspace cleanup and any history repair need.
 The integrator's job is then what it should be: read the report, move the
 bookmark, verify.
 
-**Never rebase a RUNNING agent's chain** (learned 2026-08-28). Integrating a
+**Never rebase a RUNNING agent's chain.** Integrating a
 lane's chain while that agent is still working corrupts its working copy: the
 stale-workspace recovery fires under it and can revert it to an older revision,
-leaving its change divergent. One survey lost work this way and only recovered
-from scratchpad backups. **Integrate only chains whose agent has reported and
+leaving its change divergent and its work lost. **Integrate only chains whose agent has reported and
 stopped.** If a lane must land early, message it to commit and stop FIRST, wait
 for the completion notification, then rebase. The integrator's own working copy
 going stale is harmless by comparison — that is just this session catching up.
@@ -604,30 +593,28 @@ going stale is harmless by comparison — that is just this session catching up.
 ### Landing
 
 1. **Resolve the oldest commit in a chain first, never the tip.** A clean tip can
-   sit on conflicted ancestors. Resolving at the tip is what put nine conflicted
-   commits into one repo's own history.
+   sit on conflicted ancestors. Resolving at the tip leaves conflicted commits in
+   the repo's own history.
 2. **Read the label on every conflict block; never assume which side is which.**
    `jj` writes `+++++++ … (rebase destination)` for trunk's side but
    `(rebased revision)` for the lane's — and it alternates *within a single
-   file*, sometimes between two blocks of the same document. A repo has already
-   been corrupted once by assuming, and the union-merge that did it looked right.
+   file*, sometimes between two blocks of the same document. Assuming corrupts
+   the document, and the merge that did it looks right.
 3. **Never resolve a shared document with a union script.** A blind union (keep
    `+` lines, drop `-` lines, keep context) **silently mangles entries**: a row
    both sides edited loses the unchanged half, and a `-`/`+` rewrite of the same
-   row can leave the old row duplicated elsewhere. It has duplicated a heading,
-   orphaned one lane's body under another lane's heading, and dropped a
-   correction entirely. Two such defects reached trunk on 2026-08-28 — a merged
-   entry stripped of its opening line, and a superseded queue row appearing twice
-   — and were only caught because a merge agent read the file properly. Worse,
-   the damage survives: a board was found carrying **two `## Queued` tables with
-   different column headers**, from a union merge sessions earlier that nobody
-   noticed. After resolving any document by machine, **grep for duplicated
+   row can leave the old row duplicated elsewhere. It duplicates headings,
+   orphans one lane's body under another lane's heading, strips an entry of its
+   opening line and drops corrections entirely, and only someone reading the
+   file properly catches it. Worse, the damage survives: a union merge can leave
+   a document with **two tables for one section, with different column
+   headers**, that nobody notices for sessions. After resolving any document by machine, **grep for duplicated
    headings.**
 4. **A clean textual merge can still leave a semantic conflict** — a changed
-   signature, a moved function, an enum that gained an arm. Two real ones from a
-   single integration: a trait impl added on trunk kept the old method signature
-   after a clean merge and the crate would not compile; and a lane passed a value
-   to a function whose parameter type another lane had turned into an enum. The
+   signature, a moved function, an enum that gained an arm. For example: a trait
+   impl added on trunk keeps the old method signature after a clean merge and the
+   crate does not compile; or a lane passes a value to a function whose parameter
+   type another lane turned into an enum. The
    gates are the only proof, and neither lane could have seen its own.
 5. **Deletion-versus-modification is the reorg conflict.** When trunk splits a
    file into a directory and a lane edited the old file, the conflict presents as
@@ -673,11 +660,10 @@ it only under three conditions, and the first two are why it usually waits.
 
 - **No lane may be running.** Every lane rebases onto trunk, so rewriting it
   underneath them invalidates their work.
-- **Resolve oldest-first, in a scratch workspace.** Three attempts in one session
-  turned one conflicted commit into 11, then 71; both were undone with an
-  operation restore, which is the reason to work where an undo is cheap — and
-  safe only because no lane was running (*Environment*: never in a shared repo
-  otherwise).
+- **Resolve oldest-first, in a scratch workspace.** A wrong attempt multiplies
+  the conflicted commits, so work where an undo is cheap; the operation restore
+  that undoes it is safe only because no lane is running (*Environment*: never in
+  a shared repo otherwise).
 - **The acceptance test is the tree, not the log.** Hash the documents and the
   source before and after; the result must be **byte-identical**. A repair that
   changes content is a different change wearing a repair's clothes.
@@ -690,14 +676,14 @@ it only under three conditions, and the first two are why it usually waits.
   working, run only the tests you touched (*Spare the disk*, below).
 - Never report green without having run them.
 - **Verify headlessly.** Never auto-launch the application to check something —
-  it steals the human's screen focus. He launches it himself.
+  it steals the human's screen focus. They launch it themselves.
 
 ### What a commit message says
 
 **A commit message says what the commit did — never what it is waiting for.**
 Review state, "PROPOSAL", "NEEDS REVIEW" and the like do not belong in a commit,
 least of all in its subject: a commit is immutable and review state changes, so
-the message is wrong within hours and stays wrong forever (Chris, 2026-08-29:
+the message is wrong within hours and stays wrong forever ([simply-chris](https://simplychris.ai):
 *"calling out for 'needs review' in commit messages is silly, that's what
 BOARD.md is for"*). No co-author lines.
 
@@ -705,7 +691,7 @@ BOARD.md is for"*). No co-author lines.
 landed-index rows (`I-106`, `N8`, `DEC-42`, `LANE-x`, `ops: … landed`) mean
 nothing to a reader of the history, and nothing at all in a public repo. The
 subject says, in plain words, what changed and why it matters; the body may
-explain more, still in plain words (Chris, 2026-10-31, on
+explain more, still in plain words ([simply-chris](https://simplychris.ai), on
 `docs(ops): I-106 closed (N8–N11, N13); N12 filed as I-107; landed-index row`:
 *"random internal ops docs references as commit messages, they are
 meaningless"*). A commit that only updates ops docs says what it records
@@ -714,8 +700,8 @@ meaningless"*). A commit that only updates ops docs says what it records
 ### Survival
 
 - **Commit early and often.** A WIP commit in your own workspace costs nothing.
-  Four agents died mid-task on a spend limit on 2026-08-29 and lost everything
-  between them because none had committed. A crash should cost minutes.
+  An agent that dies mid-task, on a spend limit say, loses everything it had not
+  committed. A crash should cost minutes.
 - **Commit after each green step**, so a dropped connection loses nothing.
 
 ### Environment
@@ -724,7 +710,7 @@ meaningless"*). A commit that only updates ops docs says what it records
   intercepts filesystem syscalls turns a working-copy scan into minutes: `jj log`
   measured **over two minutes** sandboxed and **16 ms** without. It hangs rather
   than fails, so it reads as a repo problem — the same command run by hand
-  returns instantly, which is how it was finally spotted. A slow `jj` is not
+  returns instantly. A slow `jj` is not
   evidence of a large repo, a lock, or a corrupt operation log. Check this first.
 - **`jj squash` and `jj describe` open `$EDITOR` and hang an agent forever.**
   `export JJ_EDITOR=true` and always pass `--use-destination-message`.
@@ -733,8 +719,8 @@ meaningless"*). A commit that only updates ops docs says what it records
   the project's `.trash/<what>-<date>/` (gitignored; the human empties it). What
   only the human can delete goes in the asks file.
 - **Never search `.trash/`** (`grep -r`, `rg`, `find`). It holds retired
-  workspaces and their build caches, tens of GB; one `grep -r` into it stalled
-  two lanes for over half an hour (2026-10-30). Search the source and docs
+  workspaces and their build caches, tens of GB; a `grep -r` into it stalls a
+  lane for half an hour or more. Search the source and docs
   directories by name.
 - **No `timeout` on macOS.** The command does not exist there; don't wrap a
   build in it. Commit after each green step instead.
@@ -742,15 +728,15 @@ meaningless"*). A commit that only updates ops docs says what it records
   own build workspace, committed on the lane's chain, where others can see it;
   the coordinator decides whether it lands on trunk or stays on a side bookmark.
 - **Never `jj op restore`, `jj op revert` or `jj undo` in a shared repo.** They
-  act on the whole repo's operation log and undo other lanes' commits too
-  (2026-10-23: one undid another lane's merge). To fix your own mistake,
+  act on the whole repo's operation log and undo other lanes' commits too,
+  merges included. To fix your own mistake,
   `jj restore`, `jj abandon` or `jj rebase` your own changes; if that cannot fix
   it, report it.
 
-### Spare the disk: builds are writes (Chris, 2026-10-31)
+### Spare the disk: builds are writes ([simply-chris](https://simplychris.ai))
 
 Every build writes gigabytes to the human's SSD, and build caches are what fill
-his disk.
+their disk.
 
 - **Full gates once, after the final rebase.** While working, run only the tests
   you touched. A load or soak harness runs only when the brief asks for it.
@@ -812,17 +798,17 @@ his disk.
 - **Markdown tables**: short fixed-width columns first — an id, one emoji
   status — then the free-text description, then anything else (date, source,
   size). Keeps columns aligned in the human's editor (*Rows in the record*, §2).
-- **When a bookkeeping loop repeats, script it.** Chris, 2026-08-29: *"are there
-  any things you do repeatedly that could be ops/scripts"* — nine lanes × eight
-  shell calls each turned out to be most of a context window spent on
+- **When a bookkeeping loop repeats, script it.** [simply-chris](https://simplychris.ai):
+  *"are there any things you do repeatedly that could be ops/scripts"*. A few
+  shell calls per lane, times every lane, is most of a context window spent on
   bookkeeping. The judgement stays human: a real code conflict, and what a lane's
   board substance should say.
 
-### Fences are advisory, not exclusive (Chris, 2026-08-28)
+### Fences are advisory, not exclusive ([simply-chris](https://simplychris.ai))
 
 Briefs enumerate the files or modules a lane may touch, and overlaps are
 deliberate choices rather than accidents — but **do not gate a lane on finding
-files nobody else touches.** Chris: *"we don't need to work on things that are
+files nobody else touches.** [simply-chris](https://simplychris.ai): *"we don't need to work on things that are
 exclusively on free files — given we use workspaces we can sacrifice a little
 cleanup pre-merge and have more stuff work in parallel, as long as there's not
 massive refactors involved."*
@@ -835,7 +821,7 @@ restructured, or just extended?"* — extension parallelises, restructuring does
 not. Fences remain useful as **ownership hints** ("if you need to change X, say
 so in your report") rather than hard walls.
 
-### Don't mix long work into a field of short work (Chris, 2026-08-28)
+### Don't mix long work into a field of short work ([simply-chris](https://simplychris.ai))
 
 *"Long work parallelizes poorly with lots of short work, unless it's something
 really different like research."*
@@ -851,11 +837,10 @@ semantically with code lanes.
 Rule of thumb: **fire long multi-stage code work when the board is quiet**, or
 stage it explicitly so each stage is short. Prefer many small lanes otherwise.
 
-### Lanes cannot address each other by label (learned 2026-08-29)
+### Lanes cannot address each other by label
 
 A lane cannot see another lane's workspace or wait on it, and a board label is
-not an agent name. Two lanes that needed to agree on who owned a shared type
-tried to message each other by label and the send bounced — **the coordinator is
+not an agent name. A message one lane sends another by label bounces — **the coordinator is
 the only one that holds every lane's agent id**, so every cross-lane message
 routes through it whether or not that was intended. Cross-lane dependencies are
 the briefer's problem.
@@ -869,20 +854,20 @@ the briefer's problem.
   forwarded. The cost of hesitating is that both lanes keep working, which is
   precisely the failure this is meant to prevent.
 
-The deeper point, proved by two lanes in the same area independently building the
-same enum: **overlapping lanes are cheap for edits and expensive for
+The deeper point, since two lanes in the same area can each build the same type
+independently: **overlapping lanes are cheap for edits and expensive for
 abstractions, because only one abstraction can live.** When a decision lands
 mid-flight that implies a refactor, that refactor is a *new shared abstraction*
 by definition — assign it to exactly one lane, in writing, before either starts.
-The rule of thumb that settled it: **the lane that cannot do its own work without
+The rule of thumb: **the lane that cannot do its own work without
 touching those lines owns them.**
 
-### Show the UI; don't make the human rebuild it (Chris, 2026-08-29)
+### Show the UI; don't make the human rebuild it ([simply-chris](https://simplychris.ai))
 
 A UI change is rendered, not described — into a shared, dated, lane-labelled
 directory under the repo root, and said so in the report.
 
-The reason is arithmetic. Chris: *"having to rebuild it from scratch myself takes
+The reason is arithmetic. [simply-chris](https://simplychris.ai): *"having to rebuild it from scratch myself takes
 a while … and subagents are already doing all that work and screenshotting."* The
 lane has already paid the build cost and already rendered the scenes to check its
 own work; without redirection those images land in a build directory and are
@@ -891,19 +876,15 @@ saves a full rebuild per lane.
 
 - **The path is the repo root's, not `$PWD`.** A lane runs inside its own
   workspace, so `$PWD/…` writes where the human never looks and which is deleted
-  with the workspace. Five lanes rendered 130 images into their own workspaces
-  before this was caught (Chris: *"I don't see that screenshot"* … *"subagents
-  should be making sure to write in .screenshots of the root project"*). Use an
-  absolute path.
+  with the workspace. Use an absolute path.
 - **Keep only the scenes that changed.** Rendering is all-or-nothing, but a lane
-  that copies every scene into its directory buries the two that matter, and five
-  lanes doing it produced 130 near-identical files (Chris: *"why so many
-  duplicate screenshots?!"*). Render to scratch, diff against the previous run,
+  that copies every scene into its directory buries the two that matter, and a
+  few lanes doing it leave piles of near-identical files. Render to scratch, diff against the previous run,
   keep what changed plus what the lane added. The exception is a deliberate
   **baseline** set, which keeps everything precisely so the next lane has
   something to diff against.
 - **Say both numbers** — *"21 rendered, 3 changed"*. "Nothing changed" is
-  information too, and it is the sentence that tells the human he need not look.
+  information too, and it is the sentence that tells the human they need not look.
 - **`reference/` is evidence: never overwrite or clear it.** It holds captures of
   other people's software and the human's own manual captures. `progress/` is
   dated and lane-labelled so two lanes do not clobber each other, and stale
@@ -923,7 +904,7 @@ returned the most valuable finding in a lane's report.
 ### Local-model delegation
 
 Burn bulk-implementation tokens on a LOCAL model so the frontier-model quota goes
-to judgment. Limits are real — three agents died to one in a single day.
+to judgment. Limits are real: an agent that hits one dies mid-task.
 
 Verified working: `pi --provider ollama --model <local-model> --no-session -p "…"`
 (pi 0.84.3, headless print mode; `--mode json` for structured output,
@@ -948,8 +929,8 @@ sweeps (e.g. a 45-file signature migration), doc plumbing.
 **Never delegate**: architecture, compiler or unsafe internals, conflict
 resolution, contract and design decisions, anything spec-ambiguous.
 
-Policy, calibrated by the first pilot's failure (a history-test port: >10 min on
-the local model, misused private APIs, wrong semantics, rewritten):
+Policy, because a loosely specified task (a test port, say) comes back slow,
+misusing private APIs with the wrong semantics, and gets rewritten:
 
 - Delegate ONLY well-specified mechanical work — rote sweeps with an exemplar
   ("here is one converted module, convert these N the same way"), test
@@ -958,31 +939,30 @@ the local model, misused private APIs, wrong semantics, rewritten):
   verify, and a hard instruction to change nothing else. Review the diff like a
   hostile PR; rewriting more than 30% means the task was miscategorised — do it
   directly next time and note it.
-- Laptop heat and GPU contention are real: if the human needs the machine he says
+- Laptop heat and GPU contention are real: if the human needs the machine they say
   so and the local model pauses. Prefer batching runs over keeping the server
   warm.
 
-The switch has been thrown both ways — paused for laptop heat, then **re-enabled
-under quota pressure** (Chris, 2026-08-28, later the same day) when frontier
-quota was near its limit for several days, exactly the trade the pause clause
-anticipated: local latency beats no quota. Which way it is set *now* is live
+The switch goes both ways: pause it for laptop heat, and **re-enable it under
+quota pressure** when frontier quota is near its limit, because local latency
+beats no quota. Which way it is set *now* is live
 state and belongs on the board, not here.
 
-### Constraint hygiene (added 2026-08-28 after a real miss)
+### Constraint hygiene
 
 When work is throttled by a constraint — quota, a blocking lane, a paused
 dependency — record WHICH constraint and re-check it when the situation changes.
 A throttle set for reason X must be lifted the moment X stops applying; the
 failure mode is a conservative policy outliving its cause and quietly serialising
-work nobody chose to serialise. Concretely: a model-quota freeze correctly
-stopped lanes on that model, but lanes on a different model were never subject to
-it, and after the switch the freeze should have been lifted proactively rather
-than waiting for the human to ask why everything was sequential. Default posture
+work nobody chose to serialise. For example: a model-quota freeze stops lanes on
+that model, but lanes on a different model are never subject to it, so after a
+switch of model lift the freeze yourself rather than wait for the human to ask
+why everything is sequential. Default posture
 remains parallelise-and-merge-later.
 
 ---
 
-## 5. How we state claims — #SimplyAILogic (Chris, 2026-08-28)
+## 5. How we state claims — #SimplyAILogic ([simply-chris](https://simplychris.ai))
 
 Docs, reports and briefs reason **modally and constructively**, not classically.
 Four operational habits:
@@ -998,7 +978,7 @@ Four operational habits:
    lever. Writing ⚫️ where 🚫 is meant hides that lever.
 3. **Belief carries evidence and stays revisable.** `(p ∧ e) → Bp`: assert with
    what produced the assertion. There is **no T axiom for belief** — we hold
-   false beliefs, and several have been corrected the day they were written. On
+   false beliefs, and correct some the day they are written. On
    contradiction, revise (`Bp ∧ B¬p → BR`) rather than pick a side or stall. Keep
    the correction visible; it is usually more useful than the claim.
 4. **Fixed past, open future** (`□Past`, `◇Future`). Shipped work is stated
@@ -1041,6 +1021,4 @@ Answer all five explicitly, docs updated as you go (docs before eng).
    the harness says it "won't be resumed". Give the relaunched agent its
    predecessor's transcript path — the tail holds the exact plan and next step it
    was executing, which is finer-grained than the committed workspace state.
-   (Learned 2026-08-28: three fresh agents were launched from workspace state
-   alone; the transcripts had survived.)
 5. Private memory duplicates the key conventions and points back here.
