@@ -12,10 +12,22 @@ Run the installer:
 
     ~/projects/simply/dev/adopt.sh <project>
 
-It is idempotent and never overwrites anything that already exists. It
-copies `AGENTS.md` and symlinks the role definitions, lays out the doc web of §3
-(ops skeletons, `docs/scratch/`, the human channel, `.workspaces/`,
-`.screenshots/`), and appends the gitignore entries those need.
+It is idempotent and never overwrites anything that already exists. It:
+
+- **links `AGENTS.md`** to this repo's (a relative symlink), and starts an
+  `AGENTS.project.md` for the project's own rules: build, gates, branches,
+  paths. Where the two disagree, the project file wins for that project;
+- **symlinks the role definitions** for the harness (below);
+- lays out the doc web of §3 from `templates/`: `CHANGELOG.md` at the root
+  (tracked), and `docs/ops/`, the one **untracked** directory of working
+  state (board, decisions for the human, things for the human to run,
+  issues, decisions, ideas, roadmap, status, drafts);
+- makes each untracked directory (`docs/ops/`, `.workspaces/`, `.trash/`, …)
+  ignore itself with its own `.gitignore` holding `*`.
+
+For a repo that already has its own `AGENTS.md`, changelog or todo files, use
+the **`adopt` skill** (`skills/adopt/`): it runs the installer and moves what
+the repo had to where it belongs.
 
 **The role definitions go in the directory your coding harness reads them
 from — pick the one that matches the harness.** The script auto-detects
@@ -50,9 +62,13 @@ if the team already keeps one.
 ## Layout
 
     AGENTS.md     the system: roles, the doc web, the directory structure, the rules
-    adopt.sh      the installer: symlinks + doc-web skeleton + gitignore, idempotent
+    adopt.sh      the installer: links, templates, self-ignoring dirs; idempotent
+    templates/    the starter files adopt.sh copies (CHANGELOG.md,
+                  AGENTS.project.md, docs/ops/*.md)
     agents/       the eight role definitions, symlinked into each project
                   (.claude/agents for Claude Code, .pi/agents for pi.dev)
+    skills/       adopt (bring an existing repo onto the system),
+                  brainstorm (the co-developer's own method)
 
 ## The eight roles
 
