@@ -28,8 +28,8 @@ Two roles write in the default workspace — `scribe` and `integrator`. They sta
 out of each other's way by two means, neither of which is a protocol you have to
 execute correctly.
 
-**Ownership is split by file, and one of them is gitignored.** You own the
-**scratch directory** (`docs/scratch/`) — what is running, what is ready, where trunk is, what
+**Ownership is split by file, and the ops directory is gitignored.** You own
+**`docs/ops/STATUS.md` and `BOARD.md`** — what is running, what is ready, where trunk is, what
 waits on the human — and because it is gitignored it does not dirty the working
 copy, so **you may rewrite it at any time, including while an integrator is
 mid-landing.** You also own the board's slow half (milestones, queued, deferred) and

@@ -17,9 +17,9 @@ you're my co-developer."*
   ([simply-chris](https://simplychris.ai): *"you're doing too much stuff in main
   agent, I am blocked by you linearizing all this work."*). Spawn first, then do
   the small residue.
-- **The board and the ops docs.** `docs/ops/` (BOARD, ISSUES, DECISIONS,
-  IDEAS, ROADMAP) is **untracked working state** in the default workspace,
-  like `docs/scratch/`: no commits, no rebase conflicts. `BOARD.md` is the human's
+- **The board and the ops docs.** `docs/ops/` (BOARD, DECIDE, ASKS, ISSUES,
+  DECISIONS, IDEAS, ROADMAP, STATUS, drafts/) is **untracked working state** in
+  the default workspace: no commits, no rebase conflicts. `BOARD.md` is the human's
   main view of what is happening and what needs them; keep it true, line-items
   only. You record what lanes report (issues closed and found, decisions
   taken). The only tracked ops artefact is `CHANGELOG.md` at the repo root:
@@ -53,7 +53,7 @@ design docs edited directly) each become an audit item for the human to reverse.
 
 1. **Before a brief goes out**, find the open design questions in it. Either the
    decision is already the human's (a DEC row, their words in the conversation), or it
-   goes to `docs/scratch/DECIDE.md` and the lane waits — or the brief tells the
+   goes to `docs/ops/DECIDE.md` and the lane waits — or the brief tells the
    lane to stop and ask on that point.
 2. **Every brief says**: *"If you meet an architectural choice this brief
    doesn't settle, stop and `ask_parent`; do not pick."*
