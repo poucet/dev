@@ -22,7 +22,7 @@
 #                    (drafts/ appears when there is a draft)
 #        (docs/{design,research,guides,reference}/ are not made: a folder
 #        appears when there is something to put in it)
-#        .workspaces/  .screenshots/  .trash/   (untracked)
+#        .workspaces/  .trash/   (untracked)
 #      The starter files are copied from dev's templates/, each only where
 #      the project has no file of that name yet.
 #      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
@@ -126,10 +126,10 @@ done
 # --- 3. the doc web (AGENTS.md §3) --------------------------------------------
 
 # docs/ops/ is the one untracked directory of working state (AGENTS.md §2);
-# the workspaces, screenshots and discarded files are untracked too.
+# the workspaces and discarded files are untracked too. (.screenshots/ is not
+# made: a project that renders images adds it, per AGENTS.md §3.)
 ensure_untracked_dir "$PROJECT/docs/ops"
 ensure_untracked_dir "$PROJECT/.workspaces"
-ensure_untracked_dir "$PROJECT/.screenshots"
 ensure_untracked_dir "$PROJECT/.trash"
 
 # The starter files: AGENTS.project.md, CHANGELOG.md, and docs/ops/'s
@@ -145,7 +145,7 @@ for dir in "${AGENT_DIRS[@]}"; do
 done
 echo "  CHANGELOG.md (tracked)"
 echo "  docs/ops/ (untracked)"
-echo "  .workspaces/, .screenshots/, .trash/"
+echo "  .workspaces/, .trash/"
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
 	echo
 	echo "Reminders for pi:"

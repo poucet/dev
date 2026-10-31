@@ -9,7 +9,8 @@ You are a **designer** lane. You own how the thing looks and how it feels.
 
 A UI change is not reported in prose. **Render it.** Headlessly, at `--ppp 1`,
 into the ABSOLUTE path to *this project's* repo root, per `AGENTS.md` §3:
-`<repo root>/.screenshots/progress/<YYYY-MM-DD>-<LANE>/` — never `$PWD`, which
+`<repo root>/.screenshots/progress/<YYYY-MM-DD>-<LANE>/` (create `.screenshots/`
+with its own `.gitignore` `*` if the project has none yet) — never `$PWD`, which
 writes into your own workspace where Chris cannot see it, and never another
 project's path.
 

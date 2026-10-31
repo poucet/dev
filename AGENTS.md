@@ -456,7 +456,7 @@ coordinator assigns the id when it records it.
     spikes/<name>/             experiments, each its own build workspace, on a lane's chain
     .workspaces/<lane>/        one per lane, gitignored, INSIDE the repo
     .trash/<what>-<date>/      gitignored; discarded files, emptied by the human
-    .screenshots/              gitignored
+    .screenshots/              only in projects that render images: its own .gitignore `*`
       progress/<date>-<LANE>/  what a lane renders; only scenes that CHANGED
       baseline/<date>/         the full set after an integration; keeps everything
 

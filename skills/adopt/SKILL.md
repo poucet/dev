@@ -21,7 +21,7 @@ overwrites).
 | `changelog.d/` | lanes' changelog fragments until folded in; appears with the first one | yes |
 | `docs/{design,research,guides,reference}/` | the tracked doc web; not made empty, a folder appears with its first file | yes |
 | `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, DECISIONS, IDEAS, ROADMAP (the record); STATUS (live notes); `drafts/` (appears with the first draft) | no: its own `.gitignore` holds `*` |
-| `.workspaces/`, `.trash/`, `.screenshots/` | lane workspaces, discarded files, renders | no: each has its own `.gitignore` holding `*` |
+| `.workspaces/`, `.trash/` | lane workspaces, discarded files | no: each has its own `.gitignore` holding `*` |
 
 The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `docs/ops/*.md`) are
 copied from dev's `templates/`, each only where the repo has no file of that
