@@ -17,12 +17,14 @@
 #   3. lays out the doc web per AGENTS.md §3:
 #        CHANGELOG.md at the root, tracked (changelog.d/ appears with the
 #        first lane fragment)
-#        docs/ops/        BOARD ISSUES IDEAS ROADMAP DECISIONS  (untracked
-#                         working state, gitignored)
+#        docs/ops/   the one untracked directory of working state:
+#                    BOARD DECIDE ASKS  ISSUES DECISIONS IDEAS ROADMAP  STATUS
+#                    (drafts/ appears when there is a draft)
 #        (docs/{design,research,guides,reference}/ are not made: a folder
 #        appears when there is something to put in it)
-#        docs/scratch/       (gitignored)
-#        .workspaces/  .screenshots/  .trash/   (gitignored)
+#        .workspaces/  .screenshots/  .trash/   (untracked)
+#      The starter files are copied from dev's templates/, each only where
+#      the project has no file of that name yet.
 #      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
 #      by hand (skills/adopt), then re-run this to make the link.
 #   4. ignores what must never be committed: each untracked directory above
@@ -80,11 +82,16 @@ ensure_dir() { mkdir -p -- "$1"; }
 # Ensure dir contains a .gitignore with wild card to ignore that directory.
 ensure_untracked_dir() { ensure_dir "$1"; [ -e "$1/.gitignore" ] || echo '*' > "$1/.gitignore"; }
 
-# Create a file with the given heredoc content only if it does not exist.
-ensure_file() { # <path>
-	local path="$1"
-	[ -e "$path" ] && return 0
-	cat > "$path"
+# Copy every file under templates/ to the same path in the project, unless
+# that path already exists. The templates are real files in dev, not heredocs.
+copy_templates() {
+	local rel
+	while IFS= read -r rel; do
+		rel="${rel#./}"
+		[ -e "$PROJECT/$rel" ] && continue
+		ensure_dir "$PROJECT/$(dirname "$rel")"
+		cp -- "$DEV_DIR/templates/$rel" "$PROJECT/$rel"
+	done < <(cd "$DEV_DIR/templates" && find . -type f ! -name .DS_Store | sort)
 }
 
 # Symlink, refreshing a stale link but never clobbering a real file/directory.
@@ -105,22 +112,6 @@ relative_to() { perl -MFile::Spec -e 'print File::Spec->abs2rel($ARGV[0], $ARGV[
 AGENTS_LINK="$(relative_to "$DEV_DIR/AGENTS.md" "$PROJECT")"
 link_into "$AGENTS_LINK" "$PROJECT/AGENTS.md"
 
-ensure_file "$PROJECT/AGENTS.project.md" <<'EOF'
-# This repo's own rules
-
-The working system is [AGENTS.md](AGENTS.md), a link to dev's. This file holds
-what is specific to this repo; read it right after AGENTS.md. Where the two
-disagree, this file wins here. Facts only, short.
-
-## Build and gates
-
-## Branches and remotes
-
-## Never run
-
-## Where things live
-EOF
-
 # --- 2. harness agents symlink ------------------------------------------------
 
 AGENT_DIRS=()
@@ -134,115 +125,16 @@ done
 
 # --- 3. the doc web (AGENTS.md §3) --------------------------------------------
 
-# The tracked changelog and its fragments live at the root.
-ensure_file "$PROJECT/CHANGELOG.md" <<'EOF'
-# Changelog
-
-What got added, per landing — dated with a clock and the jj change id. The entry
-format is stated once in AGENTS.md §2. Lanes write `changelog.d/<LANE>.md`;
-it is folded in here on landing.
-
-## Unreleased
-EOF
-
-# docs/ops/ is untracked working state in the default workspace.
-OPS="$PROJECT/docs/ops"
-ensure_untracked_dir "$OPS"
-
-ensure_file "$OPS/BOARD.md" <<'EOF'
-# Board
-
-Line-items only; what belongs here is stated once in AGENTS.md §2. Untracked
-working state, like the live file (`docs/scratch/STATUS.md`, what is running
-right now): lanes read it by the default workspace's path and never write it.
-
-Legend: 🚧 in flight · ✅ landed · ⏸ deferred.
-
-## In flight
-
-## Milestones
-
-## Queued
-
-## Deferred by decision
-
-## Landed index
-EOF
-
-ensure_file "$OPS/ISSUES.md" <<'EOF'
-# Issues
-
-> What belongs here, and what does not: @AGENTS.md §2.
-> 🐞 open · 🔬 triaged (cause known, fix specced) · 🔄 being fixed ·
-> ✅ fixed · 🗑️ won't fix / not a bug. Sizes: S ≈ a session · M ≈ a lane.
-
-| Status | Found | What | Verdict |
-|---|---|---|---|
-EOF
-
-ensure_file "$OPS/IDEAS.md" <<'EOF'
-# Ideas
-
-An inbox: raw, half-formed, uncommitted. An idea only ever moves down; ids are
-stable and never reused.
-
-> What belongs here, and what does not: @AGENTS.md §2.
->
-> Status: 💡 open · 🔶 partly answered by something that shipped · 🎯 next up ·
-> 📋 specced and queued · 🔄 in flight · 🔬 being researched · ✅ shipped ·
-> 🗑️ answered by deciding not to.
-
-## Inbox
-| Status | Added | # | Idea | Notes |
-|---|---|---|---|---|
-
-## In-flight
-| Status | Added | # | Idea | Notes |
-|---|---|---|---|---|
-
-## Done
-| Status | Added | # | Idea | Notes |
-|---|---|---|---|---|
-EOF
-
-ensure_file "$OPS/ROADMAP.md" <<'EOF'
-# Roadmap
-
-> What belongs here, and what does not: @AGENTS.md §2. 
-
-Each horizon is one **story line** from @docs/ops/IDEAS.md carried to a usable
-state, ordered so every phase makes the next cheaper. Phases are themes, not
-gates: a row can be pulled forward whenever it's wanted — say its `LABEL` if it
-is on the board, otherwise ask and it gets specced.
-
-> Status: 🔄 in flight · ⏸️ started then paused · 📋 specced & queued on
-> @docs/ops/BOARD.md · 🔶 partly shipped (the account is in the changelog; what
-> is left is in the row) · 🎯 next up · ⬜ open, not scheduled anyw
-
-| St | Size | Item | Ideas |
-|---|---|---|---|
-EOF
-
-ensure_file "$OPS/DECISIONS.md" <<'EOF'
-# Decisions
-
-ADR-lite: small-but-binding decisions with their rationale, newest first —
-things too small for a design doc but too important to live only in commit
-messages or conversation. Big designs stay in docs/design/; findings in
-docs/research/. One line of context each; link deeper docs where they exist.
-
-One row, one decision, one date — so a settled question stays settled. Carries
-both a clock and the jj change id (AGENTS.md §2).
-
-| When · change id | Decision | Rationale |
-|---|---|---|
-EOF
-
-# The scratch, workspaces and screenshots directories.
-ensure_untracked_dir "$PROJECT/docs/scratch"
+# docs/ops/ is the one untracked directory of working state (AGENTS.md §2);
+# the workspaces, screenshots and discarded files are untracked too.
+ensure_untracked_dir "$PROJECT/docs/ops"
 ensure_untracked_dir "$PROJECT/.workspaces"
 ensure_untracked_dir "$PROJECT/.screenshots"
 ensure_untracked_dir "$PROJECT/.trash"
+
+# The starter files: AGENTS.project.md, CHANGELOG.md, and docs/ops/'s
+# BOARD DECIDE ASKS ISSUES DECISIONS IDEAS ROADMAP STATUS.
+copy_templates
 
 # --- report -------------------------------------------------------------------
 
@@ -252,7 +144,7 @@ for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done
 echo "  CHANGELOG.md (tracked)"
-echo "  docs/ops/, docs/scratch/ (untracked)"
+echo "  docs/ops/ (untracked)"
 echo "  .workspaces/, .screenshots/, .trash/"
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
 	echo

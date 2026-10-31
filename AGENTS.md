@@ -92,12 +92,29 @@ AGENTS.md and pollute those docs"*). Each opens with one pointer line and, where
 its rows carry status marks, the legend for reading them: a key belongs beside
 its table, a policy does not.
 
-**Working state or history.** The documents that decay — board, issues,
-decisions, ideas, roadmap — are **working state, not history**. They live
-untracked in the default workspace, in `docs/ops/` (gitignored, like
-`docs/scratch/`): no commits, no rebase conflicts, and one copy, always the
-current one. The one decaying document that is tracked is **`CHANGELOG.md`, at
-the repo root**, because it ships with the code it describes.
+**Working state or history.** The documents that decay — the board, the human
+channel, the record, live notes and drafts — are **working state, not
+history**. They live in one untracked directory in the default workspace,
+**`docs/ops/`**, which ignores itself (§3): no commits, no rebase conflicts,
+and one copy, always the current one. The one decaying document that is tracked
+is **`CHANGELOG.md`, at the repo root**, because it ships with the code it
+describes.
+
+| In `docs/ops/` | What goes in it | Who writes it | Pruned when |
+|---|---|---|---|
+| **The human's view** | | | |
+| `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands |
+| `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
+| `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once he has run it |
+| **The record** | | | |
+| `ISSUES.md` | defects and rough edges, not scheduled | coordinator, from lane reports | fixed → a one-line verdict |
+| `DECISIONS.md` | settled decisions with their rationale | coordinator | never: a later row supersedes |
+| `IDEAS.md` | the ideas inbox | coordinator; the human, freely | never deleted: an idea moves down |
+| `ROADMAP.md` | horizons and versions: only what is not done | coordinator | done → the changelog has it |
+| **Live notes** | | | |
+| `STATUS.md` | the coordinator's live notes: lanes running, ready and unintegrated, where trunk is, side lines | coordinator (or `scribe`) | rewritten as it changes |
+| **Work in progress** | | | |
+| `drafts/` | proposals before they become a design doc, review aids, triage | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or answered → `.trash/` |
 
 - **Lanes read `docs/ops/` by the default workspace's absolute path** (their own
   workspace has none) and **never write it**.
@@ -116,13 +133,11 @@ the human's primary view of what is happening and what needs them.
 - **Line-items only.** Prose is what lanes collide on: when eight lanes each
   edited the same narrative paragraph, every one of them conflicted. Removing the
   prose took one board from 404 lines to 233 and the collisions stopped.
-- **In-flight state does not live here at all** — it lives in the live file
-  below, which is why the `integrator` no longer owns a section of this
-  document and the `scribe` no longer waits for one. Lanes never write the
-  board.
-- **Keep it short.** It exists to show the *live* work, so a landed lane's row
-  moves out of the queue and into the landed index the same day.
-- Sections: in flight · milestones · queued · deferred by decision · landed index.
+- **Lanes never write the board**, and no role owns a section of it: the
+  `integrator` writes none of it, so the `scribe` never waits for one.
+- **Keep it short.** It exists to show the *live* work.
+- Sections: running · next · waits on the human · milestones · deferred by
+  decision.
 - **Not here**: rationale, discussion, anything addressed to the human. Those go
   to the human channel below. A board entry is a row, a state and a label.
 - **Keep it current.** The coordinator updates it on every spawn, landing and
@@ -141,27 +156,26 @@ scars of the days it was merged are under *Landing*, rule 3.
 **A label is something the human types.** Never strike a label through — a
 `~~LABEL~~` cannot be typed to fire a lane, tildes are awkward to reach, and a
 struck row reads as *present but crossed out* when what is meant is *gone*. A
-landed lane's row is **deleted** from Queued and its name appears in the landed
-index; a superseded one is deleted and its successor says what it replaced.
+landed lane's row is **deleted**, its record is the changelog; a superseded one is deleted and its successor says what it replaced.
 Status lives in the status column and in which section the row is in, never in
 the label (Chris, 2026-08-29: *"please don't use tildes in names, not sure why
 you're doing that, tildes are hard to type"*).
 
-### The live file — the churny half of the board
+### `STATUS.md` — the churny half of the board
 
 The board splits in two, because its halves change at different speeds.
 
-- **`BOARD.md` is slow**: milestones, queued, deferred, the landed index.
-- **`docs/scratch/STATUS.md` is fast**: what is running, what is ready and
-  unintegrated, where trunk is, what is waiting on the human. It changes hourly.
+- **`BOARD.md` is for the human**: what runs, what is next, what waits on him.
+- **`STATUS.md` is the coordinator's live notes**: lane ids, chains ready and
+  unintegrated, where trunk is, side lines. It changes hourly.
 
-Both are gitignored, and that is the point. Both a `scribe` and an `integrator`
+Both are untracked, and that is the point. Both a `scribe` and an `integrator`
 write in the default workspace and must not run at once; a **gitignored** file
 does not dirty the working copy at all, so the `scribe` can rewrite the board
 *during* an integration — exactly when most is changing and the human most wants
 to look. Untracked removes the contention rather than scheduling around it.
 
-Prefer a gitignored **directory** over a gitignored file: one ignore file, and
+One untracked **directory** rather than untracked files: one ignore file, and
 room for whatever else turns out to want the same treatment.
 
 The trade, stated plainly: **an untracked file is not in a lane's workspace.**
@@ -171,7 +185,7 @@ lane must *build on* — code, design, research, the changelog — is tracked.
 
 **Name it where a lane looks.** An untracked directory nobody references is
 undiscoverable: the project's own rules (`AGENTS.project.md`) name `docs/ops/`
-and `docs/scratch/` with the default workspace's absolute path.
+with the default workspace's absolute path.
 
 ### `CHANGELOG.md` — tracked, at the repo root
 
@@ -288,14 +302,14 @@ How to do a thing — build, run, release, use a tool. Generated references say 
 and are **regenerated, not edited**.
 
 
-### The human channel — gitignored
+### The human channel — `DECIDE.md` and `ASKS.md`
 
-A directory (for example `docs/scratch/`) for notes between the human and
-the agents. **Gitignored, so that conversation never enters history.** This is
-what lets the board be line-items at all: the narrative has somewhere to go.
+Two files in `docs/ops/` for what passes between the human and the agents.
+**Untracked, so that conversation never enters history.** This is what lets the
+board be line-items at all: the narrative has somewhere to go.
 
-Everything that waits on the human lives in two files here, **never only in
-chat or a commit message** — chat scrolls away while lanes report:
+Everything that waits on the human lives in these two, **never only in chat or
+a commit message** — chat scrolls away while lanes report:
 
 - **`DECIDE.md`**: decisions for the human, one row each, with a short answer
   code and the context to answer it. An answered row moves to `DECISIONS.md`.
@@ -320,8 +334,8 @@ Ideally only one or 2 key ones remain"*):
 
 - **the repo root** holds `AGENTS.md`, and the project's `AGENTS.project.md` if it
   has one, and nothing else of this kind;
-- **one untracked directory, `docs/ops/`,** holds what *decays* — board,
-  issues, ideas, roadmap, decisions. These are the documents that are wrong the
+- **one untracked directory, `docs/ops/`,** holds what *decays* — the board,
+  the human channel, the record, live notes and drafts. These are the documents that are wrong the
   moment work lands, which is why they live together and get maintained
   together, by the coordinator, in the default workspace;
 - **`CHANGELOG.md` sits at the repo root**, tracked, with its `changelog.d/`
@@ -368,8 +382,8 @@ else from this file's doc web belongs there.
 
 **Landing changes shape.** A lane's last act is still the same
 rebase-and-report as always, but landing means opening a PR against `repo/`
-that passes the gates clean, not moving anyone else's trunk — the `ops/`
-board's landed index records the PR link or merge commit in place of a
+that passes the gates clean, not moving anyone else's trunk — the changelog
+entry and the lane's report record the PR link or merge commit in place of a
 bookmark move. Review is the team's gate, not the integrator's.
 
 **Lanes don't write `ops/`** any more than they write `docs/ops/` in a repo
@@ -417,13 +431,15 @@ coordinator assigns the id when it records it.
     CHANGELOG.md               tracked, user-facing; folded from the fragments below
     changelog.d/<LANE>.md      tracked; a lane's entry until its landing folds it in
     docs/
-      ops/                     gitignored working state, default workspace only:
-                               BOARD.md ISSUES.md IDEAS.md ROADMAP.md DECISIONS.md
+      ops/                     untracked working state, default workspace only (§2):
+                               BOARD.md DECIDE.md ASKS.md         the human's view
+                               ISSUES.md DECISIONS.md IDEAS.md ROADMAP.md   the record
+                               STATUS.md                          live notes
+                               drafts/                            work in progress
       design/                  proposals — human review gate
       research/                investigations and measurements
       guides/                  how-to
       reference/               generated — regenerate, don't edit
-      scratch/                 gitignored human channel: DECIDE.md ASKS.md STATUS.md
     spikes/<name>/             experiments, each its own build workspace, on a lane's chain
     .workspaces/<lane>/        one per lane, gitignored, INSIDE the repo
     .trash/<what>-<date>/      gitignored; discarded files, emptied by the human
@@ -432,7 +448,7 @@ coordinator assigns the id when it records it.
       baseline/<date>/         the full set after an integration; keeps everything
 
 **An untracked directory ignores itself**: its own `.gitignore` holds `*`
-(`docs/ops/.gitignore`, `docs/scratch/.gitignore`, `.workspaces/.gitignore`…),
+(`docs/ops/.gitignore`, `.workspaces/.gitignore`, `.trash/.gitignore`…),
 not a path entry in the root `.gitignore`. The directory carries its own rule
 wherever it is, and the root ignore file stays the project's.
 
@@ -1002,7 +1018,7 @@ Answer all five explicitly, docs updated as you go (docs before eng).
 
 1. Read the project's `AGENTS.md`, this file, and the board.
 2. `jj log` — every lane's chain is committed incrementally; compare with the
-   board's in-flight table. `jj workspace list` plus a per-workspace `jj status`
+   board's running rows and `STATUS.md`. `jj workspace list` plus a per-workspace `jj status`
    finds uncommitted lane work.
 3. Finished unmerged chains → hand to a `integrator`. Dead agents → relaunch with
    the fence from the board row; the chain survives.

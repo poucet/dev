@@ -20,9 +20,12 @@ overwrites).
 | `CHANGELOG.md` | user-facing, at the root | yes |
 | `changelog.d/` | lanes' changelog fragments until folded in; appears with the first one | yes |
 | `docs/{design,research,guides,reference}/` | the tracked doc web; not made empty, a folder appears with its first file | yes |
-| `docs/ops/` | BOARD, ISSUES, DECISIONS, IDEAS, ROADMAP: working state | no: its own `.gitignore` holds `*` |
-| `docs/scratch/` | STATUS, DECIDE, ASKS, drafts | no: its own `.gitignore` holds `*` |
+| `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, DECISIONS, IDEAS, ROADMAP (the record); STATUS (live notes); `drafts/` (appears with the first draft) | no: its own `.gitignore` holds `*` |
 | `.workspaces/`, `.trash/`, `.screenshots/` | lane workspaces, discarded files, renders | no: each has its own `.gitignore` holding `*` |
+
+The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `docs/ops/*.md`) are
+copied from dev's `templates/`, each only where the repo has no file of that
+name.
 
 ## Steps
 
@@ -45,12 +48,14 @@ overwrites).
      kept;
    - todo, board or issue files → their content into `docs/ops/` (untracked),
      the old files to `.trash/`;
+   - a `docs/scratch/` from before → its files into `docs/ops/`, the empty
+     folder to `.trash/`;
    - design or research notes → the matching `docs/` folder.
 4. **Write `AGENTS.project.md`** if there isn't one: how to build and test (the
    gates, as exact commands), branches and remotes, what never to run (GUIs,
    real devices, pushes), paths. Short; facts only.
 5. **Verify:**
-   - `git check-ignore docs/ops/BOARD.md docs/scratch/STATUS.md` both print;
+   - `git check-ignore docs/ops/BOARD.md docs/ops/STATUS.md` both print;
    - `jj st` / `git status` shows no machine-specific path (the harness
      symlinks) as added;
    - the harness sees the roles (pi: `"projectPersonas": true` in
