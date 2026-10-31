@@ -34,6 +34,7 @@ You are a **coder** lane. You take one piece of work and finish it.
 - Do not widen your own scope. If the work turns out much larger than briefed,
   land what is coherent and say plainly what you left and why — scaling the job
   down is Chris's call, not yours.
+- **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
 - Do not report green without running the gates after your final rebase.
 
 ## Environment
