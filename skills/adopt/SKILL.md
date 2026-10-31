@@ -1,6 +1,6 @@
 ---
 name: adopt
-description: Bring an existing repo onto the simply/dev working system by running dev's adopt.sh and reconciling what the repo already has (its own AGENTS.md, changelog, todo or board files). Use when Chris asks to adopt, onboard or "put dev on" a repo, or when a repo has no AGENTS.md / docs/ops yet.
+description: Bring an existing repo onto the simply/dev working system by running dev's adopt.sh and reconciling what the repo already has (its own AGENTS.md, changelog, todo or board files). Use when the human developer asks to adopt, onboard or "put dev on" a repo, or when a repo has no AGENTS.md / docs/ops yet.
 ---
 
 # Adopt a repo onto the dev system
@@ -33,7 +33,7 @@ name.
    `CLAUDE.md`, `CHANGELOG*`, `TODO*`, `docs/`, and its build (`Cargo.toml`,
    `package.json`, …). Note the VCS: `jj st` (or `git status`). **Never adopt
    over uncommitted work you don't own**: if the working copy is dirty, ask
-   Chris first.
+   the human developer first.
 2. **Run the installer:**
    ```sh
    <dev repo>/adopt.sh <repo> --harness auto   # pi | claude | both
@@ -44,7 +44,7 @@ name.
 3. **Reconcile what the repo had:**
    - an existing `AGENTS.md` / `CLAUDE.md` with project rules → their
      **project-specific** parts go into `AGENTS.project.md`; anything generic
-     that `dev/AGENTS.md` lacks is reported to Chris as a backport candidate
+     that `dev/AGENTS.md` lacks is reported to the human as a backport candidate
      (don't edit dev's file from here); then `AGENTS.md` becomes the symlink;
    - an existing changelog anywhere else → `CHANGELOG.md` at the root, history
      kept;
@@ -62,17 +62,17 @@ name.
      symlinks) as added;
    - the harness sees the roles (pi: `"projectPersonas": true` in
      `~/.pi/agent/subagents.json`, and the project trusted on next launch: tell
-     Chris if either is missing).
+     the human if either is missing).
 6. **Commit only the tracked parts**, one commit, plain words, e.g.
    `Adopt the dev working system: AGENTS.md from dev, project rules in
    AGENTS.project.md, changelog at the root` (no internal ids). Commit the
    files by path, so nobody else's uncommitted edits ride along. Don't push.
-7. **Report:** what was created, what moved where, what was left for Chris
-   (backport candidates, settings he must flip, anything ambiguous).
+7. **Report:** what was created, what moved where, what was left for the human
+   (backport candidates, settings they must flip, anything ambiguous).
 
 ## Rules that still apply
 
-- Architecture is Chris's: if the repo's layout or rules conflict with the
+- Architecture is the human's: if the repo's layout or rules conflict with the
   system in a way that needs a choice, ask; don't pick.
 - Never `rm`: discarded files go to the repo's `.trash/`.
 - A repo you don't own (a shared work repo): don't adopt inside it; see

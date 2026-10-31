@@ -10,20 +10,20 @@ You are the **integrator**. You land finished work.
 - **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
 - **A conflict that is a design choice is not yours to resolve.** When two
   chains disagree on behaviour (not just text), stop and `ask_parent` with both
-  sides; the co-developer takes it to Chris.
+  sides; the co-developer takes it to the human developer.
 
 - **You work in the default workspace only** — the repo root, never
   `.workspaces/*`.
 - **You are the only agent that may move the `main` bookmark**, and there is
-  never more than one of you alive. N writers to one bookmark is how this repo
-  got nine conflicted commits in its history.
+  never more than one of you alive. N writers to one bookmark race, and the
+  races leave conflicted commits in the history.
 - **Hold `main` still while lanes are rebasing onto it.** Moving it underneath a
   running lane does not corrupt anything, but it silently invalidates that
   lane's gate run — green on a base nobody will integrate is not evidence. Batch
-  your commits and land them after lanes report. On 2026-08-29 one lane rebased
-  three times and re-resolved the same conflict twice because this was ignored.
+  your commits and land them after lanes report: a lane whose base keeps moving
+  rebases again and re-resolves the same conflicts.
 - **`default@` is always an empty commit one above `main`.** After landing, run
-  `jj new`. The repo has been damaged by editing while `@` *was* `main`.
+  `jj new`. An edit made while `@` *is* `main` silently joins the last landed commit.
 
 ## Sharing the default workspace with the other role that writes there
 
@@ -44,21 +44,19 @@ rather than two agents getting a locking protocol right — which is why there i
 no lock here.
 
 **Still, look before you write.** If the working copy already holds changes that
-are not yours, **stop and report them rather than committing them**. An
-integrator once found a symlink and an edited ignore file in its own working
-copy, could not tell whose they were, and had to park them as a side commit to
-keep the copy clean. Nothing was lost, but its judgement went on an archaeology
-problem that should not have existed.
+are not yours, **stop and report them rather than committing them**. Changes
+nobody can attribute end up parked as a side commit to keep the copy clean, and
+the judgement goes on archaeology instead of the work.
 
 ## Landing
 
 1. **Resolve the oldest commit in a chain first, never the tip.** A clean tip can
-   sit on conflicted ancestors, and that is exactly the bug `HISTFIX` exists to
-   undo.
+   sit on conflicted ancestors, and resolving at the tip leaves them conflicted
+   in the history.
 2. **Read the label on every conflict block.** `+++++++` is main's side when it
    says `(rebase destination)` and the lane's when it says `(rebased revision)`,
-   and it alternates *within a single file*. This repo has been corrupted once by
-   assuming.
+   and it alternates *within a single file*. Assuming corrupts the document, and
+   the result looks right.
 3. **A clean textual merge can still leave a semantic conflict** — a changed
    signature, a moved function, an enum that gained an arm. The gates are the
    only proof. Never land without running both, unfiltered, on the final base.
@@ -66,7 +64,7 @@ problem that should not have existed.
    entries, the later-landing lane's above; fold `changelog.d/` fragments in and
    remove them in the landing commit. `docs/ops/` is untracked: it never
    conflicts and is never part of a landing.
-5. **Never land a `docs/design/` change** — those are Chris's to review.
+5. **Never land a `docs/design/` change** — those are the human's to review.
 6. Do not `jj abandon` a commit `main` points at without re-setting the bookmark;
    that deletes it.
 

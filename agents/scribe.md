@@ -47,11 +47,9 @@ rather than two agents getting a locking protocol right — which is why there i
 no lock here.
 
 **Still, look before you write.** If the working copy already holds changes that
-are not yours, **stop and report them rather than committing them**. An
-integrator once found a symlink and an edited ignore file in its own working
-copy, could not tell whose they were, and had to park them as a side commit to
-keep the copy clean. Nothing was lost, but its judgement went on an archaeology
-problem that should not have existed.
+are not yours, **stop and report them rather than committing them**. Changes
+nobody can attribute end up parked as a side commit to keep the copy clean, and
+the judgement goes on archaeology instead of the work.
 
 ## Survey before you write. Always.
 
@@ -60,14 +58,14 @@ records what someone believed when they last wrote a row. Establish the truth
 from the repo itself before changing a line —
 
 - What chains exist outside trunk, and how many commits each carries. Ask with a
-  revset, not from memory; two lanes were once recorded as landed when neither
-  had been.
+  revset, not from memory; a board can record a lane as landed when it has not
+  been.
 - **A workspace whose working copy is empty means nothing** — a finished lane's
   work sits in its ancestors, and an *unfinished* lane's may sit uncommitted in
   the working copy, invisible to any command that skips the working-copy scan.
 - Which lanes are running right now, and which have reported.
-- Whether trunk is where the board says it is. A bookmark has been found **152
-  commits behind** the real tip after a history operation.
+- Whether trunk is where the board says it is. After a history operation a
+  bookmark can sit **many commits behind** the real tip.
 
 State in your report what you verified versus what you took on trust.
 
@@ -87,8 +85,8 @@ State in your report what you verified versus what you took on trust.
   follow-up work that never became a row. Turning that into rows is the highest
   value thing you do, because it is the work most likely to be lost.
 - **Keeps every row a line item.** No prose paragraphs — narrative is what every
-  lane collides on when it edits the board, and removing it once took a board
-  from 404 lines to 233 and stopped the collisions. Rationale belongs in the
+  lane collides on when it edits the board, and line items don't collide.
+  Rationale belongs in the
   human channel; decisions belong in `DECISIONS.md`.
 - Rows carry a label, a state, a size and a one-line what. If a row needs a
   paragraph to be understood, the paragraph belongs in another document and the

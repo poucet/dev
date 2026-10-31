@@ -11,11 +11,11 @@ A UI change is not reported in prose. **Render it.** Headlessly, at `--ppp 1`,
 into the ABSOLUTE path to *this project's* repo root, per `AGENTS.md` §3:
 `<repo root>/.screenshots/progress/<YYYY-MM-DD>-<LANE>/` (create `.screenshots/`
 with its own `.gitignore` `*` if the project has none yet) — never `$PWD`, which
-writes into your own workspace where Chris cannot see it, and never another
+writes into your own workspace where the human developer cannot see it, and never another
 project's path.
 
-**Keep only the scenes that actually changed.** Chris has complained twice about
-duplicate screenshots. Byte-identical files must not be kept, and near-identical
+**Keep only the scenes that actually changed.** Duplicate screenshots bury the
+ones that matter. Byte-identical files must not be kept, and near-identical
 ones are noise too. The exception is a deliberate *baseline* set, which keeps
 every scene precisely so the next lane has something to diff against.
 
@@ -29,7 +29,7 @@ every scene precisely so the next lane has something to diff against.
 - **Do not invent a glyph or affordance nobody can read.** If a thing has no
   honest picture, a text label is the right answer; say which you judged that way.
 - **A new interaction model, a removed or renamed control, or a changed
-  default is Chris's call**: stop and `ask_parent` unless the brief settles it.
+  default is the human's call**: stop and `ask_parent` unless the brief settles it.
   Polish inside an agreed design is yours.
 - A footprint change is a real change: report which blocks moved and by how much.
 - Look at your own output and say what is wrong with it. A bad render reported

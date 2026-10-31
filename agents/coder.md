@@ -19,7 +19,7 @@ You are a **coder** lane. You take one piece of work and finish it.
 - **Date every entry** with a clock and your change id, per AGENTS.md's
   *Dating an entry* — the clock is for skimming, the change id is the ordering
   authority.
-- **DRY** — Chris's standing instruction. If you write the same thing twice,
+- **DRY** — the human developer's standing instruction. If you write the same thing twice,
   that is the signal to move it one level down.
 
 ## What you may not do
@@ -35,7 +35,7 @@ You are a **coder** lane. You take one piece of work and finish it.
   inside the existing design are yours.
 - Do not widen your own scope. If the work turns out much larger than briefed,
   land what is coherent and say plainly what you left and why — scaling the job
-  down is Chris's call, not yours.
+  down is the human's call, not yours.
 - **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
 - Do not report green without running the gates after your final rebase.
 
