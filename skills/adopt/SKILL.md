@@ -14,7 +14,7 @@ overwrites).
 
 | path | what | tracked? |
 |---|---|---|
-| `AGENTS.md` | symlink to `../dev/AGENTS.md` (the system) | the symlink, yes |
+| `AGENTS.md` | relative symlink to the dev repo's `AGENTS.md` (the system) | the symlink, yes |
 | `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks | yes |
 | `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no (machine path) |
 | `CHANGELOG.md` | user-facing, at the root | yes |
@@ -36,8 +36,10 @@ name.
    Chris first.
 2. **Run the installer:**
    ```sh
-   ~/projects/simply/dev/adopt.sh <repo> --harness auto   # pi | claude | both
+   <dev repo>/adopt.sh <repo> --harness auto   # pi | claude | both
    ```
+   (`<dev repo>` is wherever this system is cloned: the directory this skill's
+   `skills/` folder sits in.)
    It creates only what is missing.
 3. **Reconcile what the repo had:**
    - an existing `AGENTS.md` / `CLAUDE.md` with project rules → their

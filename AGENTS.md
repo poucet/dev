@@ -439,7 +439,7 @@ coordinator assigns the id when it records it.
 
     AGENTS.md                  this file: a symlink to it, or a copy
     AGENTS.project.md          this project's own rules (optional; wins over this file)
-    .claude/agents ->          symlink to ~/projects/simply/dev/agents
+    .claude/agents ->          symlink to <this system's repo>/agents
                                (Claude Code; pi.dev uses .pi/agents instead)
     CHANGELOG.md               tracked, user-facing; folded from the fragments below
     changelog.d/<LANE>.md      tracked; a lane's entry until its landing folds it in

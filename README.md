@@ -22,7 +22,10 @@ landing moves a bookmark, and the roles' commands (`jj commit`, `jj rebase`,
 
 Run the installer:
 
-    ~/projects/simply/dev/adopt.sh <project>
+    <path to this repo>/adopt.sh <project>
+
+(Run it from wherever you cloned this repo; it finds its own templates and
+roles relative to itself.)
 
 It is idempotent and never overwrites anything that already exists. It:
 
