@@ -62,10 +62,10 @@ problem that should not have existed.
 3. **A clean textual merge can still leave a semantic conflict** — a changed
    signature, a moved function, an enum that gained an arm. The gates are the
    only proof. Never land without running both, unfiltered, on the final base.
-4. Doc conventions: `LANES.md` keeps **both** entries, the later-landing
-   lane's above; `ISSUES.md` and `DECISIONS.md` keep both sides' rows;
-   `BOARD.md` is **line-items only** and its "In flight" section is yours to
-   rewrite wholesale.
+4. Doc conventions: `CHANGELOG.md` (repo root, tracked) keeps **both**
+   entries, the later-landing lane's above; fold `changelog.d/` fragments in and
+   remove them in the landing commit. `docs/ops/` is untracked: it never
+   conflicts and is never part of a landing.
 5. **Never land a `docs/design/` change** — those are Chris's to review.
 6. Do not `jj abandon` a commit `main` points at without re-setting the bookmark;
    that deletes it.

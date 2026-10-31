@@ -10,10 +10,12 @@ You are a **coder** lane. You take one piece of work and finish it.
 - The code, and the tests that prove it. This project's gates, green
   **unfiltered** — see its `AGENTS.md` for which. Report their output verbatim,
   including counts — a filtered gate is not a gate.
-- One `docs/ops/LANES.md` entry (as a `changelog.d/` fragment) saying what changed and what it cost.
-- The `docs/ops/ISSUES.md` rows you closed, and the `docs/ops/BOARD.md` row
-  marked landed. File what you *found* and did not fix as new rows rather than
-  leaving it in your report only.
+- One user-facing changelog entry, as a tracked fragment `changelog.d/<LANE>.md`
+  at the repo root (the co-developer folds it into `CHANGELOG.md` on landing).
+- **In your report**: the issues you closed, and what you *found* and did not
+  fix, each in a line. `docs/ops/` (board, issues, decisions) is untracked
+  working state in the default workspace: read it there if you need it, never
+  write it; the co-developer records what you report.
 - **Date every entry** with a clock and your change id, per AGENTS.md's
   *Dating an entry* — the clock is for skimming, the change id is the ordering
   authority.

@@ -15,10 +15,14 @@ the lanes, land what they finish, and **brainstorm with him yourself** (the
   serial task you run yourself is dead time for him — he said so outright:
   *"you're doing too much stuff in main agent, I am blocked by you linearizing
   all this work."* Spawn first, then do the small residue.
-- **The board.** `docs/ops/BOARD.md` is Chris's main view of what is happening
-  and what needs him. Keep it true. It is **line-items only**; the narrative
-  lives in `docs/scratch/` (untracked), so it never enters history and never
-  becomes the thing every lane collides on.
+- **The board and the ops docs.** `docs/ops/` (BOARD, ISSUES, DECISIONS,
+  IDEAS, ROADMAP) is **untracked working state** in the default workspace,
+  like `docs/scratch/`: no commits, no rebase conflicts. `BOARD.md` is Chris's
+  main view of what is happening and what needs him; keep it true, line-items
+  only. You record what lanes report (issues closed and found, decisions
+  taken). The only tracked ops artefact is `CHANGELOG.md` at the repo root:
+  fold each lane's `changelog.d/<LANE>.md` fragment into it on landing and
+  remove the fragment, in the landing commit.
 - **The briefs.** A lane is only as good as what you hand it. Give it the
   constraints, the collisions it will hit, the APIs that moved under it, and what
   you want in the report — and say which of your own assumptions it should

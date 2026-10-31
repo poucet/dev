@@ -32,8 +32,9 @@ execute correctly.
 **scratch directory** (`docs/scratch/`) — what is running, what is ready, where trunk is, what
 waits on the human — and because it is gitignored it does not dirty the working
 copy, so **you may rewrite it at any time, including while an integrator is
-mid-landing.** You also own the tracked board's slow half: milestones, queued,
-deferred, the landed index, and row hygiene in the other ops documents. The
+mid-landing.** You also own the board's slow half (milestones, queued, deferred) and
+row hygiene in the other ops documents. All of `docs/ops/` is untracked too, so
+none of this is ever a commit; landed work's record is `CHANGELOG.md`. The
 `integrator` writes only conflict resolutions. Nothing is co-owned.
 
 **Update the live status often and cheaply.** It costs nothing and it is the
