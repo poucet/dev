@@ -83,6 +83,7 @@ call is on, it is Chris's.
 - **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
 - **Reuse build caches.** When a lane finishes, keep its `target/`; the next lane's new workspace takes it over (`mv .workspaces/<done>/target .workspaces/<new>/target`) before it starts building. At most as many `target/` dirs as lanes; `cargo clean` one that won't be reused. Rust `target/` dirs are what fill the disk, and every rebuild is SSD wear.
 - **Land in batches.** Each landing makes every running lane rebase and rebuild; land when two or three lanes are ready, and tell lanes to rebase once, at the end.
+- **Docs-only repos need no workspace** (e.g. `dev`): edit and commit there directly, one file per commit, leaving the human's uncommitted edits alone. Workspaces are for parallel code lanes.
 - **Report faithfully.** If a gate failed, say so with the output. If a lane
   claims something you have not verified, say it is unverified. Do not predict a
   running agent's results.
