@@ -13,13 +13,16 @@
 #                                       trusted project)
 #        Claude Code  .claude/agents   (subagents)
 #   3. lays out the doc web per AGENTS.md §3:
-#        docs/ops/        BOARD CHANGELOG ISSUES IDEAS ROADMAP DECISIONS
+#        CHANGELOG.md  changelog.d/   at the root, tracked
+#        docs/ops/        BOARD ISSUES IDEAS ROADMAP DECISIONS  (untracked
+#                         working state, gitignored)
 #        docs/{design,research,guides,reference,archive}/  (.gitkeep)
-#        docs/scratch/       STATUS.md   (gitignored)
-#        .workspaces/  .screenshots/
-#   4. appends the gitignore entries the above need, to the project's
-#      .gitignore (created if absent). The symlink targets are machine-specific
-#      absolute paths, so they must never be committed.
+#        docs/scratch/       (gitignored)
+#        .workspaces/  .screenshots/  .trash/   (gitignored)
+#   4. ignores what must never be committed: each untracked directory above
+#      (and .claude/ or .pi/) gets its own .gitignore holding '*'. The symlink
+#      targets are machine-specific absolute paths, so they must never be
+#      committed either.
 #
 # Usage:
 #   ./adopt.sh <project-dir> [--harness pi|claude|both|auto]
@@ -94,7 +97,7 @@ link_into() { # <target> <link-path>
 copy_file() { # <target> <copy-path>
 	local target="$1" copypath="$2"
 	if [ -e "$copypath" ]; then
-		echo "  !! exists, left alone: $link" >&2
+		echo "  !! exists, left alone: $copypath" >&2
 		return 0
 	fi
 	cp -- "$target" "$copypath"
@@ -117,15 +120,28 @@ done
 
 # --- 3. the doc web (AGENTS.md §3) --------------------------------------------
 
+# The tracked changelog and its fragments live at the root.
+ensure_file "$PROJECT/CHANGELOG.md" <<'EOF'
+# Changelog
+
+What got added, per landing — dated with a clock and the jj change id. The entry
+format is stated once in AGENTS.md §2. Lanes write `changelog.d/<LANE>.md`;
+it is folded in here on landing.
+
+## Unreleased
+EOF
+ensure_gitkeep "$PROJECT/changelog.d"
+
+# docs/ops/ is untracked working state in the default workspace.
 OPS="$PROJECT/docs/ops"
-ensure_dir "$OPS"
+ensure_untracked_dir "$OPS"
 
 ensure_file "$OPS/BOARD.md" <<'EOF'
 # Board
 
-Line-items only; what belongs here is stated once in AGENTS.md §2. Scrathpad state
-(what is running right now) lives in `docs/scratch/` — gitignored, invisible to
-lanes; a lane gets its context from its brief, not from here.
+Line-items only; what belongs here is stated once in AGENTS.md §2. Untracked
+working state, like the live file (`docs/scratch/STATUS.md`, what is running
+right now): lanes read it by the default workspace's path and never write it.
 
 Legend: 🚧 in flight · ✅ landed · ⏸ deferred.
 
@@ -138,15 +154,6 @@ Legend: 🚧 in flight · ✅ landed · ⏸ deferred.
 ## Deferred by decision
 
 ## Landed index
-EOF
-
-ensure_file "$OPS/CHANGELOG.md" <<'EOF'
-# Changelog
-
-What got added, per landing — dated with a clock and the jj change id. The entry
-format is stated once in AGENTS.md §2.
-
-## Unreleased
 EOF
 
 ensure_file "$OPS/ISSUES.md" <<'EOF'
@@ -227,6 +234,7 @@ done
 ensure_untracked_dir "$PROJECT/docs/scratch"
 ensure_untracked_dir "$PROJECT/.workspaces"
 ensure_untracked_dir "$PROJECT/.screenshots"
+ensure_untracked_dir "$PROJECT/.trash"
 
 # --- report -------------------------------------------------------------------
 
@@ -235,8 +243,9 @@ echo "  AGENTS.md -> $DEV_DIR/AGENTS.md"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done
-echo "  docs/ops/, docs/{design,research,guides,reference,archive}/, docs/scratch/"
-echo "  .workspaces/, .screenshots/"
+echo "  CHANGELOG.md, changelog.d/ (tracked)"
+echo "  docs/ops/ (untracked), docs/{design,research,guides,reference,archive}/, docs/scratch/"
+echo "  .workspaces/, .screenshots/, .trash/"
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
 	echo
 	echo "Reminders for pi:"
