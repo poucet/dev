@@ -6,6 +6,18 @@ and the rules that keep them from stepping on each other.
 **[AGENTS.md](AGENTS.md) is the system.** Read that. This file is only how to
 adopt it.
 
+## Requires Jujutsu (jj)
+
+The system assumes **[jj](https://jj-vcs.github.io/jj/latest/)** as the
+version-control front end: every lane works in its own `jj workspace`,
+landing moves a bookmark, and the roles' commands (`jj commit`, `jj rebase`,
+`jj workspace add`) are jj's. It runs on top of an ordinary git repo
+(colocated), so GitHub, CI and plain `git` users see a normal git history.
+
+    brew install jj                        # or see the install page:
+    # https://jj-vcs.github.io/jj/latest/install-and-setup/
+    cd <project> && jj git init --colocate # an existing git repo becomes a jj repo too
+
 ## Adopt it in a project
 
 Run the installer:
