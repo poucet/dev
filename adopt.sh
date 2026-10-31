@@ -5,7 +5,9 @@
 # Does four things, all idempotent (safe to re-run; nothing existing is
 # overwritten):
 #
-#   1. copies AGENTS.md        -> this repo's AGENTS.md
+#   1. links AGENTS.md         -> dev's AGENTS.md, by a relative symlink
+#      (../dev/AGENTS.md when the repo sits beside dev), and starts an
+#      AGENTS.project.md for the repo's own rules
 #   2. symlinks the role definitions into the directory the coding harness
 #      in use reads them from:
 #        pi.dev       .pi/agents       (personas; needs projectPersonas: true
@@ -19,6 +21,8 @@
 #        docs/{design,research,guides,reference,archive}/  (.gitkeep)
 #        docs/scratch/       (gitignored)
 #        .workspaces/  .screenshots/  .trash/   (gitignored)
+#      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
+#      by hand (skills/adopt), then re-run this to make the link.
 #   4. ignores what must never be committed: each untracked directory above
 #      (and .claude/ or .pi/) gets its own .gitignore holding '*'. The symlink
 #      targets are machine-specific absolute paths, so they must never be
@@ -93,19 +97,29 @@ link_into() { # <target> <link-path>
 	ln -sfn -- "$target" "$link"
 }
 
-# Copy a file
-copy_file() { # <target> <copy-path>
-	local target="$1" copypath="$2"
-	if [ -e "$copypath" ]; then
-		echo "  !! exists, left alone: $copypath" >&2
-		return 0
-	fi
-	cp -- "$target" "$copypath"
-}
+# The path of $1 relative to directory $2.
+relative_to() { perl -MFile::Spec -e 'print File::Spec->abs2rel($ARGV[0], $ARGV[1])' "$1" "$2"; }
 
-# --- 1. AGENTS.md -------------------------------------------------------------
+# --- 1. AGENTS.md and AGENTS.project.md ---------------------------------------
 
-copy_file "$DEV_DIR/AGENTS.md" "$PROJECT/AGENTS.md"
+AGENTS_LINK="$(relative_to "$DEV_DIR/AGENTS.md" "$PROJECT")"
+link_into "$AGENTS_LINK" "$PROJECT/AGENTS.md"
+
+ensure_file "$PROJECT/AGENTS.project.md" <<'EOF'
+# This repo's own rules
+
+The working system is [AGENTS.md](AGENTS.md), a link to dev's. This file holds
+what is specific to this repo; read it right after AGENTS.md. Where the two
+disagree, this file wins here. Facts only, short.
+
+## Build and gates
+
+## Branches and remotes
+
+## Never run
+
+## Where things live
+EOF
 
 # --- 2. harness agents symlink ------------------------------------------------
 
@@ -239,7 +253,7 @@ ensure_untracked_dir "$PROJECT/.trash"
 # --- report -------------------------------------------------------------------
 
 echo "Adopted simply/dev into $PROJECT (harness: $HARNESS)."
-echo "  AGENTS.md -> $DEV_DIR/AGENTS.md"
+echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done

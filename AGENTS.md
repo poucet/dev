@@ -8,7 +8,8 @@ directory the coding harness in use reads them from (Claude Code:
 
     # either: ./adopt.sh <project>
 
-This will create the necessary starter docs, copy over AGENTS.md and symlink the agents.
+This will create the necessary starter docs, link AGENTS.md (relative, to dev's)
+with an `AGENTS.project.md` beside it, and symlink the agents.
 
 Every rule below was paid for. Where a rule carries a date or a quote, that is
 the scar it came from; keep it, because a rule with a scar gets followed.

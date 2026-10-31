@@ -22,7 +22,7 @@ overwrites).
 | `docs/{design,research,guides,reference,archive}/` | the tracked doc web | yes |
 | `docs/ops/` | BOARD, ISSUES, DECISIONS, IDEAS, ROADMAP: working state | no: its own `.gitignore` holds `*` |
 | `docs/scratch/` | STATUS, DECIDE, ASKS, drafts | no: its own `.gitignore` holds `*` |
-| `.workspaces/`, `.trash/` | lane workspaces, discarded files | no |
+| `.workspaces/`, `.trash/`, `.screenshots/` | lane workspaces, discarded files, renders | no: each has its own `.gitignore` holding `*` |
 
 ## Steps
 
