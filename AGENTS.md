@@ -697,6 +697,18 @@ explain more, still in plain words ([simply-chris](https://simplychris.ai), on
 meaningless"*). A commit that only updates ops docs says what it records
 ("record the VST3 inactive-parameter fix as done"), not which rows moved.
 
+### Referring to the human's points
+
+**Never refer to the human's points by a number alone.** When they raise
+several things at once and you answer by number ("1, 3, 7"), they can't tell
+how you numbered them: they may not have numbered them at all, they added one
+later, or they don't remember which was which ([simply-chris](https://simplychris.ai):
+*"when you reference my ideas by number, it's hard to know how you have
+numbered them"*). In chat and in docs alike, say what the point *is* with the
+number, in a few words ("3 (aligning OSC against the local transport)"), and
+when a document keeps the numbering, list the points with their numbers at
+the top.
+
 ### Survival
 
 - **Commit early and often.** A WIP commit in your own workspace costs nothing.
