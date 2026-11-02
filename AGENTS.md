@@ -765,7 +765,7 @@ their disk.
   ```
 - **The lane cap bounds the caches.** A finished lane's cache is kept until a
   new lane takes it, and there are never more caches than lanes allowed at once
-  (six by default: the harness's agent slots). One that won't be reused is
+  (ten by default). One that won't be reused is
   cleaned before its workspace is retired.
 
 ### Work
