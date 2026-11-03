@@ -1,0 +1,53 @@
+#!/bin/sh
+# lane — make and retire lane workspaces, sharing the build cache by APFS clone.
+#
+#   lane new <name> [rev]   jj workspace at .workspaces/<name> (default rev: main),
+#                           with target/ cloned from the repo root's target/
+#   lane retire <name>      forget the workspace and move its directory to
+#                           .trash/ws-<name>-<date> (refuses if its working copy
+#                           has changes)
+#
+# Run from the repo root (the default workspace). The clone (`cp -c`) shares every
+# block with the root's target/ until cargo rewrites a file, so dependencies are
+# stored once however many lanes run. `du` counts clones in full; `df` doesn't.
+set -eu
+
+die() { echo "lane: $*" >&2; exit 1; }
+[ -d .jj ] || die "run from the repo root (no .jj here)"
+export JJ_EDITOR=true GIT_EDITOR=true EDITOR=true
+
+cmd=${1:-}; name=${2:-}
+[ -n "$cmd" ] && [ -n "$name" ] || die "usage: lane new <name> [rev] | lane retire <name>"
+ws=".workspaces/$name"
+
+case "$cmd" in
+new)
+  rev=${3:-main}
+  [ -e "$ws" ] && die "$ws already exists"
+  mkdir -p .workspaces
+  [ -f .workspaces/.gitignore ] || echo '*' > .workspaces/.gitignore
+  jj workspace add "$ws" --name "$name" -r "$rev" </dev/null >/dev/null
+  if [ -d target ]; then
+    start=$(date +%s)
+    cp -c -R -p target "$ws/target"
+    echo "lane: $ws on $rev; target/ cloned from ./target in $(( $(date +%s) - start ))s"
+  else
+    echo "lane: $ws on $rev; no ./target to clone, the first build is cold"
+  fi
+  ;;
+retire)
+  [ -d "$ws" ] || die "no $ws"
+  if jj workspace list </dev/null | grep -q "^$name:"; then
+    changes=$(cd "$ws" && jj diff --name-only </dev/null | head -1)
+    [ -z "$changes" ] || die "$ws has uncommitted changes ($changes …); commit or restore them first"
+    jj workspace forget "$name" </dev/null >/dev/null
+  fi
+  mkdir -p .trash
+  [ -f .trash/.gitignore ] || echo '*' > .trash/.gitignore
+  dest=".trash/ws-$name-$(date +%Y-%m-%d)"
+  [ -e "$dest" ] && dest="$dest-$(date +%H%M%S)"
+  mv "$ws" "$dest"
+  echo "lane: $name forgotten, directory in $dest"
+  ;;
+*) die "unknown command $cmd" ;;
+esac

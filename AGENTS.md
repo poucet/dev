@@ -759,19 +759,8 @@ their disk.
 - **A lane rebases once, at the end**, and the coordinator lands in batches, so
   lanes don't rebuild after every landing.
 - **Never clean a build cache that will be reused** (`cargo clean` and the like).
-- **On APFS, clone a base cache instead of moving or rebuilding one.** Keep one warm cache built on trunk (`.workspaces/_base-target`); a new lane gets `cp -cRp .workspaces/_base-target .workspaces/<lane>/target`. A clone is instant and shares every block until it is written, so dependencies are stored once however many lanes run; `-p` keeps the timestamps so cargo sees them as fresh. `du` counts each clone in full: measure with `df`. The integrator refreshes the base after landings; a finished lane's cache goes to `.trash/`.
-- **Reuse build caches, not workspaces.** A new lane gets a fresh workspace and
-  takes over a finished lane's cache: dependencies stay built and only the
-  project's own code rebuilds. For a cargo project:
-  ```sh
-  jj workspace add .workspaces/<new> -r <trunk>
-  mv .workspaces/<done>/target .workspaces/<new>/target
-  jj workspace forget <done> && mv .workspaces/<done> .trash/ws-<done>
-  ```
-- **The lane cap bounds the caches.** A finished lane's cache is kept until a
-  new lane takes it, and there are never more caches than lanes allowed at once
-  (ten by default). One that won't be reused is
-  cleaned before its workspace is retired.
+- **Make and retire lanes with `bin/lane`** (this repo): `lane new <name> [rev]` adds the workspace and clones the repo root's `target/` into it (APFS `cp -c`: instant, and the blocks are shared until cargo rewrites them, so dependencies are stored once); `lane retire <name>` forgets it and moves it to `.trash/`. The root's `target/` is the base: integrators gate in the default workspace without `CARGO_TARGET_DIR`, which keeps it warm on trunk. `du` counts clones in full; `df` doesn't.
+- **A finished lane's cache goes with it** (`lane retire`): a new lane clones the root's, so a spare is never worth its disk.
 
 ### Work
 
