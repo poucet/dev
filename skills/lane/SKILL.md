@@ -20,6 +20,8 @@ A lane's disk is almost all `target/`. `cp -c` makes an APFS clone: every block 
 
 The root's `target/` is the base every new lane clones. Integrators gate in the default workspace **without** `CARGO_TARGET_DIR`, so each landing leaves the base built on trunk. Don't hand caches from lane to lane, and don't keep spares: a retired lane's cache goes to `.trash/` with it.
 
+Rebuilds leave superseded artifacts behind in every `target/`; where the project has a prune command (tussen: `cargo xtask prune`), run it after a lane's final gate run and in the default workspace after landing, so the base stays lean and clones start small.
+
 ## Order of operations
 
 - **Start**: `lane new <name> [rev]`, then spawn the agent with `cwd` = `.workspaces/<name>`. Spawn after the script returns, never in the same parallel batch (the directory must exist).
