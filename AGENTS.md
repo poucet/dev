@@ -560,6 +560,7 @@ what workspace cleanup and any history repair need.
    - **Fragment folds are batched** into one docs commit — at a natural pause or
      at the version stamp — never one fold commit per landing. Every trunk commit,
      docs included, makes every running lane rebase again.
+   - **One gate per tool call, with a tight ceiling.** Run each gate in its own call, output to a log, and read `$?`. If the tool takes a timeout, set it to about twice that gate's usual time (minutes, not hours): a ceiling of two hours means a hung gate costs two hours, and no steering message reaches the agent for the whole call ([simply-chris](https://simplychris.ai): *"using a 2h timeout, wtf"*). A run that hits its ceiling is a hang to investigate, not something to re-run. **Nothing a lane runs can wait for input**: run commands with `</dev/null` and `JJ_EDITOR=true GIT_EDITOR=true EDITOR=true`, so a prompt fails at once instead of waiting out the ceiling; and write gate output to a log, whose growth is how the coordinator tells a slow run from a stuck one.
    - **Never sleep-poll a gate.** Run it in the foreground, output to a log,
      and read `$?`. A backgrounded run plus `sleep 600` waits the full ten
      minutes after the gate is done, and no steering message reaches the agent
