@@ -732,7 +732,8 @@ the top.
   `--use-destination-message` is the real fix; `JJ_EDITOR` is the belt.
 - **`rm` may be denied, and `~/.Trash` is not the bin.** Move discarded files to
   the project's `.trash/<what>-<date>/` (gitignored; the human empties it). What
-  only the human can delete goes in the asks file.
+  only the human can delete goes in the asks file — except emptying `.trash/`, which
+  the human does on their own: never ask for it.
 - **Never search `.trash/`** (`grep -r`, `rg`, `find`). It holds retired
   workspaces and their build caches, tens of GB; a `grep -r` into it stalls a
   lane for half an hour or more. Search the source and docs
