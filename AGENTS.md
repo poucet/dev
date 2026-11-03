@@ -755,6 +755,7 @@ their disk.
 
 - **Full gates once, after the final rebase.** While working, run only the tests
   you touched. A load or soak harness runs only when the brief asks for it.
+- **A load harness runs alone.** It saturates every core by design; run beside other lanes' gates, it makes all of them several times slower and makes their timing tests flake (measured: load average 100+ on 16 cores, gates 3× slower). The coordinator schedules load runs for when no other lane is gating.
 - **A lane rebases once, at the end**, and the coordinator lands in batches, so
   lanes don't rebuild after every landing.
 - **Never clean a build cache that will be reused** (`cargo clean` and the like).
