@@ -759,7 +759,7 @@ their disk.
 - **A lane rebases once, at the end**, and the coordinator lands in batches, so
   lanes don't rebuild after every landing.
 - **Never clean a build cache that will be reused** (`cargo clean` and the like).
-- **Make and retire lanes with `bin/lane`** (this repo): `lane new <name> [rev]` adds the workspace and clones the repo root's `target/` into it (APFS `cp -c`: instant, and the blocks are shared until cargo rewrites them, so dependencies are stored once); `lane retire <name>` forgets it and moves it to `.trash/`. The root's `target/` is the base: integrators gate in the default workspace without `CARGO_TARGET_DIR`, which keeps it warm on trunk. `du` counts clones in full; `df` doesn't.
+- **Make and retire lanes with the `lane` skill** (`skills/lane/`): `lane new <name> [rev]` adds the workspace and clones the repo root's `target/` into it (APFS `cp -c`: instant, and the blocks are shared until cargo rewrites them, so dependencies are stored once); `lane retire <name>` forgets it and moves it to `.trash/`. The root's `target/` is the base: integrators gate in the default workspace without `CARGO_TARGET_DIR`, which keeps it warm on trunk. `du` counts clones in full; `df` doesn't.
 - **A finished lane's cache goes with it** (`lane retire`): a new lane clones the root's, so a spare is never worth its disk.
 
 ### Work
