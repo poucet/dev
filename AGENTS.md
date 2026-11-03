@@ -759,6 +759,7 @@ their disk.
 - **A lane rebases once, at the end**, and the coordinator lands in batches, so
   lanes don't rebuild after every landing.
 - **Never clean a build cache that will be reused** (`cargo clean` and the like).
+- **On APFS, clone a base cache instead of moving or rebuilding one.** Keep one warm cache built on trunk (`.workspaces/_base-target`); a new lane gets `cp -cRp .workspaces/_base-target .workspaces/<lane>/target`. A clone is instant and shares every block until it is written, so dependencies are stored once however many lanes run; `-p` keeps the timestamps so cargo sees them as fresh. `du` counts each clone in full: measure with `df`. The integrator refreshes the base after landings; a finished lane's cache goes to `.trash/`.
 - **Reuse build caches, not workspaces.** A new lane gets a fresh workspace and
   takes over a finished lane's cache: dependencies stay built and only the
   project's own code rebuilds. For a cargo project:
