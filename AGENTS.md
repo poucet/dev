@@ -102,7 +102,8 @@ describes.
 | In `docs/ops/` | What goes in it | Who writes it | Pruned when |
 |---|---|---|---|
 | **The human's view** | | | |
-| `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands |
+| `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands, into `LANDED.md` |
+| `LANDED.md` | board rows that finished, newest first: what, when, change id, lane | coordinator (or `scribe`) | never: it is the record of the work (what a user gets is the changelog) |
 | `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
 | `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once they have run it |
 | **The record** | | | |
@@ -123,6 +124,7 @@ here:
 
 | Doc | Id | Status legend | Row |
 |---|---|---|---|
+| `LANDED.md` | `L-012` | ✅ landed · 📄 finished, not landed · 🗑️ dropped | `\| L-012 \| ✅ \| what finished \| when · change id \| lane \|` |
 | `ISSUES.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
 | `DECISIONS.md` | `D-042` | ✅ in force · ♻️ superseded · ❓ reopened | `\| D-042 \| ✅ \| decision \| rationale \| when · change id \|` |
 | `IDEAS.md` | `N-012` | 💡 open · 🔶 partly answered · 🎯 next up · 📋 queued · 🔄 in flight · 🔬 researched · ✅ shipped · 🗑️ declined | `\| N-012 \| 💡 \| idea \| notes \| added \|` |
