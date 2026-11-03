@@ -103,7 +103,7 @@ describes.
 |---|---|---|---|
 | **The human's view** | | | |
 | `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands, into `LANDED.md` |
-| `LANDED.md` | board rows that finished, newest first: what, when, change id, lane | coordinator (or `scribe`) | never: it is the record of the work (what a user gets is the changelog) |
+| `LANDED.md` | every board row that left the board, newest first, under its board label: what, when, change ids | coordinator (or `scribe`) | never: it is the record of the work (what a user gets is the changelog) |
 | `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
 | `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once they have run it |
 | **The record** | | | |
@@ -124,7 +124,7 @@ here:
 
 | Doc | Id | Status legend | Row |
 |---|---|---|---|
-| `LANDED.md` | `L-012` | ✅ landed · 📄 finished, not landed · 🗑️ dropped | `\| L-012 \| ✅ \| what finished \| when · change id \| lane \|` |
+| `LANDED.md` | the board label, e.g. `` `flaky-2` `` | 🚧 landing · ✅ landed · 🔀 folded elsewhere · 📄 finished, not landed · 🗑️ dropped | `\| `flaky-2` \| ✅ \| what finished \| when \| change ids \|` |
 | `ISSUES.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
 | `DECISIONS.md` | `D-042` | ✅ in force · ♻️ superseded · ❓ reopened | `\| D-042 \| ✅ \| decision \| rationale \| when · change id \|` |
 | `IDEAS.md` | `N-012` | 💡 open · 🔶 partly answered · 🎯 next up · 📋 queued · 🔄 in flight · 🔬 researched · ✅ shipped · 🗑️ declined | `\| N-012 \| 💡 \| idea \| notes \| added \|` |
@@ -166,10 +166,10 @@ result, then re-read the section you touched. It is one file, prose plus tables,
 and the file everyone navigates by. Being untracked, it never conflicts; what
 goes wrong when a shared document is merged is under *Landing*, rule 3.
 
-**A label is something the human types.** Never strike a label through — a
+**A row's id is its label**: the lane's name (`flaky-2`, `ui-shell`), never a row number. Numbers shift as rows come and go and mean nothing a day later; a label survives into `LANDED.md`, commit-free notes and conversation. **A label is something the human types.** Never strike a label through — a
 `~~LABEL~~` cannot be typed to fire a lane, tildes are awkward to reach, and a
 struck row reads as *present but crossed out* when what is meant is *gone*. A
-landed lane's row is **deleted**, its record is the changelog; a superseded one is deleted and its successor says what it replaced.
+landed lane's row **moves to `LANDED.md`** under the same label (the changelog says what a user got); a superseded one is deleted and its successor says what it replaced.
 Status lives in the status column and in which section the row is in, never in
 the label.
 
