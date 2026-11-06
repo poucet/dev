@@ -700,6 +700,8 @@ explain more, still in plain words ([simply-chris](https://simplychris.ai), on
 meaningless"*). A commit that only updates ops docs says what it records
 ("record the VST3 inactive-parameter fix as done"), not which rows moved.
 
+**Code and tracked docs never cite ops ids either** ([simply-chris](https://simplychris.ai): *"code and docs should NEVER reference issues and decisions and such by id"*). No issue, decision, idea, roadmap, ask or lane id (`I-007`, `DEC-42`, `X-151`, `T-3`, `N-12`, `A-22`, `SC-11`, a board label) in source, comments, tests, design and research docs, guides, the changelog or a README. Those ids live in `docs/ops/`, which is untracked: in a clone, a review or a public repo they point at nothing, and the rows they name are pruned, renumbered and superseded while the code keeps citing them. Say the reason itself, in plain words, where it is needed ("a scene never creates a channel", not "per T-35"). What may be cited: a design doc's section number (§2.3, which is never renumbered), another file or function by name, and a jj change id in the changelog.
+
 ### Referring to the human's points
 
 **Never refer to the human's points by a number alone.** When they raise
