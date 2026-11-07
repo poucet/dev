@@ -31,7 +31,7 @@ That is the whole model. Full definitions are in `agents/`.
 |---|---|---|---|
 | `coder` | own workspace | production code, its tests, its changelog fragment | no |
 | `researcher` | own workspace | `docs/research/` only; no production code | no |
-| `tech-lead` | own workspace | `docs/design/` only; never lands without human review | no |
+| `tech-lead` | own workspace | `docs/design/` only; lands on trunk, a proposal under its review banner | no |
 | `designer` | own workspace | UI, plus rendered before/after evidence | no |
 | `foreman` | own workspace, dispatches lanes | briefs and track state; little code | no |
 | `scribe` | the default workspace | `BOARD.md`, and rows in the other ops docs (untracked) | no |
@@ -274,11 +274,14 @@ nobody relitigates it three sessions later. One row, one decision, one date.
 
 ### `docs/design/`
 
-Proposals and the locked design. **Gated on human review: a design document never
-lands on trunk without it.** While a proposal sits unlanded in a lane's own
-chain, it carries a banner saying it awaits review; once it is on trunk, its
-state lives on the board instead, because a banner claiming a proposal is
-unreviewed outlives the review.
+Proposals and the locked design. **Design documents always land on trunk**, the
+proposals included: the human reviews on trunk, never in a lane's workspace
+([simply-chris](https://simplychris.ai): *"I can't review design docs in workspaces, they need to be in main"*).
+A proposal lands with a `⚠️ PROPOSAL — awaits review` banner and its open
+questions marked; the decisions it waits on go in the decisions file the same day.
+When the human answers, the next commit folds the answers in and takes the
+banner off. **Review gates what a design *decides*, not whether it is on trunk**:
+nothing is built on a proposal's open questions until they are answered.
 
 **Changing a design needs review; recording that it was built does not.** Once a
 design is approved, a lane marking its own stage as built, correcting a sketch to
@@ -414,7 +417,7 @@ goes wherever the changelog lives — in `repo/` if the team keeps one there.
   what stops a class of bug reaching you."*
 - **An issue says what is wrong before anything else.** A repair history is one
   clause at the end, never the opening.
-- **A design document needs its human's review before a commit changes it.** A lane reports the correction; it does not make it.
+- **A design change lands as a proposal**: the banner on, the changed or open points marked, the questions in the lane's report. A lane never presents its own change to a design as decided.
 - **Fix it, do not file it.** A small defect found in passing is closed in the
   lane. [simply-chris](https://simplychris.ai): *"I hate that issues keep piling up instead of getting resolved."*
 
@@ -447,7 +450,7 @@ coordinator assigns the id when it records it.
                                ISSUES.md DECISIONS.md IDEAS.md ROADMAP.md   the record
                                STATUS.md                          live notes
                                drafts/                            work in progress
-      design/                  proposals — human review gate
+      design/                  the design, proposals included (banner until reviewed)
       research/                investigations and measurements
       guides/                  how-to
       reference/               generated — regenerate, don't edit
@@ -653,7 +656,8 @@ going stale is harmless by comparison — that is just this session catching up.
   each landed, not by which side of the conflict it came from.
 - `docs/ops/` (board, issues, decisions, ideas, roadmap) is untracked: it never
   conflicts, and no lane's commit touches it.
-- **Never land a `docs/design/` change** — those are the human's to review.
+- **Land `docs/design/` changes like any other docs**, banner intact: the human
+  reviews them on trunk. Never strip a review banner while landing.
 
 ### Repairing history, if it comes to that
 

@@ -24,9 +24,11 @@ You are a **coder** lane. You take one piece of work and finish it.
 
 ## What you may not do
 
-- **Never commit a change under `docs/design/`** without human review. Recording
-  that something was built is fine; changing a design is not. If your work
-  implies a design change, write the proposal and stop.
+- **Never present a change to `docs/design/` as decided.** Recording that
+  something was built is fine. Changing a design is a proposal: it lands on
+  `main` under a `⚠️ PROPOSAL — awaits review` banner, the changed points
+  marked, and its questions go in your report. If your work implies a design
+  change, write the proposal and stop.
 - **Never make an architectural choice.** A public API, wire or file format,
   crate or module boundary, threading or locking model, undo scope, what a mode
   or setting means, or a user-visible default — if your brief doesn't settle it,

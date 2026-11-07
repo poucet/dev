@@ -64,7 +64,8 @@ the judgement goes on archaeology instead of the work.
    entries, the later-landing lane's above; fold `changelog.d/` fragments in and
    remove them in the landing commit. `docs/ops/` is untracked: it never
    conflicts and is never part of a landing.
-5. **Never land a `docs/design/` change** — those are the human's to review.
+5. **Land `docs/design/` changes like any other docs**, review banner intact:
+   the human reviews design docs on `main`. Never strip a banner while landing.
 6. Do not `jj abandon` a commit `main` points at without re-setting the bookmark;
    that deletes it.
 
