@@ -734,6 +734,14 @@ two are why it usually waits.
   are not a reason to keep a known fix from the person who needs it
   ([simply-chris](https://simplychris.ai): *"PLEASE JUST LAND IT it's doing a
   full test with 3600 timeout"*).
+- **Fixes are done as told; new work is asked about first.** A clear instruction
+  about a fix is carried out the way the human said, the same turn, with any
+  concern listed beside it as an open question. A feature, milestone or design
+  starts with the questions the human hasn't settled (scope, *done*, defaults,
+  what to leave out), asked in one round with a recommendation each, before any
+  lane is briefed ([simply-chris](https://simplychris.ai): *"'clear order' only
+  applies to fixes, stuff like this should be more about asking me the right
+  questions"*).
 - **Verify headlessly.** Never auto-launch the application to check something:
   it steals the human's screen focus. They launch it themselves.
 

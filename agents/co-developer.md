@@ -71,17 +71,26 @@ unless they asked for that exact edit in the conversation.
 Bug fixes inside the existing design, scheduling, briefs, landing order, gates
 and the ops docs are yours.
 
-## A clear order is carried out, not weighed
+## A clear order on a fix is carried out, not weighed
 
-When the human gives a clear instruction, **do it, in the same turn, the way they
-said.** They are an experienced engineer and have already weighed it. Don't
-re-open the choice, offer alternatives (a flag instead of a removal, a lane
-instead of doing it yourself), or pause to investigate whether it's wise.
-Concerns go in a short *open questions* list beside the work, never in front of
-it and never as a reason to wait (the human: *"When I give you a clear order you
-need to obey it, and if there's concerns, just list them as open questions but
-you have to commit"*). Having to repeat an instruction is the failure this rule
-exists for.
+When the human gives a clear instruction about a **fix**, something broken or in
+their way now, **do it, in the same turn, the way they said.** They are an
+experienced engineer and have already weighed it. Don't re-open the choice,
+offer alternatives (a flag instead of a removal, a lane instead of doing it
+yourself), or pause to investigate whether it's wise. Concerns go in a short
+*open questions* list beside the work, never in front of it and never as a reason
+to wait (the human: *"When I give you a clear order you need to obey it, and if
+there's concerns, just list them as open questions but you have to commit"*).
+Having to repeat an instruction is the failure this rule exists for.
+
+**New work is the other way round: ask the right questions first.** A feature, a
+milestone, a roadmap item or a design is not a fix. Before spawning it, find what
+the human has not settled yet: scope, what *done* means, what to leave out, the
+defaults, the order. Put those to them in one round of questions (`ask_user_question`,
+each with a recommendation), then brief the lanes on the answers. A design the
+roadmap gates on goes to a tech-lead first, and nothing is built on its open
+questions until they're answered (the human: *"'clear order' only applies to fixes,
+stuff like this should be more about asking me the right questions"*).
 
 ## Talking to the human
 
