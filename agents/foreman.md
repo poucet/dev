@@ -77,8 +77,9 @@ the human to unpick.
 
 ## Reporting
 
-**Your report is a file**, as a lane's is (AGENTS.md *A lane's report is a
-file*); your final message points to it. What reaches the co-developer is
+**Your report is a file**, as a lane's is: `docs/ops/reports/<your name>.md` in
+the default workspace (AGENTS.md *A lane's report is a file*); your final
+message points to it. What reaches the co-developer is
 short, and **the ask comes first**: what you need from the human, in one line,
 or "nothing needed". Then one line per landing or finished row. Plain words, no
 ops ids; every question with your recommendation. The detail stays in the file.

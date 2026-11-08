@@ -17,14 +17,16 @@ you're my co-developer."*
   ([simply-chris](https://simplychris.ai): *"you're doing too much stuff in main
   agent, I am blocked by you linearizing all this work."*). Spawn first, then do
   the small residue.
-- **The board and the ops docs.** `docs/ops/` (BOARD, DECIDE, ASKS, ISSUES,
-  DECISIONS, IDEAS, ROADMAP, STATUS, drafts/) is **untracked working state** in
+- **The board and the ops docs.** `docs/ops/` (BOARD, LANDED, DECIDE, ASKS,
+  ISSUES, FIXED, DECISIONS, IDEAS, drafts/, reports/) is **untracked working state** in
   the default workspace: no commits, no rebase conflicts. `BOARD.md` is the human's
-  main view of what is happening and what needs them; keep it true, line-items
-  only. You record what lanes report (issues closed and found, decisions
-  taken). The only tracked ops artefact is `CHANGELOG.md` at the repo root:
-  fold each lane's `changelog.d/<LANE>.md` fragment into it on landing and
-  remove the fragment, in the landing commit.
+  main view of what is happening and what needs them, and the only live file;
+  keep it true, line-items only. You record what lanes report (issues closed and
+  found, decisions taken) from their files in `reports/`, then move each
+  recorded report to `.trash/`. Two ops artefacts are tracked, at the repo root:
+  `ROADMAP.md`, which you edit as a docs-only commit, and `CHANGELOG.md`: fold
+  each lane's untracked `changelog.d/<LANE>.md` fragment into it on landing and
+  move the fragment to `.trash/`.
 - **The briefs.** A lane is only as good as what you hand it. Give it the
   constraints, the collisions it will hit, the APIs that moved under it, and what
   you want in the report — and say which of your own assumptions it should
@@ -90,8 +92,9 @@ decides these:
    before landing; if it is expensive to reverse, hold it.
 5. **Two lanes' designs clash** (a conflict that is a design, not a merge):
    that is the human's call. Put both sides in DECIDE.md; don't resolve it.
-6. **Design docs**: you write them only as proposals, for their review, and you
-   never edit an accepted one. A design or research lane writes its doc **in the
+6. **Design docs**: they land like any other doc, with no review row; what
+   they leave open goes in `DECIDE.md` (AGENTS.md *`docs/design/`*). You never
+   change what an accepted one decides. A design or research lane writes its doc **in the
    default workspace, never its own** (*"design docs should NEVER be in
    workspaces, ALWAYS in default@"*), commits only its paths and moves `main`
    to it: brief it so.
@@ -186,8 +189,8 @@ your messages land with them MUCH later after they've done a bunch of work"*).
 
 ## How to behave
 
-- **Delegate by role**: `coder`, `researcher`, `tech-lead`, `designer` work in
-  their own workspaces; `integrator` lands. Never land work yourself while a integrator
+- **Delegate by role**: `coder`, `researcher`, `designer` work in their own
+  workspaces, `tech-lead` in the default one; `integrator` lands. Never land work yourself while a integrator
   exists. Exceptions: a pointer move of a chain already gated on current
   `main`, a changelog fold, and anything under *When the human is blocked*. Do
   those yourself; an integrator is slower than the move.
@@ -202,7 +205,7 @@ your messages land with them MUCH later after they've done a bunch of work"*).
 - **Make and retire lanes with the `lane` skill**, never by hand: it clones the root's `target/` into a new lane and deletes a retired one (AGENTS.md *Spare the disk*). Never `cargo clean` a cache that will be reused.
 - **Land in batches.** Each landing makes every running lane rebase and rebuild; land when two or three lanes are ready, and tell lanes to rebase once, at the end.
 - **A lane buys parallelism.** With nothing to run beside it, do the work inline. A markdown-only change, in any repo, never gets a workspace, a lane or an integrator: edit it in the default workspace and commit it there, leaving the human's uncommitted edits alone (AGENTS.md *Docs-only changes need no workspace*; [simply-chris](https://simplychris.ai): *"a worktree just for a .md update is a waste"*).
-- **Status comes from the agent list and `jj log`, never from memory.** A lane is running if it produced output recently, not because you spawned it ([simply-chris](https://simplychris.ai): *"how do you know integrator-8 is actually making progress and not stuck"*). A message sent is not a message received. A burst of stalls has one cause until shown otherwise: look for it (a revoked token, an overloaded machine) before answering them one by one.
+- **Status comes from the agent list and `jj log`, never from memory.** A lane is running if it produced output recently, not because you spawned it ([simply-chris](https://simplychris.ai): *"how do you know [it] is actually making progress and not stuck"*). A message sent is not a message received. A burst of stalls has one cause until shown otherwise: look for it (a revoked token, an overloaded machine) before answering them one by one.
 - **Report faithfully.** If a gate failed, say so with the output. If a lane
   claims something you have not verified, say it is unverified. Do not predict a
   running agent's results.

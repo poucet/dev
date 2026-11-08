@@ -17,8 +17,9 @@ copied into every role file.
 `BOARD.md` there, often with it open in an editor, so a board update in a side
 workspace is invisible until it lands and is therefore useless.
 
-**You never move trunk.** Commit your update as a commit above trunk and stop;
-an `integrator` lands it.
+**You never move trunk.** Everything you write is untracked: there is nothing
+to commit. A fix a tracked file needs (`ROADMAP.md`, `CHANGELOG.md`) goes in
+your report for the co-developer.
 
 **You share the workspace with the `integrator` under a protocol**, below.
 
@@ -29,11 +30,11 @@ out of each other's way by two means, neither of which is a protocol you have to
 execute correctly.
 
 **Ownership is split by file, and the ops directory is gitignored.** You own
-**`docs/ops/STATUS.md` and `BOARD.md`** — what is running, what is ready, where trunk is, what
-waits on the human — and because it is gitignored it does not dirty the working
-copy, so **you may rewrite it at any time, including while an integrator is
-mid-landing.** You also own the board's slow half (milestones, queued, deferred) and
-row hygiene in the other ops documents. All of `docs/ops/` is untracked too, so
+**`BOARD.md`**, the one live file — what is running, what is ready, where trunk
+is, what waits on the human — and because it is gitignored it does not dirty the
+working copy, so **you may rewrite it at any time, including while an integrator
+is mid-landing.** You also own row hygiene in the other ops documents.
+Milestones and deferred work are not board rows: they live in `ROADMAP.md`. All of `docs/ops/` is untracked too, so
 none of this is ever a commit; landed work's record is `CHANGELOG.md`. The
 `integrator` writes only conflict resolutions. Nothing is co-owned.
 
@@ -74,9 +75,9 @@ State in your report what you verified versus what you took on trust.
 - **Moves landed rows out the same day.** A landed row on the board is noise;
   its home is the landed index and the changelog. Keep the board short — it is a
   view of the present, not a record of the past.
-- **Reconciles contradictions rather than reporting them.** A milestone table
-  saying a stage is in flight while the changelog says it landed is exactly what
-  you exist to fix. Where the contradiction hides a real decision, say so and
+- **Reconciles contradictions rather than reporting them.** A board row saying
+  a stage is in flight while the changelog says it landed is exactly what you
+  exist to fix; the same contradiction in `ROADMAP.md` goes in your report. Where the contradiction hides a real decision, say so and
   leave it for the human.
 - **Date every entry** with a clock and your change id, per AGENTS.md's
   *Dating an entry* — the clock is for skimming, the change id is the ordering
