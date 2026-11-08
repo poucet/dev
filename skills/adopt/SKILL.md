@@ -18,14 +18,23 @@ overwrites).
 | `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks | yes |
 | `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no (machine path) |
 | `CHANGELOG.md` | user-facing, at the root | yes |
-| `changelog.d/` | lanes' changelog fragments until folded in; appears with the first one | yes |
+| `ROADMAP.md` | what comes next, by version, at the root; cites no ops ids | yes |
+| `changelog.d/` | lanes' changelog fragments until folded in, in the default workspace | no: its own `.gitignore` holds `*` |
 | `docs/{design,research,guides,reference}/` | the tracked doc web; not made empty, a folder appears with its first file | yes |
-| `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, DECISIONS, IDEAS, ROADMAP (the record); STATUS (live notes); `drafts/` (appears with the first draft) | no: its own `.gitignore` holds `*` |
+| `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, FIXED, DECISIONS, IDEAS (the record); `reports/` (lanes' final reports); `drafts/` (appears with the first draft) | no: its own `.gitignore` holds `*` |
 | `.workspaces/`, `.trash/` | lane workspaces, discarded files | no: each has its own `.gitignore` holding `*` |
 
-The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `docs/ops/*.md`) are
-copied from dev's `templates/`, each only where the repo has no file of that
-name.
+The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `ROADMAP.md`,
+`docs/ops/*.md`) are copied from dev's `templates/`, each only where the repo
+has no file of that name.
+
+**A repo adopted under the older layout** keeps its files: `adopt.sh` deletes
+nothing. Bring it in line by hand: `docs/ops/ROADMAP.md` moves to the root and
+is committed, with ops ids taken out (`adopt.sh` warns while it is there);
+`docs/ops/STATUS.md`'s live rows fold into `BOARD.md`, any standing rule in it
+goes to `AGENTS.project.md`, and the file goes to `.trash/`; closed rows in
+`ISSUES.md` move to `FIXED.md`; fragments already tracked in `changelog.d/`
+are folded or untracked (`jj file untrack`).
 
 ## Steps
 
@@ -57,7 +66,7 @@ name.
    gates, as exact commands), branches and remotes, what never to run (GUIs,
    real devices, pushes), paths. Short; facts only.
 5. **Verify:**
-   - `git check-ignore docs/ops/BOARD.md docs/ops/STATUS.md` both print;
+   - `git check-ignore docs/ops/BOARD.md changelog.d/x.md` both print;
    - `jj st` / `git status` shows no machine-specific path (the harness
      symlinks) as added;
    - the harness sees the roles (pi: `"projectPersonas": true` in
@@ -65,7 +74,7 @@ name.
      the human if either is missing).
 6. **Commit only the tracked parts**, one commit, plain words, e.g.
    `Adopt the dev working system: AGENTS.md from dev, project rules in
-   AGENTS.project.md, changelog at the root` (no internal ids). Commit the
+   AGENTS.project.md, changelog and roadmap at the root` (no internal ids). Commit the
    files by path, so nobody else's uncommitted edits ride along. Don't push.
 7. **Report:** what was created, what moved where, what was left for the human
    (backport candidates, settings they must flip, anything ambiguous).

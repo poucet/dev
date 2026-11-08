@@ -15,16 +15,19 @@
 #                                       trusted project)
 #        Claude Code  .claude/agents   (subagents)
 #   3. lays out the doc web per AGENTS.md §3:
-#        CHANGELOG.md at the root, tracked (changelog.d/ appears with the
-#        first lane fragment)
+#        CHANGELOG.md and ROADMAP.md at the root, tracked
+#        changelog.d/  lanes' changelog fragments (untracked)
 #        docs/ops/   the one untracked directory of working state:
-#                    BOARD DECIDE ASKS  ISSUES DECISIONS IDEAS ROADMAP  STATUS
+#                    BOARD DECIDE ASKS  ISSUES FIXED DECISIONS IDEAS
+#                    reports/ (lanes' final reports)
 #                    (drafts/ appears when there is a draft)
 #        (docs/{design,research,guides,reference}/ are not made: a folder
 #        appears when there is something to put in it)
 #        .workspaces/  .trash/   (untracked)
 #      The starter files are copied from dev's templates/, each only where
-#      the project has no file of that name yet.
+#      the project has no file of that name yet. Files of an older layout
+#      (docs/ops/STATUS.md, docs/ops/ROADMAP.md) are left where they are;
+#      a root ROADMAP.md is not added while docs/ops/ROADMAP.md exists.
 #      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
 #      by hand (skills/adopt), then re-run this to make the link.
 #   4. ignores what must never be committed: each untracked directory above
@@ -44,7 +47,7 @@ set -euo pipefail
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "dev dir: $DEV_DIR"
 
-usage() { sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,42p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
 HARNESS="auto"
@@ -89,6 +92,10 @@ copy_templates() {
 	while IFS= read -r rel; do
 		rel="${rel#./}"
 		[ -e "$PROJECT/$rel" ] && continue
+		if [ "$rel" = "ROADMAP.md" ] && [ -e "$PROJECT/docs/ops/ROADMAP.md" ]; then
+			echo "  !! docs/ops/ROADMAP.md exists: move it to the repo root (tracked) by hand" >&2
+			continue
+		fi
 		ensure_dir "$PROJECT/$(dirname "$rel")"
 		cp -- "$DEV_DIR/templates/$rel" "$PROJECT/$rel"
 	done < <(cd "$DEV_DIR/templates" && find . -type f ! -name .DS_Store | sort)
@@ -129,11 +136,13 @@ done
 # the workspaces and discarded files are untracked too. (.screenshots/ is not
 # made: a project that renders images adds it, per AGENTS.md §3.)
 ensure_untracked_dir "$PROJECT/docs/ops"
+ensure_dir "$PROJECT/docs/ops/reports"   # lanes write their reports here
+ensure_untracked_dir "$PROJECT/changelog.d"
 ensure_untracked_dir "$PROJECT/.workspaces"
 ensure_untracked_dir "$PROJECT/.trash"
 
-# The starter files: AGENTS.project.md, CHANGELOG.md, and docs/ops/'s
-# BOARD DECIDE ASKS ISSUES DECISIONS IDEAS ROADMAP STATUS.
+# The starter files: AGENTS.project.md, CHANGELOG.md, ROADMAP.md, and
+# docs/ops/'s BOARD DECIDE ASKS ISSUES FIXED DECISIONS IDEAS.
 copy_templates
 
 # --- report -------------------------------------------------------------------
@@ -143,8 +152,8 @@ echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done
-echo "  CHANGELOG.md (tracked)"
-echo "  docs/ops/ (untracked)"
+echo "  CHANGELOG.md, ROADMAP.md (tracked)"
+echo "  changelog.d/, docs/ops/ (untracked)"
 echo "  .workspaces/, .trash/"
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
 	echo
