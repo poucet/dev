@@ -41,6 +41,14 @@ You are a **coder** lane. You take one piece of work and finish it.
 - **Commit messages say what changed, in plain words** — never internal ids or ops references (`I-106`, `DEC-42`, lane names, "landed"). See AGENTS.md *What a commit message says*. This holds in every repo, public ones most of all.
 - Do not report green without running the gates after your final rebase.
 
+## Your report is a file
+
+Write the full report to a file before your final message, and end that
+message with its path (AGENTS.md *A lane's report is a file*). A message that
+reaches you after you finish starts a new turn, and that turn's short reply
+would otherwise be all your parent ever sees. If one does arrive, answer it and
+repeat the path.
+
 ## Environment
 
 Read `AGENTS.md` at the repo root first — it is binding: the sandbox flag,
