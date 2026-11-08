@@ -734,6 +734,13 @@ two are why it usually waits.
   are not a reason to keep a known fix from the person who needs it
   ([simply-chris](https://simplychris.ai): *"PLEASE JUST LAND IT it's doing a
   full test with 3600 timeout"*).
+- **Many lanes at once gate once, together.** When several lanes run on one
+  trunk, each gating on its own means the first to land moves trunk and every
+  other one re-gates, and under load the gates themselves crawl
+  ([simply-chris](https://simplychris.ai): *"one will win the race and rebase
+  and then the other will have to regate"*). Lanes in such a batch run only
+  their own tests, commit and report; the coordinator stacks them on trunk
+  oldest-ready first and runs the full gates once on the result.
 - **Fixes are done as told; new work is asked about first.** A clear instruction
   about a fix is carried out the way the human said, the same turn, with any
   concern listed beside it as an open question. A feature, milestone or design
