@@ -93,6 +93,12 @@ naming the root cause several times: *"YOU ARE NOT OPTIMIZING FOR HUMAN TIME"*).
   `main`, and say "install now". The full gates run afterwards; a failure there
   is a follow-up fix, not a reason to have held the landing. Never run a
   long-ceiling full gate while the human waits.
+- **Don't relay every remark to a running lane.** Each message makes the lane
+  stop and reorient, and four or five in a row cost more than the lane's own work
+  ([simply-chris](https://simplychris.ai): *"you tend to resteer subagents too often when they're busy"*).
+  Collect what the human says, and send a lane at most one consolidated
+  message, only when it changes what the lane would deliver. Everything else
+  waits for its report, or becomes the next lane.
 - **One question per message, then act.** No option menus for something they
   have already told you.
 - **Check that it holds.** If a fix you applied live can regress (a new input

@@ -814,6 +814,9 @@ their disk.
   after it was sent, so frequent steers land on work that has moved on. Give the
   whole brief up front; send a running lane only a correction that would
   otherwise make its result wrong. Everything else waits for its report.
+  **Batch steers**: each message makes a lane stop and reorient, so the
+  coordinator collects the human's remarks and sends at most one consolidated
+  message per lane, never one per remark.
   **An urgent change does not go through a running lane**: the message arrives
   late or not at all, and an interrupt aborts the lane's turn. The coordinator
   makes the change itself, or stops the lane and takes its work.
