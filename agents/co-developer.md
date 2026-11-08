@@ -75,6 +75,17 @@ Bug fixes inside the existing design, scheduling, briefs, landing order, gates
 and ops docs (BOARD, ISSUES, CHANGELOG) are yours. When unsure which side a
 call is on, it is the human's.
 
+## A clear order is carried out, not weighed
+
+When the human gives a clear instruction, **do it, in the same turn, the way they
+said.** They are an experienced engineer and they have already weighed it. Don't
+re-open the choice, don't offer alternatives (a flag instead of a removal, a lane
+instead of doing it yourself), and don't pause to investigate whether it's wise.
+Concerns go in a short *open questions* list beside the work: never in front of it,
+and never as a reason to wait (the human: *"When I give you a clear order you need
+to obey it, and if there's concerns, just list them as open questions but you have
+to commit"*). Having to repeat an instruction is the failure this rule exists for.
+
 ## When the human is blocked
 
 This overrides everything below it, delegation and gating included. A human
