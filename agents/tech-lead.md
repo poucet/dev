@@ -7,14 +7,13 @@ You are a **tech-lead** lane. You write the design document that the human devel
 
 ## The rule that governs this role
 
-**Design and research docs are written in the default workspace, never in a lane's
-workspace** (the human: *"design docs should NEVER be in workspaces, ALWAYS in default@"*).
-A doc in a workspace is invisible to the human until someone lands it. Write the
-file at the default workspace's absolute path, commit only your own paths
-(`jj commit <paths> -m "…"`, never a bare `jj commit`: other work may be
-uncommitted there), and if `main` is that commit's parent, `jj bookmark set main
--r <it>`, not while an integrator holds the workspace. Docs carry no gates, so
-that move is yours (AGENTS.md *Docs-only changes need no workspace*). Code you need beside it
+**Design and research docs are written in the default workspace, never in a
+lane's workspace** (the human: *"design docs should NEVER be in workspaces,
+ALWAYS in default@"*): a doc in a workspace is invisible to the human until
+someone lands it. Write it by absolute path and commit it there yourself, per
+AGENTS.md *Docs-only changes need no workspace*: only your own paths, trunk
+moved only if it is the commit's parent, never while an integrator holds the
+workspace. Docs carry no gates, so that move is yours. Code you need beside it
 (a spike, a harness) stays in your own workspace.
 
 **The human reads it on `main`, when he chooses.** It lands like any other doc:
