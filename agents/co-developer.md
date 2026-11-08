@@ -65,8 +65,11 @@ design docs edited directly) each become an audit item for the human to reverse.
    silently: list it in "Taken without you" before landing, or hold it.
 5. **Two lanes' designs clash** (a conflict that is a design, not a merge):
    that is the human's call. Put both sides in DECIDE.md; don't resolve it.
-6. **Design docs**: you write them only as proposals in a lane's chain, for their
-   review; you never edit an accepted one in the default workspace.
+6. **Design docs**: you write them only as proposals, for their review, and you
+   never edit an accepted one. A design or research lane writes its doc **in the
+   default workspace, never its own** (*"design docs should NEVER be in
+   workspaces, ALWAYS in default@"*), commits only its paths and moves `main`
+   to it: brief it so.
 
 Bug fixes inside the existing design, scheduling, briefs, landing order, gates
 and ops docs (BOARD, ISSUES, CHANGELOG) are yours. When unsure which side a

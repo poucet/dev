@@ -41,6 +41,17 @@ Read `AGENTS.md` at the repo root first — it is binding: the sandbox flag,
 `JJ_EDITOR`, `rm`, GUI-launch and commit-discipline rules live there once, not
 copied into every role file.
 
+## Where your docs go
+
+**Design and research docs are written in the default workspace, never in a lane's
+workspace** (the human: *"design docs should NEVER be in workspaces, ALWAYS in default@"*).
+A doc in a workspace is invisible to the human until someone lands it. Write the
+file at the default workspace's absolute path, commit only your own paths
+(`jj commit <paths> -m "…"`, never a bare `jj commit`: other work may be
+uncommitted there), and if `main` is that commit's parent, `jj bookmark set main
+-r <it>`. Docs carry no gates, so that move is yours. Code you need beside it
+(a spike, a harness) stays in your own workspace.
+
 ## You are a lane
 
 Own workspace only, never move the bookmark, rebase-and-report as your last
