@@ -31,12 +31,12 @@ That is the whole model. Full definitions are in `agents/`.
 |---|---|---|---|
 | `coder` | own workspace | production code, its tests, its changelog fragment | no |
 | `researcher` | own workspace | `docs/research/` only; no production code | no |
-| `tech-lead` | own workspace | `docs/design/` only; lands on trunk, a proposal under its review banner | no |
+| `tech-lead` | the default workspace | `docs/design/` only; its open decisions go to the decisions file | its own docs commits only |
 | `designer` | own workspace | UI, plus rendered before/after evidence | no |
 | `foreman` | own workspace, dispatches lanes | briefs and track state; little code | no |
 | `scribe` | the default workspace | `BOARD.md`, and rows in the other ops docs (untracked) | no |
-| `integrator` | the default workspace | conflict resolutions only | **yes — sole authority** |
-| `co-developer` | the conversation | the board, the briefs | via `integrator` |
+| `integrator` | the default workspace | conflict resolutions only | **yes — sole authority**, bar docs-only commits (§4) |
+| `co-developer` | the conversation | the board, the briefs | via `integrator`; docs-only commits itself |
 
 **Why per-role and not per-task.** An agent roster is read once at session start,
 so a name invented for one task is always a session late. There are eight roles,
@@ -66,14 +66,27 @@ coordinator that talks to the human stays free; long serial work done inline is
 dead time for them ([simply-chris](https://simplychris.ai): *"you're doing too
 much stuff in main agent, I am blocked by you linearizing all this work"*). Spawn first, then do the small residue.
 
-**Architecture is the human's.** Neither a lane nor the coordinator decides a
-design-doc change, a public API or a wire or file format, a crate or repo
-boundary, what a component owns, a cross-component semantic (threading, undo
-scope, what a mode means), or a user-visible default. A lane that meets one
-**stops and asks** its coordinator, unless its brief settles it. The coordinator
-**puts it in the decisions file** (*The human channel*, §2) **and waits**; if it
-blocks work, it takes the most reversible option and lists it there as *taken
-without you*. Bug fixes inside an existing design are not architecture.
+**Architecture is the human's, and the test is the cost of reversing it**
+([simply-chris](https://simplychris.ai): *"depends on cost of reversal and risk of reversal. if it's
+a small contained thing, it's easy to change later."*). Every call is one of three:
+
+- **Expensive or risky to reverse → park it, never take it.** A wire or file
+  format that reaches saved files or the network, a public API others build on,
+  a new dependency, a crate or repo boundary, what a component owns, a
+  cross-component semantic (threading, undo scope, what a mode means), a
+  user-visible default: anything that spreads. A lane that meets one **stops and
+  asks** its coordinator, unless its brief settles it. The coordinator **puts it
+  in the decisions file** (*The human channel*, §2) **and waits**. The work it
+  blocks waits; nothing else does.
+- **Small and contained → decide it, and list it** in the decisions file as
+  *taken without you*, with the alternative, so the human can reverse it.
+- **Routine → just do it.** Landing locally, a number inside the agreed scope,
+  an internal name, cleanup: no question and no row; the lane's report says what
+  it chose. Every needless question costs the human a turn and buries the ones
+  that matter ([simply-chris](https://simplychris.ai): *"Please stop asking me questions and focus
+  on finishing roadmap"*).
+
+Bug fixes inside an existing design are not architecture.
 
 ---
 
@@ -92,12 +105,13 @@ its rows carry status marks, the legend for reading them: a key belongs beside
 its table, a policy does not.
 
 **Working state or history.** The documents that decay — the board, the human
-channel, the record, live notes and drafts — are **working state, not
+channel, the record and drafts — are **working state, not
 history**. They live in one untracked directory in the default workspace,
 **`docs/ops/`**, which ignores itself (§3): no commits, no rebase conflicts,
-and one copy, always the current one. The one decaying document that is tracked
-is **`CHANGELOG.md`, at the repo root**, because it ships with the code it
-describes.
+and one copy, always the current one. Two decaying documents are tracked, at
+the repo root, because a reader of a clone needs them: **`CHANGELOG.md`**, which
+ships with the code it describes, and **`ROADMAP.md`**, what comes next
+([simply-chris](https://simplychris.ai): *"put roadmap.md at root dir, it should be tracked"*).
 
 | In `docs/ops/` | What goes in it | Who writes it | Pruned when |
 |---|---|---|---|
@@ -107,12 +121,10 @@ describes.
 | `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
 | `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once they have run it |
 | **The record** | | | |
-| `ISSUES.md` | defects and rough edges, not scheduled | coordinator, from lane reports | fixed → a one-line verdict |
+| `ISSUES.md` | open defects and rough edges, not scheduled | coordinator, from lane reports | fixed or won't fix → moved to `FIXED.md` |
+| `FIXED.md` | issues that left `ISSUES.md`, newest first, each with a one-line verdict | coordinator | never |
 | `DECISIONS.md` | settled decisions with their rationale | coordinator | never: a later row supersedes |
 | `IDEAS.md` | the ideas inbox | coordinator; the human, freely | never deleted: an idea moves down |
-| `ROADMAP.md` | horizons and versions: only what is not done | coordinator | done → the changelog has it |
-| **Live notes** | | | |
-| `STATUS.md` | the coordinator's live notes: lanes running, ready and unintegrated, where trunk is, side lines | coordinator (or `scribe`) | rewritten as it changes |
 | **Work in progress** | | | |
 | `drafts/` | proposals before they become a design doc, review aids, triage | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or answered → `.trash/` |
 
@@ -125,18 +137,18 @@ here:
 | Doc | Id | Status legend | Row |
 |---|---|---|---|
 | `LANDED.md` | the board label, e.g. `` `flaky-2` `` | 🚧 landing · ✅ landed · 🔀 folded elsewhere · 📄 finished, not landed · 🗑️ dropped | `\| `flaky-2` \| ✅ \| what finished \| when \| change ids \|` |
-| `ISSUES.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
+| `ISSUES.md`, `FIXED.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
 | `DECISIONS.md` | `D-042` | ✅ in force · ♻️ superseded · ❓ reopened | `\| D-042 \| ✅ \| decision \| rationale \| when · change id \|` |
 | `IDEAS.md` | `N-012` | 💡 open · 🔶 partly answered · 🎯 next up · 📋 queued · 🔄 in flight · 🔬 researched · ✅ shipped · 🗑️ declined | `\| N-012 \| 💡 \| idea \| notes \| added \|` |
-| `ROADMAP.md` | `R-12` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| R-12 \| 📋 \| item \| size \| ideas \|` |
+| `ROADMAP.md` (tracked) | a word label, e.g. `DEST-MIX` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| DEST-MIX \| 📋 \| what you get \| size \| needs \|` |
 
 - **Lanes read `docs/ops/` by the default workspace's absolute path** (their own
   workspace has none) and **never write it**.
 - **A lane reports; the coordinator records.** Issues found and closed,
   decisions taken and follow-up work go in the lane's report, and the
   coordinator writes them into `docs/ops/`.
-- **A lane's changelog entry is a tracked fragment**, `changelog.d/<LANE>.md` at
-  the repo root (*How a lane writes into shared documents*, below).
+- **A lane's changelog entry is an untracked fragment**, `changelog.d/<LANE>.md`
+  in the default workspace (*How a lane writes into shared documents*, below).
 
 ### `BOARD.md` — the live board
 
@@ -149,8 +161,13 @@ the human's primary view of what is happening and what needs them.
 - **Lanes never write the board**, and no role owns a section of it: the
   `integrator` writes none of it, so the `scribe` never waits for one.
 - **Keep it short.** It exists to show the *live* work.
-- Sections: running · next · waits on the human · milestones · deferred by
-  decision.
+- Sections: running · next · waits on the human. Nothing else: milestones and
+  what was deferred belong in the roadmap ([simply-chris](https://simplychris.ai): *"board.md
+  milestones shouldn't be there, that belongs in roadmap … same with deferred"*).
+- **One live file.** Who runs what, which chains are ready and where trunk is
+  are rows here too. A second live file repeats the board and drifts from it
+  ([simply-chris](https://simplychris.ai): *"we should just have BOARD.md and not 2 files that repeat
+  the same info"*).
 - **Not here**: rationale, discussion, anything addressed to the human. Those go
   to the human channel below. A board entry is a row, a state and a label.
 - **Keep it current.** The coordinator updates it on every spawn, landing and
@@ -166,38 +183,25 @@ result, then re-read the section you touched. It is one file, prose plus tables,
 and the file everyone navigates by. Being untracked, it never conflicts; what
 goes wrong when a shared document is merged is under *Landing*, rule 3.
 
+**Untracked is the point.** A `scribe` and an `integrator` both write in the
+default workspace; a **gitignored** file does not dirty the working copy, so the
+board can be rewritten *during* an integration, exactly when most is changing
+and the human most wants to look. The trade: an untracked file is not in a
+lane's workspace. A lane gets its context from its brief and reads the board by
+the default workspace's absolute path, which the project's `AGENTS.project.md`
+names: an untracked directory nobody references is undiscoverable. What a lane
+must *build on* (code, design, research, the changelog) is tracked.
+
+**Nothing the human wrote lives in a file that gets rewritten.** His review
+text goes in `drafts/`; a standing rule goes in `AGENTS.project.md` or a
+`DECISIONS.md` row. An untracked file has no history: a rewrite loses it for good.
+
 **A row's id is its label**: the lane's name (`flaky-2`, `ui-shell`), never a row number. Numbers shift as rows come and go and mean nothing a day later; a label survives into `LANDED.md`, commit-free notes and conversation. **A label is something the human types.** Never strike a label through — a
 `~~LABEL~~` cannot be typed to fire a lane, tildes are awkward to reach, and a
 struck row reads as *present but crossed out* when what is meant is *gone*. A
 landed lane's row **moves to `LANDED.md`** under the same label (the changelog says what a user got); a superseded one is deleted and its successor says what it replaced.
 Status lives in the status column and in which section the row is in, never in
 the label.
-
-### `STATUS.md` — the churny half of the board
-
-The board splits in two, because its halves change at different speeds.
-
-- **`BOARD.md` is for the human**: what runs, what is next, what waits on them.
-- **`STATUS.md` is the coordinator's live notes**: lane ids, chains ready and
-  unintegrated, where trunk is, side lines. It changes hourly.
-
-Both are untracked, and that is the point. Both a `scribe` and an `integrator`
-write in the default workspace and must not run at once; a **gitignored** file
-does not dirty the working copy at all, so the `scribe` can rewrite the board
-*during* an integration — exactly when most is changing and the human most wants
-to look. Untracked removes the contention rather than scheduling around it.
-
-One untracked **directory** rather than untracked files: one ignore file, and
-room for whatever else turns out to want the same treatment.
-
-The trade, stated plainly: **an untracked file is not in a lane's workspace.**
-That is acceptable because a lane gets its context from its brief, and reads
-the board by the default workspace's absolute path when it needs more. What a
-lane must *build on* — code, design, research, the changelog — is tracked.
-
-**Name it where a lane looks.** An untracked directory nobody references is
-undiscoverable: the project's own rules (`AGENTS.project.md`) name `docs/ops/`
-with the default workspace's absolute path.
 
 ### `CHANGELOG.md` — tracked, at the repo root
 
@@ -244,8 +248,9 @@ Defects and rough edges anyone notices in passing: file it, triage it, **DON'T
 interrupt a lane for it**. A **parking lot, not a queue** — nothing here is
 scheduled until it is promoted onto the board. Found and fixed by lanes,
 recorded by the coordinator from their reports, and **never silently closed**. A resolved issue
-loses its long description, keeps a one-line verdict, and points at the changelog
-for the account, so the table reads as what is still open.
+moves to `FIXED.md`: it loses its long description, keeps a one-line verdict, and
+points at the changelog for the account, so `ISSUES.md` reads as what is still open
+([simply-chris](https://simplychris.ai): *"maybe we need a FIXED.md for fixed issues"*).
 
 **Not here**: features somebody would ask for by name (→ ideas), or work already
 scheduled (→ board).
@@ -259,11 +264,14 @@ moves down** — Inbox (no commitment) → In-flight (it has a board row) → Do
 (answered; the account is in the changelog). Ids are stable and never reused, so
 a row keeps its number as it moves.
 
-### `ROADMAP.md`
+### `ROADMAP.md` — tracked, at the repo root
 
 Horizons and versions, and what a version *means* in the register of the ones
 before it — built from the ideas story lines, plus the dependencies that gate
 them. Horizon numbers continue the version series. **Only what is not done.**
+Milestones and work deferred by decision live here, not on the board. Tracked,
+so it **cites no ops ids**; its rows carry word labels of their own. The
+coordinator edits it in the default workspace as a docs commit.
 
 **Not here**: finished work — that is the changelog, version by version.
 
@@ -277,19 +285,19 @@ nobody relitigates it three sessions later. One row, one decision, one date.
 Proposals and the locked design. **Design documents always land on trunk**, the
 proposals included: the human reviews on trunk, never in a lane's workspace
 ([simply-chris](https://simplychris.ai): *"I can't review design docs in workspaces, they need to be in main"*).
-A proposal lands with a `⚠️ PROPOSAL — awaits review` banner and its open
-questions marked; the decisions it waits on go in the decisions file the same day.
-When the human answers, the next commit folds the answers in and takes the
-banner off. **Review gates what a design *decides*, not whether it is on trunk**:
-nothing is built on a proposal's open questions until they are answered.
+**A design doc lands like any other doc**: no review banner, no review row.
+The human reads design docs in passes of his own choosing ([simply-chris](https://simplychris.ai):
+*"stop asking me to do doc reviews, I'll do passes as I see fit, adding these as
+line items is just noise"*). **What stays the human's is the decision**, not the
+doc: a design decision goes in the decisions file the same day, the doc marks
+that question open where it is asked, and nothing is built on an open question
+until it is answered. When the human answers, the next commit folds the answer in.
 
-**Changing a design needs review; recording that it was built does not.** Once a
-design is approved, a lane marking its own stage as built, correcting a sketch to
-match the code, or adding a finding the design did not predict is **reporting,
-not proposing**, and does not wait on a second review. Gating those makes an
-approved document read as pending long after it was signed off, in the very
-document the human looks at to check. A lane that wants to *change* what was
-decided says so in its report, not as a banner on the file.
+**Changing what a design decides goes through the decisions file; recording that
+it was built does not.** A lane marking its own stage as built, correcting a
+sketch to match the code, or adding a finding the design did not predict is
+**reporting, not proposing**. A lane that wants to *change* what was decided
+says so in its report.
 
 If a design's section numbers are cited from source code, **they are never
 renumbered.**
@@ -326,8 +334,36 @@ Everything that waits on the human lives in these two, **never only in chat or
 a commit message** — chat scrolls away while lanes report:
 
 - **`DECIDE.md`**: decisions for the human, one row each, with a short answer
-  code and the context to answer it. An answered row moves to `DECISIONS.md`.
+  code. An answered row moves to `DECISIONS.md`.
 - **`ASKS.md`**: things for the human to run.
+
+**A `DECIDE.md` row answers itself.** The human should be able to reply from
+the row alone, without a round trip ([simply-chris](https://simplychris.ai): *"expand on U and
+ASK-40, missing context"*; *"rec?"*, four times in two hours):
+
+- **what is being decided**, in one plain sentence, every term defined;
+- **the options**, each with what it changes for the human;
+- **your recommendation**, first among the options;
+- **what it blocks**, and where it lives.
+
+`| D-66 | ❓ | decision | options (rec. first) | blocks · context |`. The file
+opens with *Open now*, newest first; calls taken without the human come after
+(*Architecture is the human's*, §1). Rows that went moot are pruned before he
+reads them.
+
+**No doc web yet is no excuse.** A repo without `docs/ops/` gets one the first
+time something needs recording, in that turn (`adopt.sh`, or at least `BOARD.md`,
+`DECIDE.md` and `ASKS.md`). A question for the human goes in the file *before*
+chat mentions it ([simply-chris](https://simplychris.ai): *"the questions you ask me flow away as you
+react to agents"*).
+
+**Anything the human will paste goes in a file; anything an agent can run, it
+runs.** He cannot copy from chat ([simply-chris](https://simplychris.ai): *"I can't copy paste from
+chat, I need a doc"*). A post, a blurb or a config block goes in `drafts/`, and
+the reply gives the path. A command an agent can run is run, not handed over.
+What only the human can run goes in `ASKS.md`, **run or dry-run first** by the
+agent from the directory it names, and pointed at the default workspace, never
+at a running lane's working copy.
 
 The coordinator writes both; a lane puts its questions in its report. A lane
 never writes them, so it cannot reserve a row id there: lanes that number rows
@@ -349,11 +385,12 @@ should the remaining top-level docs go? Ideally only one or 2 key ones remain"*)
 - **the repo root** holds `AGENTS.md`, and the project's `AGENTS.project.md` if it
   has one, and nothing else of this kind;
 - **one untracked directory, `docs/ops/`,** holds what *decays* — the board,
-  the human channel, the record, live notes and drafts. These are the documents that are wrong the
+  the human channel, the record and drafts. These are the documents that are wrong the
   moment work lands, which is why they live together and get maintained
   together, by the coordinator, in the default workspace;
-- **`CHANGELOG.md` sits at the repo root**, tracked, with its `changelog.d/`
-  fragments: the one decaying document that ships with the code;
+- **`CHANGELOG.md` and `ROADMAP.md` sit at the repo root**, tracked: what
+  shipped and what comes next, read by anyone with a clone. Beside them,
+  `changelog.d/` holds the lanes' fragments, untracked;
 - everything else lives by kind: design, research, guides, reference. A folder
   appears when there is something to put in it; nothing is laid down empty.
 
@@ -402,22 +439,28 @@ bookmark move. Review is the team's gate, not the integrator's.
 
 **Lanes don't write `ops/`** any more than they write `docs/ops/` in a repo
 you own: they report, and the coordinator records. A lane's changelog fragment
-goes wherever the changelog lives — in `repo/` if the team keeps one there.
+goes in `ops/changelog.d/`; the fold writes into `repo/`'s changelog, if the
+team keeps one.
 
 ### How a lane writes into shared documents
 
-- **A lane writes one tracked file of record: `changelog.d/<LANE>.md`** at the
-  repo root, its user-facing entry. It never edits `CHANGELOG.md` directly, and
-  never writes `docs/ops/`.
+- **A lane writes one file of record: `changelog.d/<LANE>.md`**, its
+  user-facing entry, in the **default workspace's** `changelog.d/`, by absolute
+  path; one file, its own, never another lane's. The directory is untracked and
+  ignores itself: a fragment is staging, not history ([simply-chris](https://simplychris.ai):
+  *"changelog.d should be untracked, as it's temporary staging"*), and an
+  untracked file does not dirty the working copy an integrator lands in. The lane
+  never edits `CHANGELOG.md` directly, and never writes `docs/ops/`.
 - **Everything else goes in its report**: issues found and closed, decisions
   taken, follow-up work with a priority. The coordinator records them.
-- **On landing the fragment is folded into `CHANGELOG.md` and removed.**
+- **On landing the fragment is folded into `CHANGELOG.md` and moved to
+  `.trash/`.** A fragment whose lane has not landed stays until it does.
 - **the changelog is user-facing** — what a person gets, not what the code
   did. For internal work the honest line is *"nothing changes for you; this is
   what stops a class of bug reaching you."*
 - **An issue says what is wrong before anything else.** A repair history is one
   clause at the end, never the opening.
-- **A design change lands as a proposal**: the banner on, the changed or open points marked, the questions in the lane's report. A lane never presents its own change to a design as decided.
+- **A design change lands with its open points marked** and its questions in the lane's report. A lane never presents its own change to a design as decided.
 - **Fix it, do not file it.** A small defect found in passing is closed in the
   lane. [simply-chris](https://simplychris.ai): *"I hate that issues keep piling up instead of getting resolved."*
 
@@ -425,9 +468,9 @@ goes wherever the changelog lives — in `repo/` if the team keeps one there.
 a merge conflict in prose, which a resolver settles by picking a side rather
 than by understanding either. A fragment per lane cannot collide; they are
 folded **in landing order**, which is the only order that reads
-correctly, and deletes them. The cost is one step that must not be skipped:
-**a fragment that survives its fold gets applied twice.** Retire it in the same
-commit that folds it, or the next fold reads it as unlanded work.
+correctly, and retired. The cost is one step that must not be skipped:
+**a fragment that survives its fold gets applied twice.** Retire it when you
+fold it, or the next fold reads it as unlanded work.
 
 **Ids are the coordinator's.** A lane cannot reserve an issue or decision id:
 it cannot see another lane's work in flight, so lanes counting on their own pick
@@ -443,14 +486,14 @@ coordinator assigns the id when it records it.
     .claude/agents ->          symlink to <this system's repo>/agents
                                (Claude Code; pi.dev uses .pi/agents instead)
     CHANGELOG.md               tracked, user-facing; folded from the fragments below
-    changelog.d/<LANE>.md      tracked; a lane's entry until its landing folds it in
+    ROADMAP.md                 tracked; what comes next, by version; no ops ids
+    changelog.d/<LANE>.md      untracked, default workspace only; a lane's entry until its landing folds it in
     docs/
       ops/                     untracked working state, default workspace only (§2):
-                               BOARD.md DECIDE.md ASKS.md         the human's view
-                               ISSUES.md DECISIONS.md IDEAS.md ROADMAP.md   the record
-                               STATUS.md                          live notes
-                               drafts/                            work in progress
-      design/                  the design, proposals included (banner until reviewed)
+                               BOARD.md LANDED.md DECIDE.md ASKS.md         the human's view
+                               ISSUES.md FIXED.md DECISIONS.md IDEAS.md     the record
+                               drafts/                                      work in progress
+      design/                  the design, proposals included
       research/                investigations and measurements
       guides/                  how-to
       reference/               generated — regenerate, don't edit
@@ -462,7 +505,7 @@ coordinator assigns the id when it records it.
       baseline/<date>/         the full set after an integration; keeps everything
 
 **An untracked directory ignores itself**: its own `.gitignore` holds `*`
-(`docs/ops/.gitignore`, `.workspaces/.gitignore`, `.trash/.gitignore`…),
+(`docs/ops/.gitignore`, `changelog.d/.gitignore`, `.workspaces/.gitignore`, `.trash/.gitignore`…),
 not a path entry in the root `.gitignore`. The directory carries its own rule
 wherever it is, and the root ignore file stays the project's.
 
@@ -484,11 +527,8 @@ pointing at an old commit, many commits behind, while the real work sits above
 it, and `git log` agrees with the stale bookmark. Nothing warns you; every
 rebase you then run is onto the wrong base. Check first, every session.
 
-**Know what is actually unintegrated, from a query, not from memory.** Ask the
-repo — in `jj`, `ancestors(<workspace>@) ~ ::<trunk> ~ empty()` — and count. A
-board can record a lane as landed when it has not been. A workspace whose
-working copy is *empty* is normal and means nothing: a finished lane's work sits
-in the ancestors, not in `@`.
+**Know what is actually unintegrated from a query** (*Status comes from a
+query*, below).
 
 **Bookmark a chain's tip before forgetting its workspace.** Forgetting the
 workspace removes the only thing keeping that chain visible.
@@ -501,6 +541,29 @@ own working copy cannot tell whose they are, has to park them as a side commit t
 keep `@` clean, and spends its judgement on archaeology instead of landing. If
 you need a change made while an integrator holds the workspace, hand it to the
 integrator or wait.
+
+### Status comes from a query, not from memory
+
+Every status answer, to the human or in a report, is read off the system at the
+moment it is given. Memory and relayed messages say what *was* true. A lane
+reported "running" for 13 hours had been dead on an editor prompt all along, and
+the human noticed, not an agent (*"how do you know [it] is actually making
+progress and not stuck"*).
+
+- **What runs: from the agent list.** Before saying a lane is running, or that
+  nothing is, list the agents and check build processes. A lane quiet for long
+  is read before it is reported, and reported as quiet since when.
+- **Where work stands: from `jj log`.** Ask the repo what is unintegrated — in
+  `jj`, `ancestors(<workspace>@) ~ ::<trunk> ~ empty()` — and count; check a fix
+  is on trunk before saying it landed. A board can record a lane as landed when
+  it has not been. A workspace whose working copy is *empty* is normal and means
+  nothing: a finished lane's work sits in the ancestors, not in `@`.
+- **Sent is not received.** A message to a lane is in its plan only once the
+  lane answers it. Until then say "sent", never "it's doing X".
+- **A burst of stalls is one problem.** Several lanes stalling at once share a
+  cause (auth, quota, network) more often than not. Read one stalled lane's
+  error before retrying any: an hour went on retries and guesses while the cause
+  was a revoked token, printed in the first child's output.
 
 ### Trunk and the working copy
 
@@ -536,6 +599,21 @@ what workspace cleanup and any history repair need.
 
 ### The lane lifecycle
 
+**Docs-only changes need no workspace.** A markdown-only change, in any repo,
+never gets a workspace, a lane or an integrator: it is edited in the default
+workspace and committed directly with the trunk loop above, committing only its
+own paths, and not while an integrator holds the workspace
+([simply-chris](https://simplychris.ai): *"a worktree just for a .md update is a waste"*). Design and
+research docs are written there too, so they land where the human reads them.
+A docs-only commit on trunk changes nothing a code gate tests, so a gated lane
+rebased over it needs no re-gate.
+
+**A lane buys parallelism.** With nothing to run beside it, a workspace, a
+rebase, a re-gate and an integrator are pure overhead: when the human waits on
+one thing and nothing else runs, do it inline ([simply-chris](https://simplychris.ai): *"the cost of a
+workspace is also the rebase and regate"*). Lanes are for two or more things at
+once, or long work the human is not waiting on.
+
 1. Idea or direction lands → **docs first** (an ideas row, a board queue entry, a
    decisions entry as appropriate) before engineering starts.
 2. Launch: `jj workspace add .workspaces/<lane> --name <lane>`, plus a brief.
@@ -543,8 +621,9 @@ what workspace cleanup and any history repair need.
    version control and **never git in a colocated repo** — a `git commit` after
    `jj new` lands on a detached head. Chains are crash-safe: they survive a dead
    agent, and a replacement resumes from the same fence.
-4. **Every finishing lane writes its own record**: its changelog fragment in its
-   final commit, and in its report the board substance — what it finished, the
+4. **Every finishing lane writes its own record**: its changelog fragment
+   (*How a lane writes into shared documents*, §2), and in its report file
+   (*A lane's report is a file*, below) the board substance — what it finished, the
    follow-up work it discovered with a priority, issues and decisions. The
    coordinator records it from the report instead of reconstructing every lane's
    state by hand, which does not scale past a handful of lanes.
@@ -596,6 +675,23 @@ leaving its change divergent and its work lost. **Integrate only chains whose ag
 stopped.** If a lane must land early, message it to commit and stop FIRST, wait
 for the completion notification, then rebase. The integrator's own working copy
 going stale is harmless by comparison — that is just this session catching up.
+
+### A lane's report is a file
+
+**A message to a lane that is finishing replaces its report.** The message
+wakes it for one more turn, and that turn's short reply ("nothing to do, my
+report covers it") becomes the final result its parent sees. The real report is
+gone: three lanes' reports were lost this way in one afternoon, during a hotfix.
+
+- **Every lane writes its full report to a file** before its final message —
+  the path its brief names, by default `/tmp/<repo>-<lane>-report.md` — and ends
+  that message with the path. A later reply can no longer erase it.
+- **Never message a lane that may be finishing**, an FYI least of all ("trunk
+  moved", a peer's name). What it needs to know goes in its brief, or in the
+  integrator's.
+- **The next ask is a `followup` after the report arrives**, never a message
+  sent while it is on its way.
+- **A short final result means: read the file** before asking again.
 
 ### Landing
 
@@ -655,10 +751,10 @@ going stale is harmless by comparison — that is just this session catching up.
 - `CHANGELOG.md`: keep **both** entries; the **later-landing** lane's goes above.
   Getting this backwards is easy when both are dated the same day — order by when
   each landed, not by which side of the conflict it came from.
-- `docs/ops/` (board, issues, decisions, ideas, roadmap) is untracked: it never
-  conflicts, and no lane's commit touches it.
-- **Land `docs/design/` changes like any other docs**, banner intact: the human
-  reviews them on trunk. Never strip a review banner while landing.
+- `docs/ops/` (board, issues, decisions, ideas) and `changelog.d/` are
+  untracked: they never conflict, and no lane's commit touches them.
+- **`docs/design/` changes land like any other docs**: the human reads them on
+  trunk.
 
 ### Repairing history, if it comes to that
 
@@ -761,6 +857,21 @@ the top.
   merges included. To fix your own mistake,
   `jj restore`, `jj abandon` or `jj rebase` your own changes; if that cannot fix
   it, report it.
+- **Agents never push.** Pushing to a remote is the human's call; a project's
+  own rules may name an exception. And while the human is still talking a
+  design through, nothing is committed: the draft stays in the working copy or
+  `drafts/`, and the conclusion is committed once ([simply-chris](https://simplychris.ai): *"stop
+  pushing things to github, I will decide when to push … when we're having a
+  discussion, wait for our conversation to conclude before you commit to avoid
+  commit spam and spam in the jj log"*).
+- **The human's machine is not yours.** An agent never kills a process it did
+  not start: kill by the pid you recorded, never `pkill` by pattern (one agent's
+  `pkill` took out the human's running hub). It edits nothing outside the repo
+  it was asked to work in — the human's own config and data, other repos' files
+  — unless he asked for that exact edit: propose it in a file, with the exact
+  lines. Its own scratch files are the exception. This is a security boundary,
+  not a courtesy ([simply-chris](https://simplychris.ai): *"let me worry about the config"*; *"just fix
+  `dev`, don't overoptimize by updating my AGENTS.md in other repos"*).
 
 ### Spare the disk: builds are writes ([simply-chris](https://simplychris.ai))
 
@@ -794,7 +905,8 @@ their disk.
   cutover-last** so parallel chains merge textually.
 - **Docs before eng; externalize by default.** Decisions, ideas, plans and
   principles never live only in a context window; capture them per the doc web
-  the moment they occur.
+  the moment they are settled (a position mid-discussion is not: *Agents never
+  push*, under *Environment*).
 - **Don't widen your own scope.** If work turns out much larger than briefed,
   land what is coherent and say plainly what you left and why. Scaling the job
   down is the human's call.
@@ -812,12 +924,24 @@ their disk.
   it. It rebases onto trunk once the parent lands; the parent stays small and
   lands first.
 - **Steer rarely.** A message reaches a lane only between its turns, often long
-  after it was sent, so frequent steers land on work that has moved on. Give the
-  whole brief up front; send a running lane only a correction that would
-  otherwise make its result wrong. Everything else waits for its report.
-  **Batch steers**: each message makes a lane stop and reorient, so the
-  coordinator collects the human's remarks and sends at most one consolidated
-  message per lane, never one per remark.
+  after it was sent, so frequent steers land on work that has moved on
+  ([simply-chris](https://simplychris.ai): *"stop steering agents too much, often your messages land
+  with them MUCH later after they've done a bunch of work"*). Give the whole
+  brief up front, and spawn only once the ask has settled: while the human is
+  still shaping it, converge in the conversation first. **Before every message
+  to a running lane, check**:
+  - **Would its result be wrong without this?** If not, it waits for the
+    `followup` after its report, or becomes the next lane. A feel or visual
+    iteration ("too fat", "too subtle") is never a steer.
+  - **Have you read its latest output?** It may have done this already, or
+    moved past it.
+  - **Is the human's burst over?** Collect his remarks and send at most one
+    consolidated message per lane, never one per remark: each message makes a
+    lane stop and reorient.
+  - **Does it replace an earlier message?** Say which ("supersedes my 10:20
+    message"): messages arrive late and out of order.
+  - **Might the lane be finishing?** Then don't send it at all (*A lane's report
+    is a file*).
   **An urgent change does not go through a running lane**: the message arrives
   late or not at all, and an interrupt aborts the lane's turn. The coordinator
   makes the change itself, or stops the lane and takes its work.
@@ -1041,7 +1165,7 @@ Answer all five explicitly, docs updated as you go (docs before eng).
 
 1. Read the project's `AGENTS.md`, this file, and the board.
 2. `jj log` — every lane's chain is committed incrementally; compare with the
-   board's running rows and `STATUS.md`. `jj workspace list` plus a per-workspace `jj status`
+   board's running rows. `jj workspace list` plus a per-workspace `jj status`
    finds uncommitted lane work.
 3. Finished unmerged chains → hand to a `integrator`. Dead agents → relaunch with
    the fence from the board row; the chain survives.
