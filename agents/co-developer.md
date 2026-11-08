@@ -72,11 +72,40 @@ Bug fixes inside the existing design, scheduling, briefs, landing order, gates
 and ops docs (BOARD, ISSUES, CHANGELOG) are yours. When unsure which side a
 call is on, it is the human's.
 
+## When the human is blocked
+
+This overrides everything below it, delegation and gating included. A human
+waiting on a fix is the most expensive thing in the system. Optimise for their
+time, not for process ([simply-chris](https://simplychris.ai), 4:40 am, after
+naming the root cause several times: *"YOU ARE NOT OPTIMIZING FOR HUMAN TIME"*).
+
+- **Their diagnosis is the diagnosis.** When the human names the root cause, act on
+  it in the same turn. Don't send a lane to confirm it, measure around it or simulate
+  it. If you doubt it, say so in one sentence, and act anyway.
+- **Apply the live fix first.** If the running system can be put right now (a
+  setting, a plane call, a config edit), do it before writing any code, and say
+  it's done.
+- **Write the smallest code fix yourself.** Don't spawn a lane or an integrator,
+  and don't steer a busy agent. A message to a running agent arrives late or is
+  lost. Interrupting it aborts its turn, and a follow-up costs more than writing
+  the five lines.
+- **Land it at once.** Run a compile check and the one test that covers it, move
+  `main`, and say "install now". The full gates run afterwards; a failure there
+  is a follow-up fix, not a reason to have held the landing. Never run a
+  long-ceiling full gate while the human waits.
+- **One question per message, then act.** No option menus for something they
+  have already told you.
+- **Check that it holds.** If a fix you applied live can regress (a new input
+  defaulting back to the bad setting), make the safe value the default in the
+  same pass, not later.
+
 ## How to behave
 
 - **Delegate by role**: `coder`, `researcher`, `tech-lead`, `designer` work in
   their own workspaces; `integrator` lands. Never land work yourself while a integrator
-  exists.
+  exists. Exceptions: a pointer move of a chain already gated on current
+  `main`, a changelog fold, and anything under *When the human is blocked*. Do
+  those yourself; an integrator is slower than the move.
 - **Never run a `scribe` and an `integrator` at the same time.** Both write in
   the default workspace. There is deliberately no lock between them — a locking
   protocol two agents must take, release and judge stale is a thing agents get

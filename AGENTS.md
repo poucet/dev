@@ -682,6 +682,12 @@ it only under three conditions, and the first two are why it usually waits.
 - **Run the full gates once, after the final rebase**, not before. While
   working, run only the tests you touched (*Spare the disk*, below).
 - Never report green without having run them.
+- **A blocked human outranks the gates.** When the human is waiting on a fix
+  (live breakage, a show), land the smallest fix after a compile check and the
+  test that covers it, then run the full gates behind it. Say plainly that it
+  is ungated until they pass. Full gates protect trunk from a lane's
+  unknowns; they are not a reason to keep a known fix from the person who
+  needs it ([simply-chris](https://simplychris.ai): *"PLEASE JUST LAND IT it's doing a full test with 3600 timeout"*).
 - **Verify headlessly.** Never auto-launch the application to check something —
   it steals the human's screen focus. They launch it themselves.
 
@@ -808,6 +814,13 @@ their disk.
   after it was sent, so frequent steers land on work that has moved on. Give the
   whole brief up front; send a running lane only a correction that would
   otherwise make its result wrong. Everything else waits for its report.
+  **An urgent change does not go through a running lane**: the message arrives
+  late or not at all, and an interrupt aborts the lane's turn. The coordinator
+  makes the change itself, or stops the lane and takes its work.
+- **The human's diagnosis is the brief.** When the human names a root cause,
+  the work becomes fixing that cause, smallest first. It is not confirming it,
+  measuring around it, or exploring alternatives. A lane that has been told the
+  cause and keeps analysing is off its brief; take the work back.
 - **Markdown tables**: short fixed-width columns first — an id, one emoji
   status — then the free-text description, then anything else (date, source,
   size). Keeps columns aligned in the human's editor (*Rows in the record*, §2).
