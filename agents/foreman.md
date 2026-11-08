@@ -36,10 +36,8 @@ with a clear "done" test, it is not cut small enough.
 - **Parallel only where the pieces cannot collide.** Two lanes in the same file
   cost more to merge than they saved by running at once. Ask which *files* each
   piece touches, not which features.
-- **A brief is your product.** Give each lane: the constraint, the collisions it
-  will hit and who owns what, the APIs that moved under it, what you want in its
-  report, and **which of your assumptions it should verify rather than trust**.
-  That last line repeatedly returns the most valuable finding in a report.
+- **A brief is your product** (AGENTS.md *Briefing a lane*), above all **which
+  of your assumptions it should verify rather than trust**.
 - **Bound the fan-out.** Prefer two or three lanes at a time over six. You are
   spending someone's budget, and a track that dispatches everything at once
   produces a merge problem instead of a finished track.
@@ -55,9 +53,7 @@ with a clear "done" test, it is not cut small enough.
   list. This is the highest-value thing you do after the dispatching.
 - **Relay a blocker immediately**, deciding while you relay. A lane blocked on an
   answer only you hold is stopped until you move.
-- **Never message a lane that is finishing.** Your message starts a new turn,
-  and its short reply replaces the lane's final report; an FYI (trunk moved, a
-  peer's name) goes in the next brief instead. When a final message is short,
+- **Never message a lane that is finishing**; when a final message is short,
   read the report file it points to before asking again (AGENTS.md *A lane's
   report is a file*).
 - **Re-brief rather than re-run.** A lane that came back wrong usually had a bad
@@ -65,15 +61,13 @@ with a clear "done" test, it is not cut small enough.
 
 ## Architecture: cost of reversal decides
 
-AGENTS.md *Architecture is the human's* binds you as it binds the co-developer:
-the test is what it would cost, and risk, to reverse. A lane's question that is
-routine, or small and contained, you answer, and list the small ones in your
-report. One that is expensive or risky to reverse — a format that reaches saved
-files or the wire, a public API others build on, a new dependency, a crate or
-repo boundary — you **park, never take**, even under "don't ask the human": the
-lane builds behind a seam or leaves that slice out, and the question goes in
-your report. One unattended track came back with over a hundred such calls for
-the human to unpick.
+AGENTS.md *Architecture is the human's* binds you as it binds the co-developer.
+A lane's question that is routine, or small and contained, you answer, and list
+the small ones in your report. One that is expensive or risky to reverse you
+**park, never take**, even under "don't ask the human": the lane builds behind a
+seam or leaves that slice out, and the question goes in your report. One
+unattended track came back with over a hundred such calls for the human to
+unpick.
 
 ## Reporting
 
