@@ -127,6 +127,7 @@ ships with the code it describes, and **`ROADMAP.md`**, what comes next
 | `IDEAS.md` | the ideas inbox | coordinator; the human, freely | never deleted: an idea moves down |
 | **Work in progress** | | | |
 | `drafts/` | proposals before they become a design doc, review aids, triage | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or answered → `.trash/` |
+| `reports/` | each lane's full final report, `<lane>.md` | the lane, its own file only | once the coordinator has recorded it → `.trash/` |
 
 **Rows in the record** start with a short id, then **one** emoji status column,
 then the description; any other column (date, source, size) comes after it. Ids
@@ -143,7 +144,8 @@ here:
 | `ROADMAP.md` (tracked) | a word label, e.g. `DEST-MIX` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| DEST-MIX \| 📋 \| what you get \| size \| needs \|` |
 
 - **Lanes read `docs/ops/` by the default workspace's absolute path** (their own
-  workspace has none) and **never write it**.
+  workspace has none) and **write only their own report there**,
+  `docs/ops/reports/<lane>.md` (*A lane's report is a file*, §4).
 - **A lane reports; the coordinator records.** Issues found and closed,
   decisions taken and follow-up work go in the lane's report, and the
   coordinator writes them into `docs/ops/`.
@@ -450,7 +452,12 @@ team keeps one.
   ignores itself: a fragment is staging, not history ([simply-chris](https://simplychris.ai):
   *"changelog.d should be untracked, as it's temporary staging"*), and an
   untracked file does not dirty the working copy an integrator lands in. The lane
-  never edits `CHANGELOG.md` directly, and never writes `docs/ops/`.
+  never edits `CHANGELOG.md` directly.
+- **It writes into the default workspace in exactly two places**, both
+  untracked, both its own file, both by the default workspace's absolute path:
+  that fragment, and its report, `docs/ops/reports/<lane>.md` (*A lane's report
+  is a file*, §4). Nothing else in `docs/ops/`, and nothing else in the default
+  workspace.
 - **Everything else goes in its report**: issues found and closed, decisions
   taken, follow-up work with a priority. The coordinator records them.
 - **On landing the fragment is folded into `CHANGELOG.md` and moved to
@@ -493,6 +500,7 @@ coordinator assigns the id when it records it.
                                BOARD.md LANDED.md DECIDE.md ASKS.md         the human's view
                                ISSUES.md FIXED.md DECISIONS.md IDEAS.md     the record
                                drafts/                                      work in progress
+                               reports/<lane>.md                            lanes' final reports
       design/                  the design, proposals included
       research/                investigations and measurements
       guides/                  how-to
@@ -683,9 +691,15 @@ wakes it for one more turn, and that turn's short reply ("nothing to do, my
 report covers it") becomes the final result its parent sees. The real report is
 gone: three lanes' reports were lost this way in one afternoon, during a hotfix.
 
-- **Every lane writes its full report to a file** before its final message —
-  the path its brief names, by default `/tmp/<repo>-<lane>-report.md` — and ends
-  that message with the path. A later reply can no longer erase it.
+- **Every lane writes its full report to `docs/ops/reports/<lane>.md`** in the
+  default workspace, by its absolute path, before its final message, and ends
+  that message with the path. A later reply can no longer erase it. This and its
+  changelog fragment are the only things a lane writes outside its own
+  workspace (*How a lane writes into shared documents*, §2): `docs/ops/` is
+  untracked, so the file dirties nothing, and it sits where the coordinator
+  records from.
+- **A recorded report is pruned** like other working state: once the
+  coordinator has recorded it, it moves to `.trash/`.
 - **Never message a lane that may be finishing**, an FYI least of all ("trunk
   moved", a peer's name). What it needs to know goes in its brief, or in the
   integrator's.
