@@ -3,9 +3,9 @@
 #
 #   lane new <name> [rev]   jj workspace at .workspaces/<name> (default rev: main),
 #                           with target/ cloned from the repo root's target/
-#   lane retire <name>      forget the workspace and move its directory to
-#                           .trash/ws-<name>-<date> (refuses if its working copy
-#                           has changes)
+#   lane retire <name>      forget the workspace and delete its directory
+#                           (refuses if its working copy has changes; its
+#                           commits stay in the repo)
 #
 # Run from the repo root (the default workspace). The clone (`cp -c`) shares every
 # block with the root's target/ until cargo rewrites a file, so dependencies are
@@ -42,12 +42,9 @@ retire)
     [ -z "$changes" ] || die "$ws has uncommitted changes ($changes …); commit or restore them first"
     jj workspace forget "$name" </dev/null >/dev/null
   fi
-  mkdir -p .trash
-  [ -f .trash/.gitignore ] || echo '*' > .trash/.gitignore
-  dest=".trash/ws-$name-$(date +%Y-%m-%d)"
-  [ -e "$dest" ] && dest="$dest-$(date +%H%M%S)"
-  mv "$ws" "$dest"
-  echo "lane: $name forgotten, directory in $dest"
+  case "$ws" in .workspaces/?*) ;; *) die "refusing to delete $ws" ;; esac
+  rm -rf -- "$ws"
+  echo "lane: $name forgotten, $ws deleted"
   ;;
 *) die "unknown command $cmd" ;;
 esac

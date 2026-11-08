@@ -570,9 +570,10 @@ what workspace cleanup and any history repair need.
      until the sleep returns. If a run must be backgrounded, wait on it
      with `while kill -0 <pid>; do sleep 5; done`, which returns the moment it ends.
    - Then tell the human.
-7. Recycle: forget the workspace when a lane is done and move its directory to
-   `.trash/` (agents cannot `rm`). Its build cache goes to the next lane, not to
-   the bin: see *Spare the disk* below.
+7. Recycle: `lane retire <name>` forgets the workspace and deletes its
+   directory; its commits stay in the repo (bookmark an unlanded tip first).
+   Never move a retired workspace to `.trash/`: a pile of old workspaces there is
+   busy work for the human and a hazard when they clean up by hand.
 
 **Why the rebase belongs to the lane and not the integrator** ([simply-chris](https://simplychris.ai)):
 
@@ -772,7 +773,7 @@ their disk.
 - **A lane rebases once, at the end**, and the coordinator lands in batches, so
   lanes don't rebuild after every landing.
 - **Never clean a build cache that will be reused** (`cargo clean` and the like).
-- **Make and retire lanes with the `lane` skill** (`skills/lane/`): `lane new <name> [rev]` adds the workspace and clones the repo root's `target/` into it (APFS `cp -c`: instant, and the blocks are shared until cargo rewrites them, so dependencies are stored once); `lane retire <name>` forgets it and moves it to `.trash/`. The root's `target/` is the base: integrators gate in the default workspace without `CARGO_TARGET_DIR`, which keeps it warm on trunk. `du` counts clones in full; `df` doesn't.
+- **Make and retire lanes with the `lane` skill** (`skills/lane/`): `lane new <name> [rev]` adds the workspace and clones the repo root's `target/` into it (APFS `cp -c`: instant, and the blocks are shared until cargo rewrites them, so dependencies are stored once); `lane retire <name>` forgets it and deletes its directory. The root's `target/` is the base: integrators gate in the default workspace without `CARGO_TARGET_DIR`, which keeps it warm on trunk. `du` counts clones in full; `df` doesn't.
 - **A finished lane's cache goes with it** (`lane retire`): a new lane clones the root's, so a spare is never worth its disk.
 
 ### Work
