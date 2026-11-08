@@ -1,0 +1,42 @@
+# Build-speed profiles (dev/skills/rust-build-speed). The release profile is
+# not touched.
+
+[profile.dev]
+# Line numbers in backtraces and panics, no full debug info: smaller objects,
+# faster links.
+debug = "line-tables-only"
+# Debug info stays in the object files instead of being copied at link time.
+split-debuginfo = "unpacked"
+incremental = true
+
+# Dependencies (crates.io, git): no debug info, since nobody steps into them
+# and theirs is most of what each test executable links; built once at
+# opt-level 1, so the tests that run through them go faster.
+[profile.dev.package."*"]
+debug = false
+opt-level = 1
+
+# Proc-macros and build scripts: no debug info, a little optimisation, so
+# macros expand faster.
+[profile.dev.build-override]
+opt-level = 1
+debug = false
+codegen-units = 256
+
+# `cargo test`: as dev.
+[profile.test]
+inherits = "dev"
+debug = "line-tables-only"
+
+# An agent's full run after its final rebase (`cargo test --profile
+# agent-test`, or nextest's `--cargo-profile agent-test`): no incremental
+# state, so cargo doesn't hash, read and write gigabytes of dep-graph chunks
+# for a build nobody will rebuild incrementally; no strip pass after linking.
+[profile.agent-test]
+inherits = "test"
+incremental = false
+debug = "line-tables-only"
+strip = "none"
+
+[profile.agent-test.package."*"]
+debug = false

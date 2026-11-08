@@ -1,0 +1,8 @@
+# kache (the rustc wrapper on Chris's machine) passes the workspace's own
+# crates straight to rustc with their incremental state, instead of
+# compiling them from scratch and storing hundreds of MB per build that no
+# other build ever hits. Only the crates cargo builds incrementally (the
+# workspace's, in dev and test) are affected; dependencies and release
+# builds are cached as before. Without kache this does nothing.
+[env]
+KACHE_PRESERVE_INCREMENTAL = "1"

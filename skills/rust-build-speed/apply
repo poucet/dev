@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+"""apply — merge the build-speed settings into a Rust repo.
+
+    apply [--dry-run] [--only cargo|editor] <repo>
+
+Merges this skill's templates into <repo>:
+
+  templates/cargo-profiles.toml  -> <repo>/Cargo.toml          (dev/test profiles)
+  templates/cargo-config.toml    -> <repo>/.cargo/config.toml  ([env])
+  templates/vscode-settings.json -> <repo>/.vscode/settings.json  (local, untracked)
+
+`--only cargo` does the first two (what a lane commits), `--only editor` the
+last (the editor settings in the repo root, which stay out of version control).
+
+Merge, never overwrite: a missing table or key is added with its comment; a
+key the repo already sets is kept as it is and reported when it differs from
+the template. Objects and arrays in settings.json gain only their missing
+entries. Running it twice changes nothing the second time. `[profile.release]`
+is never touched. --dry-run prints the diff and writes nothing.
+"""
+
+import difflib
+import json
+import re
+import sys
+import tomllib
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+TEMPLATES = HERE / "templates"
+kept = []  # (file, key, repo value, template value)
+
+
+def die(msg):
+    print(f"apply: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+# ---------------------------------------------------------------- TOML
+
+
+def header_path(line):
+    """('profile', 'dev', 'package', '*') for a `[profile.dev.package."*"]` line, else None."""
+    s = line.strip()
+    if not s.startswith("[") or s.startswith("[["):
+        return None
+    try:
+        d = tomllib.loads(s)
+    except tomllib.TOMLDecodeError:
+        return None
+    path = []
+    while isinstance(d, dict) and len(d) == 1:
+        k, d = next(iter(d.items()))
+        path.append(k)
+    return tuple(path)
+
+
+KEY = re.compile(r'^\s*([A-Za-z0-9_-]+|"[^"]*")\s*=')
+
+
+def parse_toml_template(text):
+    """Preamble comment lines, then [(path, comment+header lines, [(key, lines)])]."""
+    preamble, sections, pending = [], [], []
+    for line in text.splitlines():
+        s = line.strip()
+        if not s:
+            if not sections and pending:
+                preamble, pending = pending, []
+            continue
+        if s.startswith("#"):
+            pending.append(line)
+        elif (p := header_path(line)) is not None:
+            sections.append((p, pending + [line], []))
+            pending = []
+        elif m := KEY.match(line):
+            sections[-1][2].append((m.group(1).strip('"'), pending + [line]))
+            pending = []
+        else:
+            die(f"template line not understood: {line!r}")
+    return preamble, sections
+
+
+def table_at(data, path):
+    for k in path:
+        if not isinstance(data, dict) or k not in data:
+            return None
+        data = data[k]
+    return data
+
+
+def subset(old, new):
+    """Every value in old is unchanged in new."""
+    if isinstance(old, dict):
+        return isinstance(new, dict) and all(k in new and subset(v, new[k]) for k, v in old.items())
+    if isinstance(old, list):
+        return isinstance(new, list) and all(v in new for v in old)
+    return old == new
+
+
+def merge_toml(target, template, label):
+    text = target.read_text() if target.exists() else ""
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e:
+        die(f"{label}: not valid TOML ({e})")
+    preamble, sections = parse_toml_template(template.read_text())
+    if any(p[:2] == ("profile", "release") for p, _, _ in sections):
+        die("a template touches [profile.release]; refusing")
+    lines = text.splitlines()
+    appended = []
+    tdata = tomllib.loads(template.read_text())
+    for path, head, items in sections:
+        have = table_at(data, path)
+        if have is None:
+            appended += [""] + head + [l for _, ls in items for l in ls]
+            continue
+        missing = []
+        for key, ls in items:
+            if key in have:
+                want = table_at(tdata, path)[key]
+                if have[key] != want:
+                    kept.append((label, ".".join(path) + "." + key, have[key], want))
+            else:
+                missing += ls
+        if not missing:
+            continue
+        idx = next((i for i, l in enumerate(lines) if header_path(l) == path), None)
+        if idx is None:  # table only implied (by a sub-table): give it its header
+            appended += [""] + head + missing
+            continue
+        end = next((j for j in range(idx + 1, len(lines)) if header_path(lines[j]) is not None), len(lines))
+        while end > idx + 1 and not lines[end - 1].strip():
+            end -= 1
+        lines[end:end] = missing
+    if appended:
+        if not text.strip():
+            appended = preamble + appended
+        elif not any(l.strip() == preamble[0].strip() for l in lines if preamble):
+            appended = [""] + preamble + appended
+        while lines and not lines[-1].strip():
+            lines.pop()
+        lines += appended
+    out = "\n".join(lines).lstrip("\n") + "\n"
+    try:
+        new = tomllib.loads(out)
+    except tomllib.TOMLDecodeError as e:
+        die(f"{label}: the merge would not be valid TOML ({e}); merge by hand")
+    if not subset(data, new):
+        die(f"{label}: the merge would change an existing value; merge by hand")
+    return text, out
+
+
+# ---------------------------------------------------------------- JSONC
+
+
+def mask(text):
+    """Comments blanked to spaces (newlines kept), so offsets still match `text`."""
+    out, i, n = list(text), 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            i += 1
+            while i < n and text[i] != '"':
+                i += 2 if text[i] == "\\" else 1
+            i += 1
+        elif text.startswith("//", i):
+            while i < n and text[i] != "\n":
+                out[i] = " "
+                i += 1
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            j = n if j < 0 else j + 2
+            for k in range(i, j):
+                if text[k] != "\n":
+                    out[k] = " "
+            i = j
+        else:
+            i += 1
+    return "".join(out)
+
+
+def loads_jsonc(text):
+    return json.loads(re.sub(r",(\s*[}\]])", r"\1", mask(text)) or "{}")
+
+
+def top_members(text):
+    """[(key, chunk_start, value_open_or_None, end)] for the top-level object's members.
+
+    chunk_start is just after the previous member's comma (or the opening brace),
+    so text[chunk_start:end] is the member with its own leading comments; end is
+    the position of its comma or of the closing brace."""
+    m, n = mask(text), len(text)
+    members, depth, i = [], 0, 0
+    expect_key, chunk_start = False, 0
+    while i < n:
+        c = m[i]
+        if c == '"':
+            j = i + 1
+            while j < n and m[j] != '"':
+                j += 2 if m[j] == "\\" else 1
+            if depth == 1 and expect_key:
+                members.append([json.loads(m[i : j + 1]), chunk_start, None, None])
+                expect_key = False
+            i = j + 1
+            continue
+        if c == ":" and depth == 1:
+            k = i + 1
+            while k < n and m[k].isspace():
+                k += 1
+            if m[k] in "{[":
+                members[-1][2] = k
+        elif c in "{[":
+            depth += 1
+            if depth == 1:
+                expect_key, chunk_start = True, i + 1
+        elif c in "}]":
+            depth -= 1
+            if depth == 0 and members and members[-1][3] is None:
+                members[-1][3] = i
+        elif c == "," and depth == 1:
+            if members and members[-1][3] is None:
+                members[-1][3] = i
+            expect_key, chunk_start = True, i + 1
+        i += 1
+    return [tuple(x) for x in members]
+
+
+def merge_jsonc(target, template, label):
+    ttext = template.read_text()
+    want = loads_jsonc(ttext)
+    text = target.read_text() if target.exists() else ""
+    if not text.strip():
+        return text, ttext
+    try:
+        have = loads_jsonc(text)
+    except json.JSONDecodeError as e:
+        die(f"{label}: not valid JSON with comments ({e})")
+    indent = re.search(r"\n([ \t]+)\S", text)
+    indent = indent.group(1) if indent else "    "
+    inserts = []  # (pos, text)
+    tm = {k: (s, e) for k, s, _, e in top_members(ttext)}
+    hm = {k: o for k, _, o, _ in top_members(text)}
+    top_new = []
+    for key, value in want.items():
+        if key not in have:
+            s, e = tm[key]
+            chunk = ttext[s:e].strip("\n").rstrip()
+            chunk = re.sub(r"(?m)^((?:    )+)", lambda m: indent * (len(m.group(1)) // 4), chunk)
+            top_new.append(chunk + ",")
+        elif isinstance(value, dict) and isinstance(have[key], dict):
+            add = [f"{json.dumps(k)}: {json.dumps(v)}," for k, v in value.items() if k not in have[key]]
+            for k, v in value.items():
+                if k in have[key] and have[key][k] != v:
+                    kept.append((label, f"{key}.{k}", have[key][k], v))
+            if add:
+                pos = hm[key] + 1
+                tail = "" if text[pos : pos + 1].isspace() else f"\n{indent * 2}"
+                inserts.append((pos, "".join(f"\n{indent * 2}{a}" for a in add) + tail))
+        elif isinstance(value, list) and isinstance(have[key], list):
+            add = [json.dumps(v) + ", " for v in value if v not in have[key]]
+            if add:
+                inserts.append((hm[key] + 1, "".join(add)))
+        elif have[key] != value:
+            kept.append((label, key, have[key], value))
+    if top_new:
+        inserts.append((mask(text).find("{") + 1, "\n" + "\n".join(top_new)))
+    out = text
+    for pos, ins in sorted(inserts, reverse=True):
+        out = out[:pos] + ins + out[pos:]
+    new = loads_jsonc(out)
+    if not subset(have, new):
+        die(f"{label}: the merge would change an existing value; merge by hand")
+    for key, value in want.items():
+        if key not in have and new.get(key) != value:
+            die(f"{label}: merge check failed for {key}; merge by hand")
+    return text, out
+
+
+# ---------------------------------------------------------------- main
+
+
+def main(argv):
+    dry = "--dry-run" in argv
+    only = None
+    args = [a for a in argv if a != "--dry-run"]
+    if len(args) == 3 and args[0] == "--only" and args[1] in ("cargo", "editor"):
+        only, args = args[1], args[2:]
+    if len(args) != 1 or args[0].startswith("-"):
+        die("usage: apply [--dry-run] [--only cargo|editor] <repo>")
+    repo = Path(args[0]).resolve()
+    if not (repo / "Cargo.toml").is_file():
+        die(f"{repo} has no Cargo.toml")
+    cargo_cfg = repo / ".cargo" / "config.toml"
+    if not cargo_cfg.exists() and (repo / ".cargo" / "config").exists():
+        cargo_cfg = repo / ".cargo" / "config"
+    plan = []
+    if only != "editor":
+        plan += [
+        (repo / "Cargo.toml", merge_toml(repo / "Cargo.toml", TEMPLATES / "cargo-profiles.toml", "Cargo.toml")),
+        (cargo_cfg, merge_toml(cargo_cfg, TEMPLATES / "cargo-config.toml", ".cargo/config.toml")),
+        ]
+    if only != "cargo":
+        vs = repo / ".vscode" / "settings.json"
+        plan.append((vs, merge_jsonc(vs, TEMPLATES / "vscode-settings.json", ".vscode/settings.json")))
+    changed = 0
+    for path, (old, new) in plan:
+        if old == new:
+            continue
+        changed += 1
+        rel = path.relative_to(repo)
+        if dry:
+            sys.stdout.writelines(difflib.unified_diff(old.splitlines(True), new.splitlines(True), f"a/{rel}", f"b/{rel}"))
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(new)
+            print(f"apply: updated {rel}")
+    for label, key, have, want in kept:
+        print(f"apply: kept {label} {key} = {json.dumps(have)} (template: {json.dumps(want)})")
+    if not changed:
+        print("apply: nothing to change")
+    elif dry:
+        print(f"apply: dry run, {changed} file(s) would change")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

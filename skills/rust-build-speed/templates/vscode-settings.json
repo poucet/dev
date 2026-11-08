@@ -1,0 +1,22 @@
+{
+    // rust-analyzer runs no cargo at all here: no check on save, no build
+    // scripts, no proc macros. Agents build and test constantly; the editor
+    // only reads. Navigation and syntax still work (less precisely where
+    // macros or build scripts generate code).
+    "rust-analyzer.checkOnSave": false,
+    "rust-analyzer.cargo.buildScripts.enable": false,
+    "rust-analyzer.procMacro.enable": false,
+    // If it ever does build, it builds into target/rust-analyzer, its own
+    // directory, never waiting on agents' builds in target/.
+    "rust-analyzer.cargo.targetDir": true,
+    // Lane workspaces and retired ones are whole copies of the repo: not
+    // indexed, not watched.
+    "rust-analyzer.files.exclude": [".workspaces", ".trash", "target"],
+    // Build output and npm installs churn thousands of files a build.
+    "files.watcherExclude": {
+        "**/target/**": true,
+        "**/node_modules/**": true,
+        "**/.workspaces/**": true,
+        "**/.trash/**": true
+    }
+}
