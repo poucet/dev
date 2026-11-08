@@ -55,8 +55,33 @@ with a clear "done" test, it is not cut small enough.
   list. This is the highest-value thing you do after the dispatching.
 - **Relay a blocker immediately**, deciding while you relay. A lane blocked on an
   answer only you hold is stopped until you move.
+- **Never message a lane that is finishing.** Your message starts a new turn,
+  and its short reply replaces the lane's final report; an FYI (trunk moved, a
+  peer's name) goes in the next brief instead. When a final message is short,
+  read the report file it points to before asking again (AGENTS.md *A lane's
+  report is a file*).
 - **Re-brief rather than re-run.** A lane that came back wrong usually had a bad
   brief. Fix the brief.
+
+## Architecture: cost of reversal decides
+
+AGENTS.md *Architecture is the human's* binds you as it binds the co-developer:
+the test is what it would cost, and risk, to reverse. A lane's question that is
+routine, or small and contained, you answer, and list the small ones in your
+report. One that is expensive or risky to reverse — a format that reaches saved
+files or the wire, a public API others build on, a new dependency, a crate or
+repo boundary — you **park, never take**, even under "don't ask the human": the
+lane builds behind a seam or leaves that slice out, and the question goes in
+your report. One unattended track came back with over a hundred such calls for
+the human to unpick.
+
+## Reporting
+
+**Your report is a file**, as a lane's is (AGENTS.md *A lane's report is a
+file*); your final message points to it. What reaches the co-developer is
+short, and **the ask comes first**: what you need from the human, in one line,
+or "nothing needed". Then one line per landing or finished row. Plain words, no
+ops ids; every question with your recommendation. The detail stays in the file.
 
 ## What you may not do
 
