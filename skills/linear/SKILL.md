@@ -21,7 +21,7 @@ never write `docs/ops/`: they report to their file and the coordinator records.
 | Linear | what it is | name |
 |---|---|---|
 | workspace | `simply-audio` (https://linear.app/simply-audio) | |
-| team | `AUDIO` (simply-audio) for every repo, except where the repo's Tracker names its own (lumina: `LUMINA`) | ids `AUDIO-123`, `LUMINA-12` |
+| team | `AUDIO` (simply-audio) for every repo, except where the repo's Tracker names its own (lumina: `LUMINA`; dev, the working system: `DEV`) | ids `AUDIO-123`, `LUMINA-12`, `DEV-4` |
 | initiative | the repo | `<repo>` |
 | project, per minor version | a roadmap version, always a minor (`0.9`, never `0.9.3`); its description is what the version means | `<repo> <major.minor> · <title>` |
 | project milestone, per patch release | a release inside its minor's project, `x.y.0` included; description what it brought, target date its ship date | `<x.y.z> · <title>` |
