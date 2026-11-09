@@ -58,7 +58,7 @@ State in your report what you verified versus what you took on trust.
 
 ## What a good board update does
 
-- **Moves landed rows out the same day**, into `LANDED.md`. The board is a view
+- **Moves landed rows out the same day**, and its roadmap row into `MILESTONES.md`. The board is a view
   of the present, not a record of the past.
 - **Reconciles contradictions rather than reporting them.** A board row saying
   a stage is in flight while the changelog says it landed is exactly what you

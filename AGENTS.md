@@ -121,8 +121,8 @@ roadmap.md at root dir, it should be tracked"*).
 | In `docs/ops/` | What goes in it | Who writes it | Pruned when |
 |---|---|---|---|
 | **The human's view** | | | |
-| `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands, into `LANDED.md` |
-| `LANDED.md` | every board row that left the board, newest first, under its board label: what, when, change ids | coordinator (or `scribe`) | never: it is the record of the work (what a user gets is the changelog) |
+| `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands; its roadmap row moves to `MILESTONES.md` |
+| `MILESTONES.md` | what shipped, milestone by milestone: each keeps its roadmap description and rows (✅, 🔶), then a generated index of the changelog's entries | coordinator; the index by script | never: it is the record of the work |
 | `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
 | `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once they have run it |
 | **The record** | | | |
@@ -141,7 +141,7 @@ by the coordinator. The prefixes live here and only here:
 
 | Doc | Id | Status legend | Row |
 |---|---|---|---|
-| `LANDED.md` | the board label, e.g. `` `flaky-2` `` | 🚧 landing · ✅ landed · 🔀 folded elsewhere · 📄 finished, not landed · 🗑️ dropped | `\| `flaky-2` \| ✅ \| what finished \| when \| change ids \|` |
+| `MILESTONES.md` | the roadmap row's word label, e.g. `DEST-MIX` | ✅ shipped · 🔶 partly shipped | `\| DEST-MIX \| ✅ \| what you got \|` under its version's heading |
 | `ISSUES.md`, `FIXED.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
 | `DECISIONS.md` | `D-042` | ✅ in force · ♻️ superseded · ❓ reopened | `\| D-042 \| ✅ \| decision \| rationale \| when · change id \|` |
 | `IDEAS.md` | `N-012` | 💡 open · 🔶 partly answered · 🎯 next up · 📋 queued · 🔄 in flight · 🔬 researched · ✅ shipped · 🗑️ declined | `\| N-012 \| 💡 \| idea \| notes \| added \|` |
@@ -171,8 +171,8 @@ primary view of what is happening and what needs them.
   to the human channel. A board entry is a row, a state and a label.
 - **Kept current.** The coordinator updates it on every spawn, landing and plan
   change, in the same turn.
-- **What landed is told in the changelog, never here.** A landed row moves to
-  `LANDED.md` the same day, under the same label; a superseded one is deleted and
+- **What landed is told in the changelog, never here.** A landed row leaves the
+  board the same day, and its roadmap row moves to `MILESTONES.md`; a superseded one is deleted and
   its successor says what it replaced.
 - **Whatever waits on the human is one hop from here.** The board names the
   decisions file and the asks file (*The human channel*); not a commit message,
@@ -465,7 +465,7 @@ words; the coordinator assigns the id.
     changelog.d/<LANE>.md      untracked, default workspace only; a lane's entry until its landing folds it in
     docs/
       ops/                     untracked working state, default workspace only (§2):
-                               BOARD.md LANDED.md DECIDE.md ASKS.md         the human's view
+                               BOARD.md MILESTONES.md DECIDE.md ASKS.md     the human's view
                                ISSUES.md FIXED.md DECISIONS.md IDEAS.md     the record
                                drafts/                                      work in progress
                                reports/<lane>.md                            lanes' final reports
