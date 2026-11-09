@@ -93,6 +93,7 @@ new)
   ;;
 link)
   [ -d "$ws" ] || die "no $ws"
+  jj workspace list </dev/null | grep -q "^$name:" || die "$ws is not a jj workspace of this repo (forgotten or retired?)"
   echo "lane: links in $ws"
   link_all
   ;;
