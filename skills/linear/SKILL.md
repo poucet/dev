@@ -1,6 +1,6 @@
 ---
 name: linear
-description: Run a repo's plan in Linear instead of docs/ops files — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its board, roadmap, milestones, issues and ideas into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, promoting ideas, starting and finishing a milestone, the board query). Use when a repo's AGENTS.project.md has `## Tracker` saying `linear`, or the human asks to move a repo to Linear.
+description: Run a repo's plan in Linear instead of docs/ops files — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its board, roadmap, milestones, issues, ideas and decisions into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query). Use when a repo's AGENTS.project.md has `## Tracker` saying `linear`, or the human asks to move a repo to Linear.
 ---
 
 # Linear mode
@@ -26,6 +26,7 @@ never write `docs/ops/`: they report to their file and the coordinator records.
 | project, per milestone | a roadmap version; its description is what the version means | `<repo> <version> · <title>` |
 | project, backlog | unscheduled issues and ideas | `<repo> · Backlog` |
 | initiative + project `Ideas` | ideas that fit no repo yet | `Ideas` |
+| initiative `dev`, project `dev · Working system` | decisions about the working system itself | |
 
 **Everything has an owner: `simply.chris.rl@gmail.com`**, the `Owner` in the
 repo's `## Tracker` block. Every issue's assignee, every project's lead and
@@ -39,7 +40,7 @@ only: never an assignee, lead or owner, and never the default.
 |---|---|
 | assignee | the `Owner` (above); the lane is a comment, never the assignee |
 | state | Backlog · Todo · In Progress · Done · Canceled · Duplicate |
-| label | Bug (defect) · Improvement (rough edge) · Feature · Idea |
+| label | Bug (defect) · Improvement (rough edge) · Feature · Idea · Decision |
 | priority | P1 → High · P2 → Medium · P3 → Low; none → No priority |
 | title | what is wrong, or what you get; a roadmap row keeps its word label first: `DEST-MIX · Mix to any destination` |
 | comment | the lane on it, a finer mark (triaged, partly shipped, paused), the verdict on close |
@@ -47,16 +48,36 @@ only: never an assignee, lead or owner, and never the default.
 Project states: Planned (next), In Progress (being built), Completed (shipped),
 Canceled. A completed project with its issues is what `MILESTONES.md` was.
 
+**A decision is an issue labelled Decision** (what was `DECIDE.md` and
+`DECISIONS.md`):
+
+| field | value |
+|---|---|
+| assignee | whoever decides: today always the `Owner` |
+| project | the one it concerns: a milestone project, `<repo> · Backlog` when none fits, `dev · Working system` for the system itself |
+| title | the question in plain words |
+| description | what a `DECIDE.md` row held (AGENTS.md *A `DECIDE.md` row answers itself*): what is being decided, in one plain sentence; the options, each with what it changes; the recommendation first; what it blocks |
+| relations | **blocks** each issue that waits on it, so nothing is started on an open question |
+| state | open (Todo) while it waits; Done when answered; Canceled when moot |
+| last comment | on Done: the answer and its rationale, with the change id of the commit that folds it in once there is one |
+
+Two saved views make it a channel (made once in Linear's UI, if the tools
+can't): **Decisions open** (label Decision, not Done or Canceled), what waits
+on the human beside `ASKS.md`; and **Decisions** (label Decision, Done, newest
+first), the log `DECISIONS.md` was.
+
 ## The `## Tracker` block
 
-In the repo's `AGENTS.project.md`. `adopt.sh --tracker linear` appends it from
+In the repo's `AGENTS.project.md`, which is untracked (AGENTS.md, *A project's
+own rules*): writing the block commits nothing. `adopt.sh --tracker linear` appends it from
 `tracker.md` beside this file, with `<repo>` filled in and the `Owner`
 defaulted; fill in the two URLs
 once setup has made them. The block is the switch: without it the repo is in
 file mode.
 
-URLs here are fine: `AGENTS.project.md` is tracked but a URL is a link, not an
-ops id. Issue ids never go in it.
+The block can name the private workspace and its URLs because the file never
+reaches a clone. Issue ids still don't go in it: they go stale, and the plan is
+in Linear, not here.
 
 ## Setup
 
@@ -73,7 +94,8 @@ Steps 1–3 set the `Owner`: initiative owner, project lead.
 3. **A project per roadmap milestone** still open, `<repo> <version> · <title>`,
    description the milestone's paragraph from `ROADMAP.md`, state Planned (or
    In Progress for the one being built), linked to the initiative.
-4. **The `## Tracker` block** in `AGENTS.project.md`.
+4. **The `## Tracker` block** in `AGENTS.project.md` (untracked; re-run
+   `adopt.sh` first if the root `.gitignore` lacks `/AGENTS.project.md`).
 5. **The README links the initiative** where it used to point at `ROADMAP.md`
    ("What comes next: <initiative URL>").
 6. **Backfill** (below), then **cutover** (below).
@@ -85,7 +107,8 @@ Canceled), so the old ids stay findable.
 
 - **Every issue's description starts with an origin line**:
   `Origin: <repo> <file> <old id>`, e.g. `Origin: tussen ISSUES.md I-007`, or
-  `Origin: tussen ROADMAP.md DEST-MIX`. Then the row's text, then its notes.
+  `Origin: tussen ROADMAP.md DEST-MIX`, or `Origin: tussen DECISIONS.md D-042`.
+  Then the row's text, then its notes.
 - **The map**: `docs/ops/drafts/linear-map-<repo>.tsv` in the repo's default
   workspace (untracked; a backfill run from elsewhere says where it put it),
   one line per row:
@@ -108,10 +131,14 @@ Canceled), so the old ids stay findable.
   | `IDEAS.md` In-flight | into the milestone project its board row belongs to, label Idea or Feature |
   | `IDEAS.md` Done | Done (✅) or Canceled (🗑️), the answer as a comment |
   | `BOARD.md` running · next | the matching issue In Progress (a lane comment) · Todo; a row with no issue gets one |
-  | `DECIDE.md`, `ASKS.md`, `DECISIONS.md` | stay files; not backfilled |
+  | `DECIDE.md` *Open now* | an open Decision issue (shape above) in the project it concerns; its *blocks* become blocking relations on the second pass |
+  | `DECIDE.md` *Taken without you* | a Decision issue created Done, the call and its alternative in the description, a comment "Taken without you; reopen to reverse" |
+  | `DECISIONS.md` | a Done Decision issue: the decision as the title, the rationale as its last comment with the row's clock and change id; ♻️ superseded adds a comment naming the issue that superseded it, ❓ reopened stays open |
+  | `ASKS.md` | stays a file; not backfilled |
 
-- **A row cross-referencing another** (`see I-012`) is rewritten to the SIM id
-  once both exist; a second pass over the map does it.
+- **A row cross-referencing another** (`see I-012`, a decision's *blocks*) is
+  rewritten to the SIM id once both exist, and a decision's blocks become
+  relations; a second pass over the map does it.
 - **Dates**: put the row's date in the description (`Found 2026-10-03`); Linear's
   own created date is the backfill's.
 - Backfill reads the repo; it writes nothing in it but the map.
@@ -125,26 +152,45 @@ Canceled), so the old ids stay findable.
 - [ ] The backfill map moved from wherever the backfill wrote it (the first
       runs: dev's `docs/ops/drafts/linear-map-<repo>.tsv`) into the repo's own
       `docs/ops/drafts/`.
-- [ ] `## Tracker` block in `AGENTS.project.md`; README links the initiative.
+- [ ] `AGENTS.project.md` is untracked: `jj file list AGENTS.project.md`
+      prints nothing (else run `adopt.sh` and commit what it names first).
+- [ ] `## Tracker` block in `AGENTS.project.md` (untracked: nothing to
+      commit); README links the initiative.
+- [ ] Old ids left in `AGENTS.project.md` and `docs/ops/drafts/` (`D-042`,
+      `I-007`) rewritten to their SIM ids from the map.
 - [ ] Moved files to `.trash/linear-cutover-<date>/`: `docs/ops/BOARD.md`,
-      `MILESTONES.md`, `ISSUES.md`, `FIXED.md`, `IDEAS.md` (untracked: just
-      `mv`), and `ROADMAP.md` from the root (tracked: `mv`, then the commit
-      below records it gone).
+      `MILESTONES.md`, `ISSUES.md`, `FIXED.md`, `IDEAS.md`, `DECIDE.md`,
+      `DECISIONS.md` (untracked: just `mv`), and `ROADMAP.md` from the root
+      (tracked: `mv`, then the commit below records it gone).
 - [ ] **One docs-only commit with explicit paths**, the trunk loop in AGENTS.md
-      §4: `jj commit AGENTS.project.md README.md ROADMAP.md -m "Keep the plan in
-      Linear: the roadmap leaves the repo, the README links it"`. No Linear ids
-      in the message. Move trunk to it only if trunk is its parent, and not
-      while an integrator holds the workspace.
-- [ ] `docs/ops/` now holds DECIDE, ASKS, DECISIONS, drafts/, reports/ only.
-- [ ] The board query (below) shows what `BOARD.md` showed.
+      §4: `jj commit README.md ROADMAP.md -m "Keep the plan in Linear: the
+      roadmap leaves the repo, the README links it"`. No Linear ids in the
+      message. Move trunk to it only if trunk is its parent, and not while an
+      integrator holds the workspace.
+- [ ] `docs/ops/` now holds ASKS.md, drafts/, reports/ only.
+- [ ] The board query (below) shows what `BOARD.md` showed; the open-decisions
+      view shows what `DECIDE.md` *Open now* showed.
 
 ## Everyday
 
 **The board** is a query, read at every session start and before every status
 answer: the initiative's issues in In Progress (running) and Todo (next),
 `list_issues` filtered by the initiative's projects and those states. What
-waits on the human is `DECIDE.md` and `ASKS.md`, as in file mode. Standing
+waits on the human is the open-decisions view and `ASKS.md`. Standing
 instructions are in the initiative's description, under *Standing*.
+
+**File a decision** (a lane asked, a design doc left a question open, a call is
+expensive to reverse): a Decision issue, shape above, before chat mentions it.
+Link it as **blocking** every issue that waits on it, and leave those issues
+where they are: the relation is what stops a lane being started on them. The
+lane's report holds its question; the issue is yours to write, a lane never
+files one.
+
+**A decision is answered**: the answer and its rationale go in a comment, the
+issue goes Done (the blocked issues are free), and the *what* is folded into
+the design doc, AGENTS.md or the skill text in the next commit, as in file
+mode. A call taken without the human is a Decision issue created Done, its
+description saying so with the alternative; he reverses it by reopening.
 
 **A lane starts**: its issue goes In Progress, with a comment
 `Lane <name> · <clock>`. No issue yet → file one first (docs before eng).
@@ -154,8 +200,9 @@ instructions are in the initiative's description, under *Standing*.
 - found and not fixed → a new issue in `<repo> · Backlog`, labelled, priority
   from the report, what is wrong first;
 - follow-up work → a new issue, Backlog or the milestone it belongs to;
-- decision taken → `DECIDE.md` *Taken without you* or `DECISIONS.md`, as in
-  file mode;
+- question for the human → an open Decision issue (above);
+- decision taken, small and contained → a Decision issue created Done, saying
+  so;
 - then the report moves to `.trash/`.
 
 **Landed**: the lane's issue goes Done the same day, verdict comment naming the
@@ -176,6 +223,9 @@ integrator still does not run into a version (AGENTS.md §4).
 
 ## Gotchas
 
+- **The free plan caps a workspace at 250 issues**, Done and Canceled ones
+  included. A backfill of a mature repo goes past it, and the next create
+  fails partway. Check the plan and count the rows before a backfill.
 - **`list_initiatives` with `includeProjects` exceeds Linear's complexity
   limit.** Ask for `fields` instead, or list projects by initiative separately.
 - **States and labels by id.** Fetch them once (`list_issue_statuses`,

@@ -7,7 +7,7 @@
 #
 #   1. links AGENTS.md         -> dev's AGENTS.md, by a relative symlink
 #      (../dev/AGENTS.md when the repo sits beside dev), and starts an
-#      AGENTS.project.md for the repo's own rules
+#      AGENTS.project.md for the repo's own rules, untracked (step 4)
 #   2. symlinks the role definitions into the directory the coding harness
 #      in use reads them from:
 #        pi.dev       .pi/agents       (personas; needs projectPersonas: true
@@ -31,14 +31,19 @@
 #      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
 #      by hand (skills/adopt), then re-run this to make the link.
 #      With --tracker linear the repo keeps its plan in Linear (AGENTS.md
-#      §2, *Linear mode*): ROADMAP.md and docs/ops/'s BOARD ISSUES FIXED
-#      IDEAS are not copied (a warning names any that already exist: they
+#      §2, *Linear mode*): ROADMAP.md and docs/ops/'s BOARD MILESTONES
+#      ISSUES FIXED IDEAS DECIDE DECISIONS are not copied (a warning names any that already exist: they
 #      move at cutover, per skills/linear), and AGENTS.project.md gains a
 #      '## Tracker' section from skills/linear/tracker.md, once.
 #   4. ignores what must never be committed: each untracked directory above
 #      (and .claude/ or .pi/) gets its own .gitignore holding '*'. The symlink
 #      targets are machine-specific absolute paths, so they must never be
 #      committed either.
+#      AGENTS.project.md is untracked in every repo, in both modes: a single
+#      file can't ignore itself, so the root .gitignore gains the line
+#      '/AGENTS.project.md', once. If the file is already tracked it is
+#      untracked (jj file untrack; git rm --cached in a git-only repo),
+#      staying on disk. Nothing is committed: the report says what to commit.
 #
 # Usage:
 #   ./adopt.sh <project-dir> [--harness pi|claude|both|auto]
@@ -55,7 +60,7 @@ set -euo pipefail
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "dev dir: $DEV_DIR"
 
-usage() { sed -n '2,50p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,56p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
 HARNESS="auto"
@@ -97,7 +102,7 @@ case "$TRACKER" in
 esac
 
 # What lives in Linear instead of a file in Linear mode (AGENTS.md §2).
-LINEAR_MOVED="ROADMAP.md docs/ops/BOARD.md docs/ops/MILESTONES.md docs/ops/ISSUES.md docs/ops/FIXED.md docs/ops/IDEAS.md"
+LINEAR_MOVED="ROADMAP.md docs/ops/BOARD.md docs/ops/MILESTONES.md docs/ops/ISSUES.md docs/ops/FIXED.md docs/ops/IDEAS.md docs/ops/DECIDE.md docs/ops/DECISIONS.md"
 moved_to_linear() { [ "$TRACKER" = "linear" ] && case " $LINEAR_MOVED " in *" $1 "*) return 0 ;; esac; return 1; }
 
 # --- helpers -----------------------------------------------------------------
@@ -167,7 +172,8 @@ ensure_untracked_dir "$PROJECT/.workspaces"
 ensure_untracked_dir "$PROJECT/.trash"
 
 # The starter files: AGENTS.project.md, CHANGELOG.md, ROADMAP.md, and
-# docs/ops/'s BOARD DECIDE ASKS ISSUES FIXED DECISIONS IDEAS.
+# docs/ops/'s BOARD DECIDE ASKS ISSUES FIXED DECISIONS IDEAS (Linear mode:
+# ASKS only).
 copy_templates
 
 # Linear mode: the '## Tracker' switch, appended once, and a warning for each
@@ -181,10 +187,37 @@ if [ "$TRACKER" = "linear" ]; then
 	done
 fi
 
+# --- 4. AGENTS.project.md is untracked (AGENTS.md, *A project's own rules*) --
+
+# It can name private infrastructure (the tracker, its URLs) and some repos are
+# public. A single file can't ignore itself, so it takes a root .gitignore line.
+TO_COMMIT=()
+if ! grep -qsxE '/?AGENTS\.project\.md' "$PROJECT/.gitignore"; then
+	if [ -s "$PROJECT/.gitignore" ] && [ -n "$(tail -c1 "$PROJECT/.gitignore")" ]; then
+		echo >> "$PROJECT/.gitignore"
+	fi
+	echo '/AGENTS.project.md' >> "$PROJECT/.gitignore"
+	TO_COMMIT+=(".gitignore")
+fi
+
+# Already tracked: untrack it, after the ignore line exists. The file stays.
+# A colocated repo is jj's, never git's (AGENTS.md §4).
+if [ -d "$PROJECT/.jj" ]; then
+	if [ -n "$(cd "$PROJECT" && jj file list AGENTS.project.md </dev/null 2>/dev/null)" ]; then
+		(cd "$PROJECT" && jj file untrack AGENTS.project.md </dev/null)
+		TO_COMMIT+=("AGENTS.project.md")
+	fi
+elif [ -d "$PROJECT/.git" ]; then
+	if git -C "$PROJECT" ls-files --error-unmatch AGENTS.project.md >/dev/null 2>&1; then
+		git -C "$PROJECT" rm --cached -q AGENTS.project.md
+		TO_COMMIT+=("AGENTS.project.md")
+	fi
+fi
+
 # --- report -------------------------------------------------------------------
 
 echo "Adopted simply/dev into $PROJECT (harness: $HARNESS)."
-echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md"
+echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md (untracked)"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done
@@ -195,6 +228,22 @@ else
 fi
 echo "  changelog.d/, docs/ops/ (untracked)"
 echo "  .workspaces/, .trash/"
+if [ ${#TO_COMMIT[@]} -gt 0 ]; then
+	echo
+	echo "To commit, by path (nothing was committed): ${TO_COMMIT[*]}"
+	msg="Keep AGENTS.project.md untracked: it can name private infrastructure"
+	case " ${TO_COMMIT[*]} " in *" AGENTS.project.md "*)
+		msg="Stop tracking AGENTS.project.md: it can name private infrastructure"
+		echo "  AGENTS.project.md was tracked: it is untracked now and still on disk;"
+		echo "  the commit records it removed from the repo. Its old contents stay in"
+		echo "  history, which only the human can rewrite." ;;
+	esac
+	if [ -d "$PROJECT/.jj" ]; then
+		echo "  jj commit ${TO_COMMIT[*]} -m \"$msg\""
+	else
+		echo "  git add .gitignore && git commit -m \"$msg\""
+	fi
+fi
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
 	echo
 	echo "Reminders for pi:"

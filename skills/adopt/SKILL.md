@@ -15,13 +15,13 @@ overwrites).
 | path | what | tracked? |
 |---|---|---|
 | `AGENTS.md` | relative symlink to the dev repo's `AGENTS.md` (the system) | the symlink, yes |
-| `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks | yes |
+| `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks; default workspace only, lanes read it by absolute path | no: a `/AGENTS.project.md` line in the root `.gitignore` (it can name private infrastructure, and some repos are public) |
 | `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no (machine path) |
 | `CHANGELOG.md` | user-facing, at the root | yes |
 | `ROADMAP.md` | what comes next, by version, at the root; cites no ops ids | yes |
 | `changelog.d/` | lanes' changelog fragments until folded in, in the default workspace | no: its own `.gitignore` holds `*` |
 | `docs/{design,research,guides,reference}/` | the tracked doc web; not made empty, a folder appears with its first file | yes |
-| `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, FIXED, DECISIONS, IDEAS (the record); `reports/` (lanes' final reports); `drafts/` (appears with the first draft) | no: its own `.gitignore` holds `*` |
+| `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, FIXED, DECISIONS, IDEAS (the record); `reports/` (lanes' final reports); `drafts/` (appears with the first draft). Linear mode: ASKS, `reports/`, `drafts/` only | no: its own `.gitignore` holds `*` |
 | `.workspaces/`, `.trash/` | lane workspaces, discarded files | no: each has its own `.gitignore` holding `*` |
 
 The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `ROADMAP.md`,
@@ -30,7 +30,8 @@ has no file of that name.
 
 **A repo whose plan lives in Linear** (AGENTS.md §2, *Linear mode*; opt-in,
 the human's call per repo) is adopted with `--tracker linear`: no `ROADMAP.md`
-and no `docs/ops/` BOARD, ISSUES, FIXED or IDEAS are made, and
+and no `docs/ops/` BOARD, MILESTONES, ISSUES, FIXED, IDEAS, DECIDE or DECISIONS
+are made (decisions are Linear issues labelled Decision), and the untracked
 `AGENTS.project.md` gains a `## Tracker` section to fill in. A re-run keeps
 Linear mode on its own once that section exists. Setting up the initiative and
 projects, backfilling an already-adopted repo and the cutover are the `linear`
@@ -75,19 +76,27 @@ are folded or untracked (`jj file untrack`).
    - design or research notes → the matching `docs/` folder.
 4. **Write `AGENTS.project.md`** if there isn't one: how to build and test (the
    gates, as exact commands), branches and remotes, what never to run (GUIs,
-   real devices, pushes), paths. Short; facts only.
+   real devices, pushes), paths, and the default workspace's absolute path
+   (lanes read `docs/ops/` and this file by it). Short; facts only. It is
+   untracked: if the repo had it tracked, `adopt.sh` untracked it and its old
+   contents are still in history; say so in the report if the repo is public.
 5. **Verify:**
-   - `git check-ignore docs/ops/BOARD.md changelog.d/x.md` both print (the
-     path need not exist, so this holds in Linear mode too);
+   - `git check-ignore docs/ops/BOARD.md changelog.d/x.md AGENTS.project.md`
+     all print (the path need not exist, so this holds in Linear mode too);
+   - `jj file list AGENTS.project.md` prints nothing. A lane started before
+     the untracking rebases past it before landing, or its tip tracks the file
+     again;
    - `jj st` / `git status` shows no machine-specific path (the harness
      symlinks) as added;
    - the harness sees the roles (pi: `"projectPersonas": true` in
      `~/.pi/agent/subagents.json`, and the project trusted on next launch: tell
      the human if either is missing).
 6. **Commit only the tracked parts**, one commit, plain words, e.g.
-   `Adopt the dev working system: AGENTS.md from dev, project rules in
-   AGENTS.project.md, changelog and roadmap at the root` (no internal ids). Commit the
-   files by path, so nobody else's uncommitted edits ride along. Don't push.
+   `Adopt the dev working system: AGENTS.md from dev, changelog and roadmap at
+   the root, the project's own rules file kept untracked` (no internal ids).
+   Commit the files by path (`AGENTS.md`, `.gitignore`, `CHANGELOG.md`,
+   `ROADMAP.md`, and `AGENTS.project.md` when `adopt.sh` says it untracked
+   it), so nobody else's uncommitted edits ride along. Don't push.
 7. **Report:** what was created, what moved where, what was left for the human
    (backport candidates, settings they must flip, anything ambiguous).
 

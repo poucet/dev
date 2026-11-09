@@ -31,7 +31,9 @@ It is idempotent and never overwrites anything that already exists. It:
 
 - **links `AGENTS.md`** to this repo's (a relative symlink), and starts an
   `AGENTS.project.md` for the project's own rules: build, gates, branches,
-  paths. Where the two disagree, the project file wins for that project;
+  paths. Where the two disagree, the project file wins for that project. It
+  is **untracked** (a line in the root `.gitignore`; a tracked one is
+  untracked): it can name private infrastructure, and some repos are public;
 - **symlinks the role definitions** for the harness (below);
 - lays out the doc web of §3 from `templates/`: `CHANGELOG.md` at the root
   (tracked), and `docs/ops/`, the one **untracked** directory of working
@@ -41,8 +43,8 @@ It is idempotent and never overwrites anything that already exists. It:
   ignore itself with its own `.gitignore` holding `*`.
 
 **A repo can keep its plan in Linear instead** (board, roadmap, milestones,
-issues, ideas; AGENTS.md §2, *Linear mode*): `adopt.sh <project> --tracker
-linear` skips those files and adds a `## Tracker` section to
+issues, ideas, decisions; AGENTS.md §2, *Linear mode*): `adopt.sh <project>
+--tracker linear` skips those files and adds a `## Tracker` section to
 `AGENTS.project.md`. The **`linear` skill** (`skills/linear/`) sets up the
 initiative and projects, backfills, and cuts over.
 

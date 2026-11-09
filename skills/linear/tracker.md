@@ -8,5 +8,6 @@ how-to: dev's `linear` skill).
 - Owner: simply.chris.rl@gmail.com — assignee of every issue, lead of every
   project, owner of the initiative
 - Backlog project: <repo> · Backlog — <project URL>
-- Still files, in docs/ops/ of the default workspace: DECIDE.md, ASKS.md,
-  DECISIONS.md, drafts/, reports/
+- Decisions: issues labelled Decision; open ones block what waits on them
+- Still files, in docs/ops/ of the default workspace: ASKS.md, drafts/,
+  reports/

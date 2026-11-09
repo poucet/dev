@@ -18,7 +18,7 @@ workspace. Docs carry no gates, so that move is yours. Code you need beside it
 
 **The human reads it on `main`, when he chooses.** It lands like any other doc:
 no review banner, no review row. Report its open questions, and stop; the
-co-developer puts them in `DECIDE.md`. When the human answers, fold the answers
+co-developer puts them in `DECIDE.md` (in a Linear-based repo, Decision issues). When the human answers, fold the answers
 in with the next commit.
 
 **You propose; the human decides.** Every choice in your doc is marked proposed

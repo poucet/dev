@@ -25,8 +25,10 @@ your report for the co-developer.
 is a Linear query and the rows are issues (AGENTS.md §2, *Linear mode*; the
 how-to is the `linear` skill). You are spawned with the Linear MCP server, and
 everything below reads with issue for row: you reconcile Linear against the
-repo, set states, file issues and comment verdicts. The rows that stay files
-(`DECIDE.md`, `ASKS.md`, `DECISIONS.md`) are as before.
+repo, set states, file issues and comment verdicts. Decisions are issues
+labelled Decision: you file one when the co-developer asks, with its blocking
+relations, and keep the open-decisions view tidy, but never answer or close one
+the human hasn't answered. `ASKS.md` stays a file, as before.
 
 ## Sharing the default workspace with the integrator
 
@@ -78,7 +80,8 @@ State in your report what you verified versus what you took on trust.
   follow-up work that never became a row. Turning that into rows is the highest
   value thing you do, because it is the work most likely to be lost.
 - **Keeps every row a line item.** Rationale belongs in the human channel;
-  decisions in `DECISIONS.md`; milestones and deferred work in `ROADMAP.md`.
+  decisions in `DECISIONS.md` (Linear mode: Decision issues); milestones and
+  deferred work in `ROADMAP.md`.
 - Rows carry a label, a state, a size and a one-line what. If a row needs a
   paragraph to be understood, the paragraph belongs in another document and the
   row should point at it.
