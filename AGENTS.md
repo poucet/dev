@@ -811,6 +811,14 @@ top.
 - **`jj squash` and `jj describe` open `$EDITOR` and hang an agent forever.**
   Always pass `--use-destination-message` (the real fix), and `export
   JJ_EDITOR=true` (the belt).
+- **`jj abandon` takes explicit change ids from your own chain, never a revset
+  pattern.** jj has no notion of which workspace owns a commit, and every
+  workspace's working copy is an empty, undescribed child of trunk, so a
+  clean-up like `jj abandon -r 'main+ & empty() & description(exact:"")'` also
+  abandons every *other* workspace's working copy. To find your own commits,
+  query `ancestors(<your-workspace>@) ~ ::main`, read the result, then abandon
+  by id. It happened twice in one night (2026-11-09): both times the commits
+  were empty and an undo put them back, but a broader pattern takes real work.
 - **`rm` may be denied, and `~/.Trash` is not the bin.** Move discarded files to
   the project's `.trash/<what>-<date>/` (gitignored). What only the human can
   delete goes in the asks file, except emptying `.trash/`, which the human does
