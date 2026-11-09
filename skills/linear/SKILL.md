@@ -124,9 +124,9 @@ Canceled), so the old ids stay findable.
   `<old id>\t<file>\t<linear id>\t<state>` (header `old_id source_file linear-id state`). Write it as you go, so a crash costs
   nothing.
 - **Reruns are idempotent.** Before creating, look the old id up in the map; if
-  it is missing there, search the initiative's issues for its origin line
-  (`list_issues` with a query on `Origin: <repo> <file> <old id>`). Found →
-  update, never duplicate.
+  it is missing there, list the initiative's issues and match its origin line
+  (`Origin: <repo> <file> <old id>`) yourself: `list_issues`' query doesn't
+  search descriptions. Found → update, never duplicate.
 - **Where each row goes**:
 
   | from | to |
@@ -247,6 +247,15 @@ integrator still does not run into a version (AGENTS.md §4).
 - **The free plan caps a workspace at 250 issues**, Done and Canceled ones
   included. A backfill of a mature repo goes past it, and the next create
   fails partway. Check the plan and count the rows before a backfill.
+- **Bulk writes run concurrently, never one call at a time.** A backfill or a
+  re-sort is hundreds of saves; a serial loop spends most of an hour waiting on
+  round trips. Run about eight at once (a thread pool, or `Promise.allSettled`
+  in chunks), check every result, and back off and retry on a rate-limit
+  error. Linear caps requests per user per hour, so pace a very large job
+  rather than firing it all at once.
+- **`list_issues`' `query` matches titles, not descriptions.** To find an
+  issue by its origin line, list the initiative's issues and match the line
+  yourself; a rerun that relies on the query creates duplicates.
 - **`list_initiatives` with `includeProjects` exceeds Linear's complexity
   limit.** Ask for `fields` instead, or list projects by initiative separately.
 - **States and labels by id.** Fetch them once (`list_issue_statuses`,
