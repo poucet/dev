@@ -176,9 +176,9 @@ per repo**: files stay the default, and a repo is in Linear mode only when its
 initiative, team and Backlog project. Setup, everyday operations, backfill and
 cutover are the `linear` skill.
 
-**One team; the repo is an initiative.** Every Linear-based repo shares one team
-(its `## Tracker` names it), so there is one board and one id series; a repo is
-an initiative, never a team of its own. Ideas that fit no repo live in a shared
+**The repo is an initiative; its team is named in its `## Tracker`.** Repos
+share a team by default, so there is one board and one id series; a repo gets a
+team of its own only when the human makes one (the Tracker says which). Ideas that fit no repo live in a shared
 `Ideas` initiative and project until one earns a repo. Every issue, project
 and initiative is assigned to the `## Tracker`'s owner, the human, whenever the
 coordinator creates or records it.
@@ -197,7 +197,7 @@ coordinator creates or records it.
 | `IDEAS.md` Inbox → In-flight → Done | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
 | one emoji status | the issue's state (Backlog · Todo · In Progress · Done · Canceled · Duplicate) and label (Bug · Improvement · Feature · Idea · Decision); a finer mark (triaged, partly shipped, paused) is a comment |
 | priority P1 · P2 · P3 | High · Medium · Low |
-| `I-007`, `N-012`, `D-042`, a roadmap row | the issue's Linear id (`SIM-123`), assigned by Linear |
+| `I-007`, `N-012`, `D-042`, a roadmap row | the issue's Linear id (`AUDIO-123`), assigned by Linear |
 
 **What stays a file in Linear mode**: `ASKS.md`, `drafts/`, `reports/`, so in
 Linear mode `docs/ops/` holds only those. Commands for the human, drafts and
@@ -231,7 +231,7 @@ initiative's description; trunk and ready chains come from `jj log`, as always.
   that must read Linear is spawned with its MCP server (`mcp_servers:
   ["linear"]`); one that needn't is spawned without it, its brief carrying what
   it needs.
-- **Linear ids are ops ids.** The workspace is private, so `SIM-123` points at
+- **Linear ids are ops ids.** The workspace is private, so `AUDIO-123` points at
   nothing in a clone: never in a commit message, code or a tracked doc (*What a
   commit message says*, §4).
 - **A roadmap issue keeps its word label** at the head of its title
@@ -867,7 +867,7 @@ wrong within hours and stays wrong forever ([simply-chris](https://simplychris.a
 BOARD.md is for"*). No co-author lines.
 
 **No internal ops references.** Issue, decision or idea ids, lane names, board
-or landed-index rows, Linear ids included (`I-106`, `N8`, `DEC-42`, `SIM-123`,
+or landed-index rows, Linear ids included (`I-106`, `N8`, `DEC-42`, `AUDIO-123`,
 `LANE-x`, `ops: … landed`) mean
 nothing to a reader of the history, least of all in a public repo
 ([simply-chris](https://simplychris.ai), on `docs(ops): I-106 closed (N8–N11,
@@ -880,7 +880,7 @@ inactive-parameter fix as done"), not which rows moved. This holds in every repo
 **Code and tracked docs never cite ops ids either**
 ([simply-chris](https://simplychris.ai): *"code and docs should NEVER reference
 issues and decisions and such by id"*). No issue, decision, idea, roadmap, ask or
-lane id (`I-007`, `X-151`, `N-12`, `SIM-123`, a board label) in source, comments,
+lane id (`I-007`, `X-151`, `N-12`, `AUDIO-123`, a board label) in source, comments,
 tests, design and research docs, guides, the changelog or a README: they live in
 untracked `docs/ops/` or a private Linear workspace, so in a clone they point at
 nothing, and the rows are
@@ -905,7 +905,7 @@ top.
 **In chat, and in reports and untracked ops docs, every Linear issue, project
 and initiative is a link the human can click**
 ([simply-chris](https://simplychris.ai): *"always hyperlink issues in chat so I
-can click on them"*): `[SIM-123](https://linear.app/<workspace>/issue/SIM-123)`,
+can click on them"*): `[AUDIO-123](https://linear.app/<workspace>/issue/AUDIO-123)`,
 with what it is beside it, never a bare id. Projects and initiatives link by the
 URL Linear returns. Tracked files still cite no ids (*What a commit message
 says*).

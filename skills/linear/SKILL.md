@@ -21,7 +21,7 @@ never write `docs/ops/`: they report to their file and the coordinator records.
 | Linear | what it is | name |
 |---|---|---|
 | workspace | `simply-audio` (https://linear.app/simply-audio) | |
-| team | one for every repo: `SIM` | ids `SIM-123` |
+| team | `AUDIO` (simply-audio) for every repo, except where the repo's Tracker names its own (lumina: `LUMINA`) | ids `AUDIO-123`, `LUMINA-12` |
 | initiative | the repo | `<repo>` |
 | project, per milestone | a roadmap version; its description is what the version means | `<repo> <version> · <title>` |
 | project, backlog | unscheduled issues and ideas | `<repo> · Backlog` |
@@ -90,7 +90,7 @@ Steps 1–3 set the `Owner`: initiative owner, project lead.
 1. **Initiative** `<repo>`: description one line on what the repo is, its GitHub
    URL if it has a remote, and a `Standing` heading (empty) for standing
    instructions.
-2. **Backlog project** `<repo> · Backlog` in team `SIM`, linked to the initiative.
+2. **Backlog project** `<repo> · Backlog` in the Tracker's team, linked to the initiative.
 3. **A project per roadmap milestone** still open, `<repo> <version> · <title>`,
    description the milestone's paragraph from `ROADMAP.md`, state Planned (or
    In Progress for the one being built), linked to the initiative.
@@ -112,7 +112,7 @@ Canceled), so the old ids stay findable.
 - **The map**: `docs/ops/drafts/linear-map-<repo>.tsv` in the repo's default
   workspace (untracked; a backfill run from elsewhere says where it put it),
   one line per row:
-  `<old id>\t<file>\t<SIM id>\t<state>` (header `old_id source_file SIM-id state`). Write it as you go, so a crash costs
+  `<old id>\t<file>\t<linear id>\t<state>` (header `old_id source_file linear-id state`). Write it as you go, so a crash costs
   nothing.
 - **Reruns are idempotent.** Before creating, look the old id up in the map; if
   it is missing there, search the initiative's issues for its origin line
@@ -137,7 +137,7 @@ Canceled), so the old ids stay findable.
   | `ASKS.md` | stays a file; not backfilled |
 
 - **A row cross-referencing another** (`see I-012`, a decision's *blocks*) is
-  rewritten to the SIM id once both exist, and a decision's blocks become
+  rewritten to the Linear id once both exist, and a decision's blocks become
   relations; a second pass over the map does it.
 - **Dates**: put the row's date in the description (`Found 2026-10-03`); Linear's
   own created date is the backfill's.
@@ -160,7 +160,7 @@ Canceled), so the old ids stay findable.
 - [ ] `## Tracker` block in `AGENTS.project.md` (untracked: nothing to
       commit); README links the initiative.
 - [ ] Old ids left in `AGENTS.project.md` and `docs/ops/drafts/` (`D-042`,
-      `I-007`) rewritten to their SIM ids from the map.
+      `I-007`) rewritten to their Linear ids from the map.
 - [ ] Moved files to `.trash/linear-cutover-<date>/`: `docs/ops/BOARD.md`,
       `MILESTONES.md`, `ISSUES.md`, `FIXED.md`, `IDEAS.md`, `DECIDE.md`,
       `DECISIONS.md` (untracked: just `mv`), and `ROADMAP.md` from the root
@@ -232,7 +232,7 @@ integrator still does not run into a version (AGENTS.md §4).
 - **`list_initiatives` with `includeProjects` exceeds Linear's complexity
   limit.** Ask for `fields` instead, or list projects by initiative separately.
 - **States and labels by id.** Fetch them once (`list_issue_statuses`,
-  `list_issue_labels` for team `SIM`) and reuse; names are not unique across
+  `list_issue_labels` for the team) and reuse; names are not unique across
   teams.
 - **Agents are not Linear users.** The lane goes in a comment; the assignee is
   always the `Owner`. Pass it on every create, and set it on update when it is
