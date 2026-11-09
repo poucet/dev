@@ -902,6 +902,14 @@ number ("3 (aligning OSC against the local transport)"), in chat and docs; a
 document that keeps the numbering lists the points with their numbers at the
 top.
 
+**In chat, and in reports and untracked ops docs, every Linear issue, project
+and initiative is a link the human can click**
+([simply-chris](https://simplychris.ai): *"always hyperlink issues in chat so I
+can click on them"*): `[SIM-123](https://linear.app/<workspace>/issue/SIM-123)`,
+with what it is beside it, never a bare id. Projects and initiatives link by the
+URL Linear returns. Tracked files still cite no ids (*What a commit message
+says*).
+
 ### Survival
 
 - **Commit early and often.** A WIP commit in your own workspace costs nothing;
