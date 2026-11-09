@@ -28,6 +28,10 @@
 #      the project has no file of that name yet. Files of an older layout
 #      (docs/ops/STATUS.md, docs/ops/ROADMAP.md) are left where they are;
 #      a root ROADMAP.md is not added while docs/ops/ROADMAP.md exists.
+#      A repo that already keeps a changelog (CHANGELOG.md at the root or in
+#      docs/ops/, any case) gets no template CHANGELOG.md; one that keeps
+#      fragments (changelog.d/ at the root or in docs/ops/) or keeps its
+#      changelog only in docs/ops/ gets no root changelog.d/. Each is reported.
 #      A real AGENTS.md (an old copy) is left alone and reported: its rules
 #      move into AGENTS.project.md by hand (skills/adopt), then re-run with
 #      --replace-agents-md, which moves it to .trash/ and makes the link.
@@ -69,7 +73,7 @@ set -euo pipefail
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "dev dir: $DEV_DIR"
 
-usage() { sed -n '2,65p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
 HARNESS="auto"
@@ -132,6 +136,7 @@ copy_templates() {
 	while IFS= read -r rel; do
 		rel="${rel#./}"
 		[ -e "$PROJECT/$rel" ] && continue
+		[ "$rel" = "CHANGELOG.md" ] && [ -n "$FOUND_CHANGELOG" ] && continue
 		moved_to_linear "$rel" && continue
 		if [ "$rel" = "ROADMAP.md" ] && [ -e "$PROJECT/docs/ops/ROADMAP.md" ]; then
 			echo "  !! docs/ops/ROADMAP.md exists: move it to the repo root (tracked) by hand" >&2
@@ -140,6 +145,16 @@ copy_templates() {
 		ensure_dir "$PROJECT/$(dirname "$rel")"
 		cp -- "$DEV_DIR/templates/$rel" "$PROJECT/$rel"
 	done < <(cd "$DEV_DIR/templates" && find . -type f ! -name .DS_Store | sort)
+}
+
+# The project-relative path of an entry named $2 (any case) directly in
+# directory $1 ("" for the root), or nothing.
+find_ci() { # <dir> <name>
+	local base="$PROJECT${1:+/$1}" hit
+	[ -d "$base" ] || return 0
+	hit="$(find "$base" -mindepth 1 -maxdepth 1 -iname "$2" 2>/dev/null | sort | head -n1)"
+	[ -n "$hit" ] && printf '%s\n' "${hit#"$PROJECT"/}"
+	return 0
 }
 
 # Symlink, refreshing a stale link but never clobbering a real file/directory.
@@ -190,9 +205,24 @@ done
 # docs/ops/ is the one untracked directory of working state (AGENTS.md §2);
 # the workspaces and discarded files are untracked too. (.screenshots/ is not
 # made: a project that renders images adds it, per AGENTS.md §3.)
+# A changelog the repo already keeps, wherever it keeps it, is left as it is:
+# no template beside it, and no root changelog.d/ when the fragments (or the
+# changelog itself) live in docs/ops/.
+FOUND_CHANGELOG="$(find_ci "" CHANGELOG.md)"
+[ -n "$FOUND_CHANGELOG" ] || FOUND_CHANGELOG="$(find_ci docs/ops CHANGELOG.md)"
+FOUND_FRAGMENTS="$(find_ci "" changelog.d)"
+[ -n "$FOUND_FRAGMENTS" ] || FOUND_FRAGMENTS="$(find_ci docs/ops changelog.d)"
+
 ensure_untracked_dir "$PROJECT/docs/ops"
 ensure_dir "$PROJECT/docs/ops/reports"   # lanes write their reports here
-ensure_untracked_dir "$PROJECT/changelog.d"
+case "$FOUND_FRAGMENTS" in
+	docs/ops/*) ;;                                     # untracked with docs/ops/
+	"") case "$FOUND_CHANGELOG" in
+		docs/ops/*) ;;                                 # changelog kept in docs/ops/
+		*) ensure_untracked_dir "$PROJECT/changelog.d" ;;
+	    esac ;;
+	*) ensure_untracked_dir "$PROJECT/$FOUND_FRAGMENTS" ;;
+esac
 ensure_untracked_dir "$PROJECT/.workspaces"
 ensure_untracked_dir "$PROJECT/.trash"
 
@@ -266,12 +296,25 @@ echo "  AGENTS.project.md (untracked)"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents (untracked)"
 done
-if [ "$TRACKER" = "linear" ]; then
-	echo "  CHANGELOG.md (tracked); plan in Linear: ## Tracker in AGENTS.project.md"
+if [ -n "$FOUND_CHANGELOG" ]; then
+	echo "  found an existing changelog, no template added: $FOUND_CHANGELOG"
+	CL=""
 else
-	echo "  CHANGELOG.md, ROADMAP.md (tracked)"
+	CL="CHANGELOG.md"
 fi
-echo "  changelog.d/, docs/ops/ (untracked)"
+if [ "$TRACKER" = "linear" ]; then
+	echo "  ${CL:+$CL (tracked); }plan in Linear: ## Tracker in AGENTS.project.md"
+else
+	echo "  ${CL:+$CL, }ROADMAP.md (tracked)"
+fi
+if [ -n "$FOUND_FRAGMENTS" ]; then
+	echo "  found existing changelog fragments: $FOUND_FRAGMENTS/"
+	echo "  docs/ops/ (untracked)"
+elif [ -d "$PROJECT/changelog.d" ]; then
+	echo "  changelog.d/, docs/ops/ (untracked)"
+else
+	echo "  docs/ops/ (untracked); no changelog.d/: the changelog lives in docs/ops/"
+fi
 echo "  .workspaces/, .trash/"
 if [ ${#TO_COMMIT[@]} -gt 0 ]; then
 	echo

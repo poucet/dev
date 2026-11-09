@@ -26,7 +26,10 @@ overwrites).
 
 The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `ROADMAP.md`,
 `docs/ops/*.md`) are copied from dev's `templates/`, each only where the repo
-has no file of that name.
+has no file of that name. A changelog the repo already keeps (`CHANGELOG.md`
+at the root or in `docs/ops/`, any case) gets no template beside it, and no
+root `changelog.d/` is made when the fragments (or the changelog itself) live
+in `docs/ops/`; `adopt.sh` reports what it found.
 
 **A repo whose plan lives in Linear** (AGENTS.md §2, *Linear mode*; opt-in,
 the human's call per repo) is adopted with `--tracker linear`: no `ROADMAP.md`
