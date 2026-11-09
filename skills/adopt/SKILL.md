@@ -28,6 +28,15 @@ The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `ROADMAP.md`,
 `docs/ops/*.md`) are copied from dev's `templates/`, each only where the repo
 has no file of that name.
 
+**A repo whose plan lives in Linear** (AGENTS.md §2, *Linear mode*; opt-in,
+the human's call per repo) is adopted with `--tracker linear`: no `ROADMAP.md`
+and no `docs/ops/` BOARD, ISSUES, FIXED or IDEAS are made, and
+`AGENTS.project.md` gains a `## Tracker` section to fill in. A re-run keeps
+Linear mode on its own once that section exists. Setting up the initiative and
+projects, backfilling an already-adopted repo and the cutover are the `linear`
+skill; the existing files stay until that cutover, and `adopt.sh` warns about
+each.
+
 **A repo adopted under the older layout** keeps its files: `adopt.sh` deletes
 nothing. Bring it in line by hand: `docs/ops/ROADMAP.md` moves to the root and
 is committed, with ops ids taken out (`adopt.sh` warns while it is there);
@@ -46,6 +55,7 @@ are folded or untracked (`jj file untrack`).
 2. **Run the installer:**
    ```sh
    <dev repo>/adopt.sh <repo> --harness auto   # pi | claude | both
+   <dev repo>/adopt.sh <repo> --tracker linear # a repo whose plan lives in Linear
    ```
    (`<dev repo>` is wherever this system is cloned: the directory this skill's
    `skills/` folder sits in.)
@@ -58,7 +68,8 @@ are folded or untracked (`jj file untrack`).
    - an existing changelog anywhere else → `CHANGELOG.md` at the root, history
      kept;
    - todo, board or issue files → their content into `docs/ops/` (untracked),
-     the old files to `.trash/`;
+     or into Linear in Linear mode (the `linear` skill's backfill), the old
+     files to `.trash/`;
    - a `docs/scratch/` from before → its files into `docs/ops/`, the empty
      folder to `.trash/`;
    - design or research notes → the matching `docs/` folder.
@@ -66,7 +77,8 @@ are folded or untracked (`jj file untrack`).
    gates, as exact commands), branches and remotes, what never to run (GUIs,
    real devices, pushes), paths. Short; facts only.
 5. **Verify:**
-   - `git check-ignore docs/ops/BOARD.md changelog.d/x.md` both print;
+   - `git check-ignore docs/ops/BOARD.md changelog.d/x.md` both print (the
+     path need not exist, so this holds in Linear mode too);
    - `jj st` / `git status` shows no machine-specific path (the harness
      symlinks) as added;
    - the harness sees the roles (pi: `"projectPersonas": true` in

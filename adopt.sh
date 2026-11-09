@@ -30,6 +30,11 @@
 #      a root ROADMAP.md is not added while docs/ops/ROADMAP.md exists.
 #      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
 #      by hand (skills/adopt), then re-run this to make the link.
+#      With --tracker linear the repo keeps its plan in Linear (AGENTS.md
+#      §2, *Linear mode*): ROADMAP.md and docs/ops/'s BOARD ISSUES FIXED
+#      IDEAS are not copied (a warning names any that already exist: they
+#      move at cutover, per skills/linear), and AGENTS.project.md gains a
+#      '## Tracker' section from skills/linear/tracker.md, once.
 #   4. ignores what must never be committed: each untracked directory above
 #      (and .claude/ or .pi/) gets its own .gitignore holding '*'. The symlink
 #      targets are machine-specific absolute paths, so they must never be
@@ -37,9 +42,12 @@
 #
 # Usage:
 #   ./adopt.sh <project-dir> [--harness pi|claude|both|auto]
+#                            [--tracker files|linear]
 #
 #   --harness          which harness directory(s) to wire (default: auto —
 #                      .claude if the project has one, else .pi)
+#   --tracker          where the plan lives (default: files; linear also
+#                      when AGENTS.project.md already has '## Tracker')
 
 #
 set -euo pipefail
@@ -47,15 +55,17 @@ set -euo pipefail
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "dev dir: $DEV_DIR"
 
-usage() { sed -n '2,42p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,50p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
 HARNESS="auto"
+TRACKER=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help) usage 0 ;;
 		--harness) HARNESS="${2:?}"; shift 2 ;;
+		--tracker) TRACKER="${2:?}"; shift 2 ;;
 		-*) echo "unknown option: $1" >&2; usage 1 >&2 ;;
 		*) if [ -n "$PROJECT" ]; then echo "unexpected argument: $1" >&2; usage 1 >&2; fi
 		   PROJECT="$1"; shift ;;
@@ -76,6 +86,20 @@ case "$HARNESS" in
 	*) echo "--harness must be pi, claude, both or auto (got: $HARNESS)" >&2; exit 1 ;;
 esac
 
+# Resolve the tracker: explicit flag wins; a project whose AGENTS.project.md
+# already declares '## Tracker' stays in Linear mode on a re-run.
+if [ -z "$TRACKER" ]; then
+	if grep -qs '^## Tracker' "$PROJECT/AGENTS.project.md"; then TRACKER="linear"; else TRACKER="files"; fi
+fi
+case "$TRACKER" in
+	files|linear) ;;
+	*) echo "--tracker must be files or linear (got: $TRACKER)" >&2; exit 1 ;;
+esac
+
+# What lives in Linear instead of a file in Linear mode (AGENTS.md §2).
+LINEAR_MOVED="ROADMAP.md docs/ops/BOARD.md docs/ops/MILESTONES.md docs/ops/ISSUES.md docs/ops/FIXED.md docs/ops/IDEAS.md"
+moved_to_linear() { [ "$TRACKER" = "linear" ] && case " $LINEAR_MOVED " in *" $1 "*) return 0 ;; esac; return 1; }
+
 # --- helpers -----------------------------------------------------------------
 
 # Create a directory (and parents) if absent.
@@ -92,6 +116,7 @@ copy_templates() {
 	while IFS= read -r rel; do
 		rel="${rel#./}"
 		[ -e "$PROJECT/$rel" ] && continue
+		moved_to_linear "$rel" && continue
 		if [ "$rel" = "ROADMAP.md" ] && [ -e "$PROJECT/docs/ops/ROADMAP.md" ]; then
 			echo "  !! docs/ops/ROADMAP.md exists: move it to the repo root (tracked) by hand" >&2
 			continue
@@ -145,6 +170,17 @@ ensure_untracked_dir "$PROJECT/.trash"
 # docs/ops/'s BOARD DECIDE ASKS ISSUES FIXED DECISIONS IDEAS.
 copy_templates
 
+# Linear mode: the '## Tracker' switch, appended once, and a warning for each
+# file that should have moved (they go at cutover, per skills/linear).
+if [ "$TRACKER" = "linear" ]; then
+	if ! grep -qs '^## Tracker' "$PROJECT/AGENTS.project.md"; then
+		{ echo; sed "s/<repo>/$(basename "$PROJECT")/g" "$DEV_DIR/skills/linear/tracker.md"; } >> "$PROJECT/AGENTS.project.md"
+	fi
+	for rel in $LINEAR_MOVED; do
+		[ -e "$PROJECT/$rel" ] && echo "  !! $rel exists: in Linear mode it moves to Linear at cutover (skills/linear)" >&2
+	done
+fi
+
 # --- report -------------------------------------------------------------------
 
 echo "Adopted simply/dev into $PROJECT (harness: $HARNESS)."
@@ -152,7 +188,11 @@ echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md"
 for dir in "${AGENT_DIRS[@]}"; do
 	echo "  $dir -> $DEV_DIR/agents"
 done
-echo "  CHANGELOG.md, ROADMAP.md (tracked)"
+if [ "$TRACKER" = "linear" ]; then
+	echo "  CHANGELOG.md (tracked); plan in Linear: ## Tracker in AGENTS.project.md"
+else
+	echo "  CHANGELOG.md, ROADMAP.md (tracked)"
+fi
 echo "  changelog.d/, docs/ops/ (untracked)"
 echo "  .workspaces/, .trash/"
 if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then

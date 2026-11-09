@@ -40,18 +40,10 @@ Canceled. A completed project with its issues is what `MILESTONES.md` was.
 
 ## The `## Tracker` block
 
-In the repo's `AGENTS.project.md` (`adopt.sh --tracker linear` writes a stub):
-
-```markdown
-## Tracker
-
-linear — the plan lives in Linear, not in docs/ops (AGENTS.md §2, *Linear mode*).
-
-- Initiative: <repo> — <initiative URL>
-- Team: SIM (workspace simply-audio)
-- Backlog: <repo> · Backlog — <project URL>
-- Still files, in <absolute path of the default workspace>/docs/ops/: DECIDE.md, ASKS.md, DECISIONS.md, drafts/, reports/
-```
+In the repo's `AGENTS.project.md`. `adopt.sh --tracker linear` appends it from
+`tracker.md` beside this file, with `<repo>` filled in; fill in the two URLs
+once setup has made them. The block is the switch: without it the repo is in
+file mode.
 
 URLs here are fine: `AGENTS.project.md` is tracked but a URL is a link, not an
 ops id. Issue ids never go in it.

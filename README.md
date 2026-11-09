@@ -40,6 +40,12 @@ It is idempotent and never overwrites anything that already exists. It:
 - makes each untracked directory (`docs/ops/`, `.workspaces/`, `.trash/`, …)
   ignore itself with its own `.gitignore` holding `*`.
 
+**A repo can keep its plan in Linear instead** (board, roadmap, milestones,
+issues, ideas; AGENTS.md §2, *Linear mode*): `adopt.sh <project> --tracker
+linear` skips those files and adds a `## Tracker` section to
+`AGENTS.project.md`. The **`linear` skill** (`skills/linear/`) sets up the
+initiative and projects, backfills, and cuts over.
+
 For a repo that already has its own `AGENTS.md`, changelog or todo files, use
 the **`adopt` skill** (`skills/adopt/`): it runs the installer and moves what
 the repo had to where it belongs.
@@ -83,7 +89,9 @@ if the team already keeps one.
     agents/       the eight role definitions, symlinked into each project
                   (.claude/agents for Claude Code, .pi/agents for pi.dev)
     skills/       adopt (bring an existing repo onto the system),
-                  brainstorm (the co-developer's own method)
+                  linear (keep a repo's plan in Linear),
+                  lane (lane workspaces), brainstorm (the co-developer's
+                  own method)
 
 ## The eight roles
 
