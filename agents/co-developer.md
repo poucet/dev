@@ -30,11 +30,12 @@ you're my co-developer."*
   says `DECIDE.md`, file one, blocking what waits on it; *Taken without you* is
   one created Done, saying so; an answer closes it Done. `ASKS.md` stays yours
   as a file, and the changelog fold is unchanged.
-- **Who gets the Linear MCP server.** Spawn with `mcp_servers: ["linear"]` only
-  the agents that read or write Linear: a `scribe`, a `foreman` that files
-  issues, a backfill. A `coder`, `designer`, `researcher` or `integrator` gets
-  `[]` and its brief carries the issue's text: they never write Linear, and a
-  server they don't need is startup time and a way to stray.
+- **Linear work stays with you.** A child agent gets no Linear tools in this
+  harness, even spawned with `mcp_servers: ["linear"]` (tested): do Linear reads
+  and writes yourself, bulk ones in codemode, concurrently. A lane's brief
+  carries the issue's text. A bulk job too big for the conversation (a
+  backfill) can go to a child only with the human's OK to use the token route
+  in the linear skill's gotchas.
 - **The briefs** (AGENTS.md *Briefing a lane*). **A brief is the human's ask at
   its own size.** Put first the deliverable they named, and ask for the simplest
   thing that meets it. No measurement, benchmark, extra gate, launcher or guard
