@@ -31,7 +31,9 @@ never write `docs/ops/`: they report to their file and the coordinator records.
 repo's `## Tracker` block. Every issue's assignee, every project's lead and
 every initiative's owner is set to it whenever the coordinator creates or
 records something, backfill included, so the human's "my issues" view is the
-whole plan. A record found without it gets it on the next touch.
+whole plan. A record found without it gets it on the next touch. The human's
+second account, `christophe.poucet@gmail.com`, is for managing the workspace
+only: never an assignee, lead or owner, and never the default.
 
 | Issue field | values |
 |---|---|
@@ -120,6 +122,9 @@ Canceled), so the old ids stay findable.
 - [ ] Backfill ran clean; a rerun creates nothing; the map has a line for every
       row of every moved file. Count rows per file against issues per origin.
 - [ ] Completed projects for every milestone in `MILESTONES.md`.
+- [ ] The backfill map moved from wherever the backfill wrote it (the first
+      runs: dev's `docs/ops/drafts/linear-map-<repo>.tsv`) into the repo's own
+      `docs/ops/drafts/`.
 - [ ] `## Tracker` block in `AGENTS.project.md`; README links the initiative.
 - [ ] Moved files to `.trash/linear-cutover-<date>/`: `docs/ops/BOARD.md`,
       `MILESTONES.md`, `ISSUES.md`, `FIXED.md`, `IDEAS.md` (untracked: just
@@ -181,6 +186,12 @@ integrator still does not run into a version (AGENTS.md §4).
   missing.
 - **No ids in commits, code or tracked docs**, Linear ids included: the
   workspace is private and a clone can't follow them.
+- **The Linear tools may not be in your tool list.** In this harness a child
+  spawned with `mcp_servers: ["linear"]` can still be missing `mcp__linear__*`
+  from its list; they are reachable through codemode: `await
+  searchTools("linear")`, then call `tools.mcp__linear__…`. Use that. Never
+  read OAuth tokens from `~/.pi/agent/mcp-auth.json` or call the server by
+  hand: it works, but it reads the human's credential file.
 - **Lanes without the MCP server can't read Linear.** Give a lane its issue's
   text in the brief rather than the server, unless it must browse.
 - **Don't close an issue you didn't see closed.** Record what the report says;
