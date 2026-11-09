@@ -23,7 +23,8 @@ never write `docs/ops/`: they report to their file and the coordinator records.
 | workspace | `simply-audio` (https://linear.app/simply-audio) | |
 | team | `AUDIO` (simply-audio) for every repo, except where the repo's Tracker names its own (lumina: `LUMINA`) | ids `AUDIO-123`, `LUMINA-12` |
 | initiative | the repo | `<repo>` |
-| project, per milestone | a roadmap version; its description is what the version means | `<repo> <version> · <title>` |
+| project, per minor version | a roadmap version, always a minor (`0.9`, never `0.9.3`); its description is what the version means | `<repo> <major.minor> · <title>` |
+| project milestone, per patch release | a release inside its minor's project, `x.y.0` included; description what it brought, target date its ship date | `<x.y.z> · <title>` |
 | project, backlog | unscheduled issues and ideas | `<repo> · Backlog` |
 | initiative + project `Ideas` | ideas that fit no repo yet | `Ideas` |
 | initiative `dev`, project `dev · Working system` | decisions about the working system itself | |
@@ -47,6 +48,14 @@ only: never an assignee, lead or owner, and never the default.
 
 Project states: Planned (next), In Progress (being built), Completed (shipped),
 Canceled. A completed project with its issues is what `MILESTONES.md` was.
+
+**A project is a minor version, never a patch.** Every `0.9.x` release lives
+in one `<repo> 0.9 · …` project, and each patch release is a **project
+milestone** in it, `0.9.3 · A tidier tree…`; a minor with a single release
+still gets its `x.y.0` milestone. An issue that ships in a patch carries that
+patch's milestone. Each shipped release also gets a project status update on
+its minor's project: `<x.y.z> · <title> — shipped <date>`, then what it
+brought.
 
 **A decision is an issue labelled Decision** (what was `DECIDE.md` and
 `DECISIONS.md`):
@@ -91,7 +100,7 @@ Steps 1–3 set the `Owner`: initiative owner, project lead.
    URL if it has a remote, and a `Standing` heading (empty) for standing
    instructions.
 2. **Backlog project** `<repo> · Backlog` in the Tracker's team, linked to the initiative.
-3. **A project per roadmap milestone** still open, `<repo> <version> · <title>`,
+3. **A project per roadmap minor version** still open, `<repo> <major.minor> · <title>`,
    description the milestone's paragraph from `ROADMAP.md`, state Planned (or
    In Progress for the one being built), linked to the initiative.
 4. **The `## Tracker` block** in `AGENTS.project.md` (untracked; re-run
@@ -124,7 +133,8 @@ Canceled), so the old ids stay findable.
   |---|---|
   | `ROADMAP.md` row | issue in its milestone's project; 🔄 In Progress, 🎯 Todo, 📋 ⬜ ⏸️ Backlog (⏸️ with a "paused" comment), 🔶 open with a "partly shipped" comment; label Feature |
   | `ROADMAP.md` *Deferred by decision* | issue in `<repo> · Backlog`, a comment naming the decision |
-  | `MILESTONES.md` milestone | a Completed project; its ✅ rows Done issues, 🔶 rows Done with a comment, the remainder an open issue in the next project or Backlog |
+  | `MILESTONES.md` milestone | a Completed project for its minor version; a patch version (`0.9.3`) is a project milestone in its minor's project, not a project, with a status update carrying its account; its ✅ rows Done issues carrying that milestone, 🔶 rows Done with a comment, the remainder an open issue in the next project or Backlog |
+  | `CHANGELOG.md` release with no milestone row | a project milestone in its minor's project, and a status update with what it brought |
   | `ISSUES.md` | Backlog, label Bug (🐛) or Improvement (🔧); 🔬 adds a "triaged" comment, 🔄 In Progress |
   | `FIXED.md` | the same, Done (✅) or Canceled (🗑️), the verdict as a comment (in a backfill, the description may carry it instead) |
   | `IDEAS.md` Inbox | Backlog, label Idea; 🎯 Todo; 🔬 / 🔶 as a comment |
@@ -148,7 +158,9 @@ Canceled), so the old ids stay findable.
 - [ ] Initiative, Backlog project and open milestone projects exist (setup 1–3).
 - [ ] Backfill ran clean; a rerun creates nothing; the map has a line for every
       row of every moved file. Count rows per file against issues per origin.
-- [ ] Completed projects for every milestone in `MILESTONES.md`.
+- [ ] Completed projects for every minor version in `MILESTONES.md`, with a
+      project milestone and a status update per release in it, and no project
+      per patch.
 - [ ] The backfill map moved from wherever the backfill wrote it (the first
       runs: dev's `docs/ops/drafts/linear-map-<repo>.tsv`) into the repo's own
       `docs/ops/drafts/`.
@@ -218,9 +230,15 @@ with a one-line comment. Never delete an issue.
 milestone project; relabel Feature if it is now scheduled work. An `Ideas` issue
 that earns a repo moves to that repo's project.
 
-**Start a milestone**: its project goes In Progress; the next one is Planned.
+**Start a minor version**: its project goes In Progress; the next one is
+Planned.
 
-**Finish a milestone**: every issue Done, Canceled or moved on; the project goes
+**Ship a release** (`x.y.z`): a project milestone `<x.y.z> · <title>` in the
+minor's project, target date the ship date; the issues that shipped in it carry
+it; a status update `<x.y.z> · <title> — shipped <date>` says what it brought.
+Never a project of its own.
+
+**Finish a minor version**: every issue Done, Canceled or moved on; the project goes
 Completed. That is the version's record; the changelog has the account. The
 integrator still does not run into a version (AGENTS.md §4).
 

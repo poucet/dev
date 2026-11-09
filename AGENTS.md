@@ -190,8 +190,8 @@ coordinator creates or records it.
 | `DECIDE.md` row | an issue labelled Decision, assigned to whoever decides (today always the owner), in the project it concerns, blocking the issues that wait on it |
 | `DECIDE.md` *Taken without you* | a Decision issue created Done, saying so; reopen it to reverse |
 | `DECISIONS.md` | the Done Decision issues, the answer and its rationale in the last comment; a saved view (label Decision, Done, newest first) is the log |
-| `ROADMAP.md` (tracked) | a project per milestone, `<repo> <version> · <title>`, its description what the version means; each roadmap row an issue in it. The file leaves the repo; the README links the initiative |
-| `MILESTONES.md` | the completed projects, with their issues |
+| `ROADMAP.md` (tracked) | a project per minor version, `<repo> <major.minor> · <title>` (never one per patch), its description what the version means; each roadmap row an issue in it. The file leaves the repo; the README links the initiative |
+| `MILESTONES.md` | the completed projects, with their issues; each patch release a project milestone in its minor's project, `<x.y.z> · <title>`, carried by the issues that shipped in it |
 | `ISSUES.md` | issues labelled Bug (defect) or Improvement (rough edge), in `<repo> · Backlog` until scheduled |
 | `FIXED.md` | the same issue, Done (fixed) or Canceled (won't fix), with a one-line verdict comment |
 | `IDEAS.md` Inbox → In-flight → Done | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
