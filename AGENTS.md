@@ -163,7 +163,9 @@ cutover are the `linear` skill.
 **One team; the repo is an initiative.** Every Linear-based repo shares one team
 (its `## Tracker` names it), so there is one board and one id series; a repo is
 an initiative, never a team of its own. Ideas that fit no repo live in a shared
-`Ideas` initiative and project until one earns a repo.
+`Ideas` initiative and project until one earns a repo. Every issue, project
+and initiative is assigned to the `## Tracker`'s owner, the human, whenever the
+coordinator creates or records it.
 
 | File mode | Linear mode |
 |---|---|

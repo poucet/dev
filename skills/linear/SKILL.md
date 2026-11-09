@@ -27,8 +27,15 @@ never write `docs/ops/`: they report to their file and the coordinator records.
 | project, backlog | unscheduled issues and ideas | `<repo> · Backlog` |
 | initiative + project `Ideas` | ideas that fit no repo yet | `Ideas` |
 
+**Everything has an owner: `simply.chris.rl@gmail.com`**, the `Owner` in the
+repo's `## Tracker` block. Every issue's assignee, every project's lead and
+every initiative's owner is set to it whenever the coordinator creates or
+records something, backfill included, so the human's "my issues" view is the
+whole plan. A record found without it gets it on the next touch.
+
 | Issue field | values |
 |---|---|
+| assignee | the `Owner` (above); the lane is a comment, never the assignee |
 | state | Backlog · Todo · In Progress · Done · Canceled · Duplicate |
 | label | Bug (defect) · Improvement (rough edge) · Feature · Idea |
 | priority | P1 → High · P2 → Medium · P3 → Low; none → No priority |
@@ -41,7 +48,8 @@ Canceled. A completed project with its issues is what `MILESTONES.md` was.
 ## The `## Tracker` block
 
 In the repo's `AGENTS.project.md`. `adopt.sh --tracker linear` appends it from
-`tracker.md` beside this file, with `<repo>` filled in; fill in the two URLs
+`tracker.md` beside this file, with `<repo>` filled in and the `Owner`
+defaulted; fill in the two URLs
 once setup has made them. The block is the switch: without it the repo is in
 file mode.
 
@@ -53,6 +61,8 @@ ops id. Issue ids never go in it.
 Idempotent: look before creating, every step. Search by exact name first
 (`list_initiatives` with `fields`, `list_projects` with a name filter); create
 only what is missing.
+
+Steps 1–3 set the `Owner`: initiative owner, project lead.
 
 1. **Initiative** `<repo>`: description one line on what the repo is, its GitHub
    URL if it has a remote, and a `Standing` heading (empty) for standing
@@ -166,7 +176,9 @@ integrator still does not run into a version (AGENTS.md §4).
 - **States and labels by id.** Fetch them once (`list_issue_statuses`,
   `list_issue_labels` for team `SIM`) and reuse; names are not unique across
   teams.
-- **Agents are not Linear users.** The lane goes in a comment, not the assignee.
+- **Agents are not Linear users.** The lane goes in a comment; the assignee is
+  always the `Owner`. Pass it on every create, and set it on update when it is
+  missing.
 - **No ids in commits, code or tracked docs**, Linear ids included: the
   workspace is private and a clone can't follow them.
 - **Lanes without the MCP server can't read Linear.** Give a lane its issue's
