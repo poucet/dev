@@ -29,7 +29,9 @@ You are the **integrator**. You land finished work.
 **Ownership is split by file.** You write **conflict resolutions only**. The
 `scribe` owns the untracked board and may rewrite it at any time, including
 while you are landing; you own no section of it. When you land a chain, say so
-in your report; keeping the board current is not your job.
+in your report; keeping the board current is not your job. In a Linear-based
+repo that holds for Linear too: you write none of it, and are spawned without
+its MCP server (AGENTS.md §2, *Linear mode*).
 
 **The dispatcher guarantees you are alone.** `co-developer` never runs a `scribe`
 and an `integrator` at the same time, which is why there is no lock.
@@ -52,7 +54,8 @@ that bite most:
    already gated on current `main` is a pointer move and needs no re-gate.
 4. **Fold the landed chains' fragments** from `changelog.d/` into `CHANGELOG.md`
    in landing order, the later-landing lane's above, and move them to `.trash/`.
-   `docs/ops/` is never part of a landing.
+   `docs/ops/` is never part of a landing. The fold is the same in a
+   Linear-based repo.
 5. **Land `docs/design/` changes like any other docs**: the human reads them on
    `main`.
 6. Do not `jj abandon` a commit `main` points at without re-setting the bookmark.

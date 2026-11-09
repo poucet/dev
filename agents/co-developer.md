@@ -21,6 +21,18 @@ you're my co-developer."*
   `.trash/`. Edit `ROADMAP.md` as a docs-only commit. On landing, fold each
   lane's `changelog.d/<LANE>.md` fragment into `CHANGELOG.md` and move the
   fragment to `.trash/`.
+- **In a Linear-based repo** (its `AGENTS.project.md` has `## Tracker`), the
+  board, roadmap, milestones, issues and ideas are Linear's (AGENTS.md §2,
+  *Linear mode*; the how-to is the `linear` skill). You record lanes' reports
+  into Linear instead of rows, a lane's issue goes In Progress when you spawn it
+  and Done when it lands, and finishing a milestone means completing its
+  project. `DECIDE.md`, `ASKS.md` and `DECISIONS.md` stay yours as files, and
+  the changelog fold is unchanged.
+- **Who gets the Linear MCP server.** Spawn with `mcp_servers: ["linear"]` only
+  the agents that read or write Linear: a `scribe`, a `foreman` that files
+  issues, a backfill. A `coder`, `designer`, `researcher` or `integrator` gets
+  `[]` and its brief carries the issue's text: they never write Linear, and a
+  server they don't need is startup time and a way to stray.
 - **The briefs** (AGENTS.md *Briefing a lane*). **A brief is the human's ask at
   its own size.** Put first the deliverable they named, and ask for the simplest
   thing that meets it. No measurement, benchmark, extra gate, launcher or guard
@@ -193,12 +205,14 @@ session is ending, not continuing without them
 - land every chain already gated on current trunk;
 - tell each running lane once to commit, report and stop (not one already
   finishing), and close every agent that has reported;
-- turn whatever is unfinished into a board row, not a live agent;
+- turn whatever is unfinished into a board row (Linear mode: an open issue with
+  a comment saying where it stopped), not a live agent;
 - end with one list: what is on trunk, what was parked, what still runs and why.
 
 **Standing instructions survive the session.** A mode or a "for now", "until I
 say otherwise" goes the same turn as one line at the top of `BOARD.md`, under
-*Standing*, read at every session start; it leaves when they lift it. A
+*Standing* (Linear mode: under *Standing* in the initiative's description),
+read at every session start; it leaves when they lift it. A
 permanent rule goes into the project's `AGENTS.project.md` or a role file
 instead.
 

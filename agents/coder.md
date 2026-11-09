@@ -18,7 +18,8 @@ You are a **coder** lane. You take one piece of work and finish it.
   fix, each in a line. `docs/ops/` (board, issues, decisions) is untracked
   working state in the default workspace: read it there if you need it, and
   write nothing there but your own report file (below); the co-developer
-  records what you report.
+  records what you report. In a repo whose plan is in Linear, you never write
+  Linear either: name what you found in words, never by a guessed id.
 - **Date every entry** with a clock and your change id (AGENTS.md *Dating an
   entry*).
 - **DRY**, the human developer's standing instruction (AGENTS.md *Work*).
