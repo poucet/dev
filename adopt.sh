@@ -6,8 +6,8 @@
 # overwritten):
 #
 #   1. links AGENTS.md         -> dev's AGENTS.md, by a relative symlink
-#      (../dev/AGENTS.md when the repo sits beside dev), and starts an
-#      AGENTS.project.md for the repo's own rules, untracked (step 4)
+#      (../dev/AGENTS.md when the repo sits beside dev), untracked (step 4),
+#      and starts an AGENTS.project.md for the repo's own rules, untracked
 #   2. symlinks the role definitions into the directory the coding harness
 #      in use reads them from:
 #        pi.dev       .pi/agents       (personas; needs projectPersonas: true
@@ -28,8 +28,9 @@
 #      the project has no file of that name yet. Files of an older layout
 #      (docs/ops/STATUS.md, docs/ops/ROADMAP.md) are left where they are;
 #      a root ROADMAP.md is not added while docs/ops/ROADMAP.md exists.
-#      A real AGENTS.md is left alone: its rules move into AGENTS.project.md
-#      by hand (skills/adopt), then re-run this to make the link.
+#      A real AGENTS.md (an old copy) is left alone and reported: its rules
+#      move into AGENTS.project.md by hand (skills/adopt), then re-run with
+#      --replace-agents-md, which moves it to .trash/ and makes the link.
 #      With --tracker linear the repo keeps its plan in Linear (AGENTS.md
 #      §2, *Linear mode*): ROADMAP.md and docs/ops/'s BOARD MILESTONES
 #      ISSUES FIXED IDEAS DECIDE DECISIONS are not copied (a warning names any that already exist: they
@@ -39,38 +40,48 @@
 #      (and .claude/ or .pi/) gets its own .gitignore holding '*'. The symlink
 #      targets are machine-specific absolute paths, so they must never be
 #      committed either.
-#      AGENTS.project.md is untracked in every repo, in both modes: a single
-#      file can't ignore itself, so the root .gitignore gains the line
-#      '/AGENTS.project.md', once. If the file is already tracked it is
-#      untracked (jj file untrack; git rm --cached in a git-only repo),
-#      staying on disk. Nothing is committed: the report says what to commit.
+#      AGENTS.md, AGENTS.project.md and the agent links are untracked in
+#      every repo, in both modes: they are local setup (the AGENTS.md link
+#      dangles in a lane's workspace and in a public clone). A single file
+#      can't ignore itself, so the root .gitignore gains an anchored line for
+#      each, once: '/AGENTS.md', '/AGENTS.project.md', '/.pi/agents' or
+#      '/.claude/agents'. Any already tracked is untracked (jj file untrack;
+#      git rm --cached in a git-only repo), staying on disk. Nothing is
+#      committed: the report prints the by-path commit command.
+#      A lane's workspace gets its own absolute links from `lane new`
+#      (skills/lane).
 #
 # Usage:
 #   ./adopt.sh <project-dir> [--harness pi|claude|both|auto]
 #                            [--tracker files|linear]
+#                            [--replace-agents-md]
 #
 #   --harness          which harness directory(s) to wire (default: auto —
 #                      .claude if the project has one, else .pi)
 #   --tracker          where the plan lives (default: files; linear also
 #                      when AGENTS.project.md already has '## Tracker')
-
+#   --replace-agents-md  a real AGENTS.md (an old copy of the system) goes to
+#                      .trash/ and becomes the link; only once its project
+#                      rules are in AGENTS.project.md
 #
 set -euo pipefail
 
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "dev dir: $DEV_DIR"
 
-usage() { sed -n '2,56p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,65p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
 HARNESS="auto"
 TRACKER=""
+REPLACE_AGENTS_MD=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help) usage 0 ;;
 		--harness) HARNESS="${2:?}"; shift 2 ;;
 		--tracker) TRACKER="${2:?}"; shift 2 ;;
+		--replace-agents-md) REPLACE_AGENTS_MD=1; shift ;;
 		-*) echo "unknown option: $1" >&2; usage 1 >&2 ;;
 		*) if [ -n "$PROJECT" ]; then echo "unexpected argument: $1" >&2; usage 1 >&2; fi
 		   PROJECT="$1"; shift ;;
@@ -147,7 +158,21 @@ relative_to() { perl -MFile::Spec -e 'print File::Spec->abs2rel($ARGV[0], $ARGV[
 # --- 1. AGENTS.md and AGENTS.project.md ---------------------------------------
 
 AGENTS_LINK="$(relative_to "$DEV_DIR/AGENTS.md" "$PROJECT")"
-link_into "$AGENTS_LINK" "$PROJECT/AGENTS.md"
+# A real AGENTS.md is an old copy of the system, maybe with project rules in
+# it. Replacing it changes what the repo's agents read, so it is the human's
+# step: reported, and done only with --replace-agents-md.
+AGENTS_COPY=""
+if [ -e "$PROJECT/AGENTS.md" ] && [ ! -L "$PROJECT/AGENTS.md" ]; then
+	if [ -n "$REPLACE_AGENTS_MD" ]; then
+		trash="$PROJECT/.trash/AGENTS.md-$(date +%Y-%m-%d)"
+		ensure_dir "$trash"
+		mv -- "$PROJECT/AGENTS.md" "$trash/AGENTS.md"
+		AGENTS_COPY="replaced"
+	else
+		AGENTS_COPY="kept"
+	fi
+fi
+[ "$AGENTS_COPY" = "kept" ] || link_into "$AGENTS_LINK" "$PROJECT/AGENTS.md"
 
 # --- 2. harness agents symlink ------------------------------------------------
 
@@ -187,39 +212,59 @@ if [ "$TRACKER" = "linear" ]; then
 	done
 fi
 
-# --- 4. AGENTS.project.md is untracked (AGENTS.md, *A project's own rules*) --
+# --- 4. the local files are untracked (AGENTS.md, *A project's own rules*) ---
 
-# It can name private infrastructure (the tracker, its URLs) and some repos are
-# public. A single file can't ignore itself, so it takes a root .gitignore line.
+# AGENTS.project.md can name private infrastructure (the tracker, its URLs);
+# the AGENTS.md link dangles in a lane's workspace and in a public clone, and
+# the agent links point into this machine. A single file can't ignore itself,
+# so each takes an anchored root .gitignore line.
+LOCAL_PATHS=("AGENTS.md" "AGENTS.project.md" "${AGENT_DIRS[@]}")
 TO_COMMIT=()
-if ! grep -qsxE '/?AGENTS\.project\.md' "$PROJECT/.gitignore"; then
+for rel in "${LOCAL_PATHS[@]}"; do
+	re="$(printf '%s' "$rel" | sed 's/[.]/\\./g')"
+	grep -qsxE "/?$re/?" "$PROJECT/.gitignore" && continue
 	if [ -s "$PROJECT/.gitignore" ] && [ -n "$(tail -c1 "$PROJECT/.gitignore")" ]; then
 		echo >> "$PROJECT/.gitignore"
 	fi
-	echo '/AGENTS.project.md' >> "$PROJECT/.gitignore"
-	TO_COMMIT+=(".gitignore")
-fi
+	echo "/$rel" >> "$PROJECT/.gitignore"
+	case " ${TO_COMMIT[*]-} " in *" .gitignore "*) ;; *) TO_COMMIT+=(".gitignore") ;; esac
+done
 
-# Already tracked: untrack it, after the ignore line exists. The file stays.
-# A colocated repo is jj's, never git's (AGENTS.md §4).
-if [ -d "$PROJECT/.jj" ]; then
-	if [ -n "$(cd "$PROJECT" && jj file list AGENTS.project.md </dev/null 2>/dev/null)" ]; then
-		(cd "$PROJECT" && jj file untrack AGENTS.project.md </dev/null)
-		TO_COMMIT+=("AGENTS.project.md")
-	fi
-elif [ -d "$PROJECT/.git" ]; then
-	if git -C "$PROJECT" ls-files --error-unmatch AGENTS.project.md >/dev/null 2>&1; then
-		git -C "$PROJECT" rm --cached -q AGENTS.project.md
-		TO_COMMIT+=("AGENTS.project.md")
-	fi
+# Already tracked: untrack each, after its ignore line exists. The files stay.
+# A real AGENTS.md left in place (an old copy) stays tracked until it is
+# replaced. A colocated repo is jj's, never git's (AGENTS.md §4).
+# A .gitignore already changed by an earlier run is still to commit.
+if [ -d "$PROJECT/.jj" ] && [ -n "$(cd "$PROJECT" && jj diff --name-only -- .gitignore </dev/null 2>/dev/null)" ]; then
+	case " ${TO_COMMIT[*]-} " in *" .gitignore "*) ;; *) TO_COMMIT+=(".gitignore") ;; esac
 fi
+UNTRACKED=()
+for rel in "${LOCAL_PATHS[@]}"; do
+	[ "$rel" = "AGENTS.md" ] && [ "$AGENTS_COPY" = "kept" ] && continue
+	if [ -d "$PROJECT/.jj" ]; then
+		[ -n "$(cd "$PROJECT" && jj file list -- "$rel" </dev/null 2>/dev/null)" ] || continue
+		(cd "$PROJECT" && jj file untrack -- "$rel" </dev/null)
+	elif [ -d "$PROJECT/.git" ]; then
+		git -C "$PROJECT" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1 || continue
+		git -C "$PROJECT" rm --cached -q -- "$rel"
+	else
+		continue
+	fi
+	UNTRACKED+=("$rel")
+	TO_COMMIT+=("$rel")
+done
 
 # --- report -------------------------------------------------------------------
 
 echo "Adopted simply/dev into $PROJECT (harness: $HARNESS)."
-echo "  AGENTS.md -> $AGENTS_LINK, AGENTS.project.md (untracked)"
+case "$AGENTS_COPY" in
+	kept) echo "  !! AGENTS.md is a real file (an old copy of the system), left tracked and in place:"
+	      echo "     move its project rules into AGENTS.project.md, then re-run with --replace-agents-md" ;;
+	replaced) echo "  AGENTS.md (an old copy) moved to .trash/AGENTS.md-$(date +%Y-%m-%d)/" ;;
+esac
+[ "$AGENTS_COPY" = "kept" ] || echo "  AGENTS.md -> $AGENTS_LINK (untracked)"
+echo "  AGENTS.project.md (untracked)"
 for dir in "${AGENT_DIRS[@]}"; do
-	echo "  $dir -> $DEV_DIR/agents"
+	echo "  $dir -> $DEV_DIR/agents (untracked)"
 done
 if [ "$TRACKER" = "linear" ]; then
 	echo "  CHANGELOG.md (tracked); plan in Linear: ## Tracker in AGENTS.project.md"
@@ -231,13 +276,12 @@ echo "  .workspaces/, .trash/"
 if [ ${#TO_COMMIT[@]} -gt 0 ]; then
 	echo
 	echo "To commit, by path (nothing was committed): ${TO_COMMIT[*]}"
-	msg="Keep AGENTS.project.md untracked: it can name private infrastructure"
-	case " ${TO_COMMIT[*]} " in *" AGENTS.project.md "*)
-		msg="Stop tracking AGENTS.project.md: it can name private infrastructure"
-		echo "  AGENTS.project.md was tracked: it is untracked now and still on disk;"
-		echo "  the commit records it removed from the repo. Its old contents stay in"
-		echo "  history, which only the human can rewrite." ;;
-	esac
+	msg="Keep AGENTS.md, AGENTS.project.md and the agent links out of version control: they are local setup"
+	if [ ${#UNTRACKED[@]} -gt 0 ]; then
+		echo "  Were tracked, now untracked and still on disk: ${UNTRACKED[*]}."
+		echo "  The commit records them removed from the repo; their old contents stay"
+		echo "  in history, which only the human can rewrite."
+	fi
 	if [ -d "$PROJECT/.jj" ]; then
 		echo "  jj commit ${TO_COMMIT[*]} -m \"$msg\""
 	else

@@ -152,8 +152,11 @@ Canceled), so the old ids stay findable.
 - [ ] The backfill map moved from wherever the backfill wrote it (the first
       runs: dev's `docs/ops/drafts/linear-map-<repo>.tsv`) into the repo's own
       `docs/ops/drafts/`.
-- [ ] `AGENTS.project.md` is untracked: `jj file list AGENTS.project.md`
-      prints nothing (else run `adopt.sh` and commit what it names first).
+- [ ] `AGENTS.md`, `AGENTS.project.md` and the agent links are untracked:
+      `jj file list AGENTS.md AGENTS.project.md .pi/agents .claude/agents`
+      prints nothing (else run `adopt.sh` and commit what it names first; a
+      real `AGENTS.md`, an old copy, moves its rules into `AGENTS.project.md`
+      and is replaced with `adopt.sh --replace-agents-md`).
 - [ ] `## Tracker` block in `AGENTS.project.md` (untracked: nothing to
       commit); README links the initiative.
 - [ ] Old ids left in `AGENTS.project.md` and `docs/ops/drafts/` (`D-042`,

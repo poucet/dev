@@ -31,9 +31,13 @@ It is idempotent and never overwrites anything that already exists. It:
 
 - **links `AGENTS.md`** to this repo's (a relative symlink), and starts an
   `AGENTS.project.md` for the project's own rules: build, gates, branches,
-  paths. Where the two disagree, the project file wins for that project. It
-  is **untracked** (a line in the root `.gitignore`; a tracked one is
-  untracked): it can name private infrastructure, and some repos are public;
+  paths. Where the two disagree, the project file wins for that project. Both
+  are **untracked**, as are the agent links below (a line each in the root
+  `.gitignore`; a tracked one is untracked): they are local setup, the link
+  dangles in a lane's workspace and a public clone, and the project file can
+  name private infrastructure. A real `AGENTS.md` (an old copy of the
+  system) is left in place and reported; `--replace-agents-md` moves it to
+  `.trash/` and makes the link;
 - **symlinks the role definitions** for the harness (below);
 - lays out the doc web of §3 from `templates/`: `CHANGELOG.md` at the root
   (tracked), and `docs/ops/`, the one **untracked** directory of working
@@ -61,9 +65,9 @@ from — pick the one that matches the harness.** The script auto-detects
     #   (also needs `projectPersonas: true` in ~/.pi/agent/subagents.json,
     #    and the project must be trusted — pi prompts on launch)
 
-The links' targets are absolute machine-specific paths, so they are gitignored;
-the project's own `AGENTS.md` records the commands that recreate them (a fresh
-clone runs the installer again).
+The links are gitignored: their targets are machine-specific. A fresh clone runs
+the installer again; a lane's workspace gets absolute links from `lane new`
+(`skills/lane/`), and `lane link <name>` remakes them in an existing one.
 
 The role files are shared verbatim between harnesses, so their frontmatter must
 stay valid for every harness that reads them: **omit `tools`** (both harnesses

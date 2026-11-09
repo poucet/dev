@@ -217,8 +217,8 @@ say otherwise" goes the same turn as one line at the top of `BOARD.md`, under
 read at every session start; it leaves when they lift it. A
 permanent rule goes into the project's `AGENTS.project.md` (untracked: edit it
 by hand, a line at a time, never rewrite it) or a role file instead. A lane
-gets the project's rules through its brief or that file's absolute path: its
-own workspace has no copy.
+gets the project's rules through the link `lane new` makes to that file in its
+workspace, or through its brief.
 
 ## Environment
 

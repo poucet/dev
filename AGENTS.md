@@ -9,6 +9,11 @@ the coding harness reads them from (Claude Code: `.claude/agents`; pi.dev:
 
     # either: ./adopt.sh <project>
 
+**These links are local setup, untracked in every repo**: a tracked relative
+link dangles inside a lane's workspace and in a public clone, an absolute one
+leaks a home path, and the system's text doesn't belong in a repo that ships.
+`lane new` gives each workspace its own absolute links.
+
 Every rule below came from a real failure. Where a rule carries its reason or a
 quote, keep it with the rule: a rule whose reason is stated gets followed.
 
@@ -17,16 +22,15 @@ quote, keep it with the rule: a rule whose reason is stated gets followed.
 wins where the two disagree. This file stays project-neutral: a project's names,
 paths, commands, gates and decision ids belong in its own file.
 
-**`AGENTS.project.md` is untracked, in every repo**: a line in the root
-`.gitignore` ignores it (a single file can't ignore itself the way a directory
-does, §3). Some repos are public while the tracker is private, and this file
-names private things: the tracker and its URLs, standing rules. Like
-`docs/ops/`, it exists only in the default workspace, so **a lane reads it by
-absolute path**: its own workspace has none, and the project's rules reach it
-through its brief or that path. It has no history, so nothing irreplaceable
-lives only there; but it is where the human's standing rules live, and **a rule
-he wrote there is his to keep**: no agent rewrites the file wholesale. Edit it
-by hand, then re-read what you touched.
+**`AGENTS.project.md` is untracked, in every repo**, like `AGENTS.md`: a line
+in the root `.gitignore` ignores it (a single file can't ignore itself the way a
+directory does, §3). Some repos are public while the tracker is private, and
+this file names private things: the tracker and its URLs, standing rules. It
+lives only in the default workspace, and **`lane new` links it into each lane's
+workspace** by absolute path, so a lane reads the one copy. It has no
+history, so nothing irreplaceable lives only there; but it is where the human's
+standing rules live, and **a rule he wrote there is his to keep**: no agent
+rewrites the file wholesale. Edit it by hand, then re-read what you touched.
 
 ---
 
@@ -160,7 +164,8 @@ the files that stay use them; an issue's id is Linear's, *Linear mode* below):
 | `ROADMAP.md` (tracked) | a word label, e.g. `DEST-MIX` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| DEST-MIX \| 📋 \| what you get \| size \| needs \|` |
 
 **Lanes read `docs/ops/` by the default workspace's absolute path** (their own
-workspace has none, so their brief names it), and `AGENTS.project.md` the same way. What a lane
+workspace has none, so their brief names it); `AGENTS.project.md` reaches them
+through the link `lane new` makes (§3). What a lane
 may write there is under *How a lane writes into shared documents*, below.
 
 ### Linear mode — the plan in Linear, not in files
@@ -464,9 +469,9 @@ As few top-level documents as possible ([simply-chris](https://simplychris.ai):
 *"where should the remaining top-level docs go? Ideally only one or 2 key ones
 remain"*):
 
-- **the repo root** holds `AGENTS.md`, `AGENTS.project.md` if any (untracked), and the
-  tracked `CHANGELOG.md` and `ROADMAP.md` (file mode only), with the untracked
-  `changelog.d/` fragments beside them;
+- **the repo root** holds `AGENTS.md` and `AGENTS.project.md` if any (both
+  untracked), and the tracked `CHANGELOG.md` and `ROADMAP.md` (file mode
+  only), with the untracked `changelog.d/` fragments beside them;
 - **`docs/ops/`** holds what decays, wrong the moment work lands, so it lives
   and is maintained together, by the coordinator, in the default workspace;
 - everything else lives by kind: design, research, guides, reference. A folder
@@ -551,11 +556,12 @@ the coordinator files the issue.
 
 ## 3. Default directory structure (a repo you own)
 
-    AGENTS.md                  this file: a symlink to it, or a copy
+    AGENTS.md                  this file: a symlink to it; untracked, by a root .gitignore line
     AGENTS.project.md          this project's own rules (optional; wins over this file);
-                               untracked, by a line in the root .gitignore; default workspace only
-    .claude/agents ->          symlink to <this system's repo>/agents
+                               untracked, by a root .gitignore line; default workspace only
+    .claude/agents ->          symlink to <this system's repo>/agents, untracked
                                (Claude Code; pi.dev uses .pi/agents instead)
+                               lane new links all three into a workspace, by absolute path
     CHANGELOG.md               tracked, user-facing; folded from the fragments below
     ROADMAP.md                 tracked; what comes next, by version; no ops ids (file mode only)
     changelog.d/<LANE>.md      untracked, default workspace only; a lane's entry until its landing folds it in
@@ -581,8 +587,9 @@ the coordinator files the issue.
 (`docs/ops/.gitignore`, `changelog.d/.gitignore`, `.workspaces/.gitignore`,
 `.trash/.gitignore`…), not a path entry in the root `.gitignore`. The rule
 travels with the directory, and the root ignore file stays the project's. The
-one exception is a single file, `AGENTS.project.md`: it takes one root line,
-`/AGENTS.project.md`, which `adopt.sh` adds.
+exceptions are the local links, which can't ignore themselves: each takes one
+anchored root line (`/AGENTS.md`, `/AGENTS.project.md`, `/.claude/agents` or
+`/.pi/agents`), which `adopt.sh` adds.
 
 Workspaces go **inside** the repo, not `../` siblings, which pollute the
 directory the other repos live in. This is about extra working copies of *this*

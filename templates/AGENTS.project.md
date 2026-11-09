@@ -4,9 +4,9 @@ The working system is [AGENTS.md](AGENTS.md), a link to dev's. This file holds
 what is specific to this repo; read it right after AGENTS.md. Where the two
 disagree, this file wins here. Facts only, short.
 
-Untracked (a line in the root .gitignore): it lives only in the default
-workspace, so a lane reads it by absolute path. Edit it by hand, a line at a
-time; never rewrite it wholesale.
+Untracked (a line in the root .gitignore), like AGENTS.md: it lives only in
+the default workspace, and `lane new` links it into each lane's workspace.
+Edit it by hand, a line at a time; never rewrite it wholesale.
 
 ## Build and gates
 

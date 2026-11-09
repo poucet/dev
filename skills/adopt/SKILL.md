@@ -14,9 +14,9 @@ overwrites).
 
 | path | what | tracked? |
 |---|---|---|
-| `AGENTS.md` | relative symlink to the dev repo's `AGENTS.md` (the system) | the symlink, yes |
-| `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks; default workspace only, lanes read it by absolute path | no: a `/AGENTS.project.md` line in the root `.gitignore` (it can name private infrastructure, and some repos are public) |
-| `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no (machine path) |
+| `AGENTS.md` | relative symlink to the dev repo's `AGENTS.md` (the system) | no: a `/AGENTS.md` line in the root `.gitignore` (the link dangles in a lane's workspace and in a public clone) |
+| `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks; default workspace only, `lane new` links it into each lane's workspace | no: a `/AGENTS.project.md` line in the root `.gitignore` (it can name private infrastructure, and some repos are public) |
+| `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no: a `/.pi/agents` or `/.claude/agents` line in the root `.gitignore` (machine path) |
 | `CHANGELOG.md` | user-facing, at the root | yes |
 | `ROADMAP.md` | what comes next, by version, at the root; cites no ops ids | yes |
 | `changelog.d/` | lanes' changelog fragments until folded in, in the default workspace | no: its own `.gitignore` holds `*` |
@@ -65,7 +65,10 @@ are folded or untracked (`jj file untrack`).
    - an existing `AGENTS.md` / `CLAUDE.md` with project rules → their
      **project-specific** parts go into `AGENTS.project.md`; anything generic
      that `dev/AGENTS.md` lacks is reported to the human as a backport candidate
-     (don't edit dev's file from here); then `AGENTS.md` becomes the symlink;
+     (don't edit dev's file from here); then re-run `adopt.sh` with
+     `--replace-agents-md`, which moves the old copy to `.trash/` and makes
+     the link (without the flag a real `AGENTS.md` is reported and left
+     tracked: replacing it changes what the repo's agents read);
    - an existing changelog anywhere else → `CHANGELOG.md` at the root, history
      kept;
    - todo, board or issue files → their content into `docs/ops/` (untracked),
@@ -77,26 +80,29 @@ are folded or untracked (`jj file untrack`).
 4. **Write `AGENTS.project.md`** if there isn't one: how to build and test (the
    gates, as exact commands), branches and remotes, what never to run (GUIs,
    real devices, pushes), paths, and the default workspace's absolute path
-   (lanes read `docs/ops/` and this file by it). Short; facts only. It is
+   (lanes read `docs/ops/` by it). Short; facts only. It is
    untracked: if the repo had it tracked, `adopt.sh` untracked it and its old
    contents are still in history; say so in the report if the repo is public.
+   The same holds for a tracked `AGENTS.md` link or agent link.
 5. **Verify:**
-   - `git check-ignore docs/ops/BOARD.md changelog.d/x.md AGENTS.project.md`
-     all print (the path need not exist, so this holds in Linear mode too);
-   - `jj file list AGENTS.project.md` prints nothing. A lane started before
-     the untracking rebases past it before landing, or its tip tracks the file
-     again;
+   - `git check-ignore --no-index docs/ops/BOARD.md changelog.d/x.md
+     AGENTS.md AGENTS.project.md` all print (the path need not exist, so this
+     holds in Linear mode too);
+   - `jj file list AGENTS.md AGENTS.project.md .pi/agents .claude/agents`
+     prints nothing (a real `AGENTS.md` kept for now aside). A lane started
+     before the untracking rebases past it before landing, or its tip tracks
+     the file again; then `lane link <name>` gives it the links;
    - `jj st` / `git status` shows no machine-specific path (the harness
      symlinks) as added;
    - the harness sees the roles (pi: `"projectPersonas": true` in
      `~/.pi/agent/subagents.json`, and the project trusted on next launch: tell
      the human if either is missing).
 6. **Commit only the tracked parts**, one commit, plain words, e.g.
-   `Adopt the dev working system: AGENTS.md from dev, changelog and roadmap at
-   the root, the project's own rules file kept untracked` (no internal ids).
-   Commit the files by path (`AGENTS.md`, `.gitignore`, `CHANGELOG.md`,
-   `ROADMAP.md`, and `AGENTS.project.md` when `adopt.sh` says it untracked
-   it), so nobody else's uncommitted edits ride along. Don't push.
+   `Adopt the dev working system: changelog and roadmap at the root, the
+   local links and the project's own rules file kept untracked` (no internal ids).
+   Commit the files by path (`.gitignore`, `CHANGELOG.md`, `ROADMAP.md`, and
+   whatever `adopt.sh` says it untracked), so nobody else's uncommitted edits
+   ride along. Don't push.
 7. **Report:** what was created, what moved where, what was left for the human
    (backport candidates, settings they must flip, anything ambiguous).
 
