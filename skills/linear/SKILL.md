@@ -112,7 +112,7 @@ Canceled), so the old ids stay findable.
 - **The map**: `docs/ops/drafts/linear-map-<repo>.tsv` in the repo's default
   workspace (untracked; a backfill run from elsewhere says where it put it),
   one line per row:
-  `<old id>\t<SIM id>\t<file>\t<state>`. Write it as you go, so a crash costs
+  `<old id>\t<file>\t<SIM id>\t<state>` (header `old_id source_file SIM-id state`). Write it as you go, so a crash costs
   nothing.
 - **Reruns are idempotent.** Before creating, look the old id up in the map; if
   it is missing there, search the initiative's issues for its origin line
@@ -126,7 +126,7 @@ Canceled), so the old ids stay findable.
   | `ROADMAP.md` *Deferred by decision* | issue in `<repo> · Backlog`, a comment naming the decision |
   | `MILESTONES.md` milestone | a Completed project; its ✅ rows Done issues, 🔶 rows Done with a comment, the remainder an open issue in the next project or Backlog |
   | `ISSUES.md` | Backlog, label Bug (🐛) or Improvement (🔧); 🔬 adds a "triaged" comment, 🔄 In Progress |
-  | `FIXED.md` | the same, Done (✅) or Canceled (🗑️), the verdict as a comment |
+  | `FIXED.md` | the same, Done (✅) or Canceled (🗑️), the verdict as a comment (in a backfill, the description may carry it instead) |
   | `IDEAS.md` Inbox | Backlog, label Idea; 🎯 Todo; 🔬 / 🔶 as a comment |
   | `IDEAS.md` In-flight | into the milestone project its board row belongs to, label Idea or Feature |
   | `IDEAS.md` Done | Done (✅) or Canceled (🗑️), the answer as a comment |
