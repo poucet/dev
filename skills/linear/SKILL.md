@@ -84,6 +84,13 @@ shipped <date>`, then what it brought.
 | state | open (Todo) while it waits; Done when answered; Canceled when moot |
 | last comment | on Done: the answer and its rationale, with the change id of the commit that folds it in once there is one |
 
+**Every initiative has a project view `Outstanding`** (projects not completed
+or canceled) **and every project an issue view `Outstanding`** (issues not
+done, canceled or duplicate), shared, in its initiative's icon and colour. The
+MCP has no view tools: a new initiative or project gets its view from dev's
+`docs/ops/drafts/linear-views.py` (idempotent; needs a personal API key) or by
+hand.
+
 Two saved views make it a channel (made once in Linear's UI, if the tools
 can't): **Decisions open** (label Decision, not Done or Canceled), what waits
 on the human beside `ASKS.md`; and **Decisions** (label Decision, Done, newest
