@@ -227,10 +227,10 @@ initiative's description; trunk and ready chains come from `jj log`, as always.
 
 - **Lanes never write Linear**, as they never write `docs/ops/`: they report to
   their file, and the coordinator (or `scribe`) records into Linear. A lane's
-  questions go in its report; the coordinator files the Decision issue. Linear work
-  is the coordinator's, done with its own Linear tools: in this harness a child
-  agent gets no MCP tools even when spawned with `mcp_servers: ["linear"]`
-  (tested), so a brief carries the issue text a lane needs.
+  questions go in its report; the coordinator files the Decision issue. An agent
+  that must read Linear is spawned with `mcp_servers: ["linear"]` and reaches
+  the tools through codemode; one that needn't is spawned without it, its
+  brief carrying the issue text it needs.
 - **Linear ids are ops ids.** The workspace is private, so `AUDIO-123` points at
   nothing in a clone: never in a commit message, code or a tracked doc (*What a
   commit message says*, §4).

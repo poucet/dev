@@ -7,8 +7,10 @@ description: Run a repo's plan in Linear instead of docs/ops files — set a rep
 
 What moves to Linear, what stays a file, and how the rest of the system reads in
 Linear mode is stated once in `AGENTS.md` §2, *Linear mode*. This skill is the
-how-to. It needs the Linear MCP tools, which only the coordinator has (a child agent
-gets none; see *Gotchas*). The tools are `mcp__linear__*`
+how-to. It needs the Linear MCP server: an agent doing any of this is spawned with
+`mcp_servers: ["linear"]` and calls the tools through codemode
+(`await searchTools("linear")`, then `tools.mcp__linear__…`). The tools are
+`mcp__linear__*`
 (`list_issues`, `get_issue`, `save_issue`, `save_comment`, `list_projects`,
 `save_project`, `list_initiatives`, `save_initiative`, `list_issue_statuses`,
 `list_issue_labels`, …).
@@ -266,15 +268,11 @@ integrator still does not run into a version (AGENTS.md §4).
   missing.
 - **No ids in commits, code or tracked docs**, Linear ids included: the
   workspace is private and a clone can't follow them.
-- **Child agents get no Linear tools.** Spawned with `mcp_servers: ["linear"]`
-  or with the tools named in an allowlist, a child still has neither
-  `mcp__linear__*` nor codemode (tested). The coordinator has them, often only
-  through codemode (`await searchTools("linear")`, then
-  `tools.mcp__linear__…`), and does Linear work itself. A bulk job handed to a
-  child, with the human's OK, uses a small JSON-RPC client against
-  `https://mcp.linear.app/mcp` that reads the token in
-  `~/.pi/agent/mcp-auth.json` and never refreshes or writes it; the script
-  goes in `/tmp/` and moves to `.trash/` when the job is done.
+- **The Linear tools live behind codemode.** They are not in the direct tool
+  list, for the coordinator or a child spawned with `mcp_servers:
+  ["linear"]`: call `await searchTools("linear")`, then `tools.mcp__linear__…`
+  inside codemode. Never read OAuth tokens from `~/.pi/agent/mcp-auth.json` or
+  call the server by hand.
 - **Lanes without the MCP server can't read Linear.** Give a lane its issue's
   text in the brief rather than the server, unless it must browse.
 - **Don't close an issue you didn't see closed.** Record what the report says;
