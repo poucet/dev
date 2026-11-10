@@ -87,9 +87,9 @@ shipped <date>`, then what it brought.
 **Every initiative has a project view `Outstanding`** (projects not completed
 or canceled) **and every project an issue view `Outstanding`** (issues not
 done, canceled or duplicate), shared, in its initiative's icon and colour. The
-MCP has no view tools: a new initiative or project gets its view from dev's
-`docs/ops/drafts/linear-views.py` (idempotent; needs a personal API key) or by
-hand.
+MCP has no view tools: a new initiative or project gets its view by hand, or
+through Linear's GraphQL API (`customViewCreate` with `initiativeId` or
+`projectId`) with a personal API key the human provides.
 
 Two saved views make it a channel (made once in Linear's UI, if the tools
 can't): **Decisions open** (label Decision, not Done or Canceled), what waits
