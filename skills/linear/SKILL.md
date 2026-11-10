@@ -37,6 +37,12 @@ is set at the cut, so naming a project after one means renumbering it when
 plans move; the version lives in the release milestones instead. A project
 from before this rule whose version shows nowhere else carries it on the first
 line of its description (`**Version:** 0.7`, `**Planned version:** 0.9`).
+An initiative's projects are its Backlog and its milestones, nothing else: a
+standing theme ("cross-cutting", "alongside the milestones") is issues in the
+Backlog, not a project. Titles are sentence case (`Load & hear`, not `Load &
+Hear`). A project takes its initiative's colour and icon, so a view or a
+roadmap reads by repo at a glance; a project in two initiatives takes the one
+its name starts with.
 
 **Everything has an owner: `simply.chris.rl@gmail.com`**, the `Owner` in the
 repo's `## Tracker` block. Every issue's assignee, every project's lead and
