@@ -42,7 +42,8 @@ standing theme ("cross-cutting", "alongside the milestones") is issues in the
 Backlog, not a project. Titles are sentence case (`Load & hear`, not `Load &
 Hear`). A project takes its initiative's colour and icon, so a view or a
 roadmap reads by repo at a glance; a project in two initiatives takes the one
-its name starts with.
+its name starts with. So **each initiative's colour is its own**: pick one no
+other initiative has (list them first).
 
 **Everything has an owner: `simply.chris.rl@gmail.com`**, the `Owner` in the
 repo's `## Tracker` block. Every issue's assignee, every project's lead and
@@ -92,6 +93,18 @@ can add a tab to a project or initiative (`customViewCreate` with `projectId`
 makes a view attached to nothing, which appears nowhere). Workspace views the
 API can make, with a personal API key the human provides.
 
+**Every Backlog project has a workspace issue view `<initiative> · backlog`**
+(lower-case `backlog`, so it reads apart from the project; `Ideas · backlog`
+for `Ideas · Backlog`), listed under https://linear.app/simply-audio/views/issues:
+shared, the initiative's icon and colour, description `<initiative> · Backlog
+issues not done, canceled or duplicate`, layout list ordered by priority (the
+default). Its filter, by project id:
+`{"and":[{"project":{"id":{"eq":"<project id>"}}},{"state":{"type":{"nin":["completed","canceled","duplicate"]}}}]}`.
+The MCP has no view tool: make it with GraphQL `customViewCreate` (`name`,
+`description`, `icon`, `color`, `shared: true`, `filterData`) and the
+`LINEAR_API_KEY` from the environment, after checking `customViews` for the
+name.
+
 Two saved views make it a channel (made once in Linear's UI, if the tools
 can't): **Decisions open** (label Decision, not Done or Canceled), what waits
 on the human beside `ASKS.md`; and **Decisions** (label Decision, Done, newest
@@ -121,7 +134,8 @@ Steps 1–3 set the `Owner`: initiative owner, project lead.
 1. **Initiative** `<repo>`: description one line on what the repo is, its GitHub
    URL if it has a remote, and a `Standing` heading (empty) for standing
    instructions.
-2. **Backlog project** `<repo> · Backlog` in the Tracker's team, linked to the initiative.
+2. **Backlog project** `<repo> · Backlog` in the Tracker's team, linked to the
+   initiative, and its workspace view `<repo> · backlog` (above).
 3. **A project per roadmap milestone** still open, `<repo> · <title>`,
    description the milestone's paragraph from `ROADMAP.md`, state Planned (or
    In Progress for the one being built), linked to the initiative.
