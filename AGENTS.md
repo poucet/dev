@@ -910,6 +910,13 @@ with what it is beside it, never a bare id. Projects and initiatives link by the
 URL Linear returns. Tracked files still cite no ids (*What a commit message
 says*).
 
+**Inside Linear it is the other way round: an issue's description or comment
+names another issue by its bare id** (`AUDIO-123`), never a markdown link or
+URL ([simply-chris](https://simplychris.ai): *"issue references in other issue
+descriptions should not be URLs but using linear's syntax, so their status
+properly show"*). Linear turns a bare id into a live reference that shows the
+issue's title and status; a URL link stays dead text.
+
 ### Survival
 
 - **Commit early and often.** A WIP commit in your own workspace costs nothing;

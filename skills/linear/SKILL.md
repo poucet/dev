@@ -255,6 +255,11 @@ integrator still does not run into a version (AGENTS.md §4).
   in chunks), check every result, and back off and retry on a rate-limit
   error. Linear caps requests per user per hour, so pace a very large job
   rather than firing it all at once.
+- **Inside Linear, name another issue by its bare id** (`AUDIO-123`) in a
+  description or comment, never `[AUDIO-123](https://…)`: Linear renders the
+  bare id as a live reference with the issue's title and status, a URL link as
+  dead text. URLs are for chat and files (AGENTS.md *Referring to the human's
+  points*).
 - **`list_issues`' `query` matches titles, not descriptions.** To find an
   issue by its origin line, list the initiative's issues and match the line
   yourself; a rerun that relies on the query creates duplicates.
