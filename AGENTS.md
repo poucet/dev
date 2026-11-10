@@ -179,7 +179,10 @@ cutover are the `linear` skill.
 **The repo is an initiative; its team is named in its `## Tracker`.** Repos
 share a team by default, so there is one board and one id series; a repo gets a
 team of its own only when the human makes one (the Tracker says which). Ideas that fit no repo live in a shared
-`Ideas` initiative and project until one earns a repo. Every issue, project
+`Ideas` initiative, in its `Ideas · Backlog` project, until one earns a repo.
+**Every project is named `<initiative> · <title>`**: one `<initiative> ·
+Backlog` per initiative, and a project per roadmap milestone with no version
+number in its name (a version is set at the cut, so nothing is renumbered). Every issue, project
 and initiative is assigned to the `## Tracker`'s owner, the human, whenever the
 coordinator creates or records it.
 
@@ -190,8 +193,8 @@ coordinator creates or records it.
 | `DECIDE.md` row | an issue labelled Decision, assigned to whoever decides (today always the owner), in the project it concerns, blocking the issues that wait on it |
 | `DECIDE.md` *Taken without you* | a Decision issue created Done, saying so; reopen it to reverse |
 | `DECISIONS.md` | the Done Decision issues, the answer and its rationale in the last comment; a saved view (label Decision, Done, newest first) is the log |
-| `ROADMAP.md` (tracked) | a project per minor version, `<repo> <major.minor> · <title>` (never one per patch), its description what the version means; each roadmap row an issue in it. The file leaves the repo; the README links the initiative |
-| `MILESTONES.md` | the completed projects, with their issues; each patch release a project milestone in its minor's project, `<x.y.z> · <title>`, carried by the issues that shipped in it |
+| `ROADMAP.md` (tracked) | a project per roadmap milestone, `<repo> · <title>` (no version number), its description what the milestone means; each roadmap row an issue in it. The file leaves the repo; the README links the initiative |
+| `MILESTONES.md` | the completed projects, with their issues; each release a project milestone in the project it shipped from, `<x.y.z> · <title>`, carried by the issues that shipped in it |
 | `ISSUES.md` | issues labelled Bug (defect) or Improvement (rough edge), in `<repo> · Backlog` until scheduled |
 | `FIXED.md` | the same issue, Done (fixed) or Canceled (won't fix), with a one-line verdict comment |
 | `IDEAS.md` Inbox → In-flight → Done | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
@@ -213,7 +216,7 @@ comment; the *what* is folded into the design doc, this file or the skill text
 in the next commit, as in file mode. Wherever this file says *the decisions
 file* or `DECIDE.md`, read a Decision issue; wherever it says `DECISIONS.md`,
 read a Done one. Decisions about the working system itself live in the `dev`
-initiative, project `dev · Working system`.
+initiative, project `dev · Backlog`.
 
 **Reading this file in Linear mode.** A rule about the board, a row, the
 roadmap, a milestone, an issue or an idea applies to its issue or project in the
