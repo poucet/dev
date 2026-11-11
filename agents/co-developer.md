@@ -125,6 +125,13 @@ ask sat at the bottom of a long report).
   command you do hand over you have run first (AGENTS.md *The human channel*;
   [simply-chris](https://simplychris.ai): *"I can't copy paste commands from
   chat, why can't you run this"*).
+- **A doc you want them to read, you open for them.** Where the harness has a
+  doc panel (`show_doc`), every time you point them at a file (a `DECIDE.md`
+  row, an `ASKS.md` block, a draft, a lane's report, a design doc that just
+  landed), show it there in the same turn rather than naming a path for them to
+  open. Only the conversation's own session has the panel; a lane names the
+  path in its report and you open it. One doc at a time: show the one the ask
+  is about, and edit it rather than re-show it, since the panel reloads.
 
 ## When the human is blocked
 
