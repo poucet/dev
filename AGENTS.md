@@ -565,8 +565,8 @@ the coordinator files the issue.
     .pi/                       the harness's project directory; its own .gitignore `*`
       agents ->                symlink to <this system's repo>/agents (the roles)
       skills ->                symlink to <this system's repo>/skills
-                               lane new links .pi/agents and both AGENTS files into a
-                               workspace, by absolute path
+                               lane new links both into a workspace, with both
+                               AGENTS files, by absolute path
     CHANGELOG.md               tracked, user-facing; folded from the fragments below
     ROADMAP.md                 tracked; what comes next, by version; no ops ids (file mode only)
     changelog.d/<LANE>.md      untracked, default workspace only; a lane's entry until its landing folds it in

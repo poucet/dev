@@ -5,9 +5,9 @@
 #                           with target/ cloned from the repo root's target/ and
 #                           the local links made (as `lane link`)
 #   lane link <name>        (re)create the local links in .workspaces/<name>:
-#                           AGENTS.md, AGENTS.project.md and the agent
-#                           directories (.claude/agents, .pi/agents), each an
-#                           absolute symlink to what the root's resolves to
+#                           AGENTS.md, AGENTS.project.md, .pi/agents and
+#                           .pi/skills, each an absolute symlink to what
+#                           the root's resolves to
 #   lane retire <name>      forget the workspace and delete its directory
 #                           (refuses if its working copy has changes; its
 #                           commits stay in the repo)
@@ -70,7 +70,7 @@ link_one() { # <rel>
 }
 
 link_all() {
-  for rel in AGENTS.md AGENTS.project.md .claude/agents .pi/agents; do
+  for rel in AGENTS.md AGENTS.project.md .pi/agents .pi/skills; do
     link_one "$rel"
   done
 }

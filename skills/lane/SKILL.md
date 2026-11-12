@@ -19,7 +19,7 @@ A lane's disk is almost all `target/`. `cp -c` makes an APFS clone: every block 
 
 ## The links
 
-`AGENTS.md`, `AGENTS.project.md` and the agent directories (`.claude/agents`, `.pi/agents`) are local links, untracked in every repo (AGENTS.md, the intro). The root's are relative or point into this machine, so inside `.workspaces/<name>` they would dangle; `lane new` gives the workspace **absolute** symlinks to what the root's resolve to: dev's `AGENTS.md`, the root's own `AGENTS.project.md`, dev's `agents/`. Only what the root has is linked.
+`AGENTS.md`, `AGENTS.project.md`, `.pi/agents` and `.pi/skills` are local links, untracked in every repo (AGENTS.md, the intro). The root's are relative or point into this machine, so inside `.workspaces/<name>` they would dangle; `lane new` gives the workspace **absolute** symlinks to what the root's resolve to: dev's `AGENTS.md`, the root's own `AGENTS.project.md`, dev's `agents/` and `skills/`. Only what the root has is linked.
 
 A link is made only where it can't show in the lane's working copy: the path must be ignored by the lane's own `.gitignore` files (a harness directory the lane lacks is created ignoring itself) and not tracked in the lane's commit. A real file is never replaced. Otherwise `lane` says why and what to do: a lane based before its repo untracked the links has them tracked, or not ignored, until it rebases onto trunk; run `lane link <name>` after that rebase, while the lane is idle.
 
