@@ -1,26 +1,22 @@
 #!/bin/sh
 # lane — make and retire lane workspaces, sharing the build cache by APFS clone.
 #
-#   lane new <name> [rev]   jj workspace at .workspaces/<name> (default rev: main),
-#                           with target/ cloned from the repo root's target/ and
-#                           the local links made (as `lane link`)
-#   lane link <name>        (re)create the local links in .workspaces/<name>:
-#                           AGENTS.md, AGENTS.project.md, .pi/agents and
-#                           .pi/skills, each an absolute symlink to what
-#                           the root's resolves to
+#   lane new <name> [rev]   jj workspace at <dir>/<name> (default rev: main),
+#                           with target/ cloned from the repo root's target/
 #   lane retire <name>      forget the workspace and delete its directory
 #                           (refuses if its working copy has changes; its
 #                           commits stay in the repo)
+#
+# <dir> is .workspaces/, or .pi/workspaces/ in a repo you don't own (one with
+# .pi/AGENTS.project.md), where nothing may show outside .pi/.
 #
 # Run from the repo root (the default workspace). The clone (`cp -c`) shares every
 # block with the root's target/ until cargo rewrites a file, so dependencies are
 # stored once however many lanes run. `du` counts clones in full; `df` doesn't.
 #
-# The links are local setup, never tracked: the root's are relative or machine
-# paths that dangle inside .workspaces/<name>, so a lane gets absolute ones. A
-# link is made only where the root's .gitignore ignores the path and the lane's
-# commit doesn't track it, so it never shows in the lane's working copy; a real
-# file is never replaced. Idempotent.
+# Nothing of the working system is linked into a workspace: the installed pi
+# package brings it to every session, and AGENTS.project.md is found from any
+# directory below the repo root.
 set -eu
 
 die() { echo "lane: $*" >&2; exit 1; }
@@ -28,59 +24,16 @@ die() { echo "lane: $*" >&2; exit 1; }
 export JJ_EDITOR=true GIT_EDITOR=true EDITOR=true
 
 cmd=${1:-}; name=${2:-}
-[ -n "$cmd" ] && [ -n "$name" ] || die "usage: lane new <name> [rev] | lane link <name> | lane retire <name>"
-ws=".workspaces/$name"
-
-# The absolute path a root path resolves to (following every symlink).
-resolve() { perl -MCwd=abs_path -e 'my $p = abs_path($ARGV[0]); print $p if defined $p && -e $p' "$1"; }
-
-# Is <rel> ignored by the lane's own ignore rules (the .gitignore files in its
-# working copy, patterns only, tracked or not)? Asked of git with the root's
-# repository and the lane's tree.
-ignored() {
-  [ -d .git ] || return 0   # not colocated: no git to ask; trust the ignore lines
-  git --git-dir=.git --work-tree="$ws" check-ignore -q --no-index -- "$1" 2>/dev/null
-}
-
-# Does the lane's commit track <rel>? Read without snapshotting its working copy.
-tracked_in_lane() {
-  [ -n "$(cd "$ws" && jj --ignore-working-copy file list -r @ -- "$1" </dev/null 2>/dev/null)" ]
-}
-
-link_one() { # <rel>
-  rel=$1
-  target=$(resolve "$rel")
-  [ -n "$target" ] || return 0                       # the root has none (or it dangles)
-  if [ -e "$ws/$rel" ] && [ ! -L "$ws/$rel" ]; then
-    echo "lane:   $rel is a real file in $ws, left alone"; return 0
-  fi
-  if tracked_in_lane "$rel"; then
-    echo "lane:   $rel is tracked in $name's commit: rebase it onto trunk, then re-run lane link $name"; return 0
-  fi
-  dir=$(dirname "$rel")
-  if [ "$dir" != . ] && [ ! -d "$ws/$dir" ]; then
-    # A harness directory the lane doesn't have: it ignores itself, as at the root.
-    mkdir -p "$ws/$dir"
-    echo '*' > "$ws/$dir/.gitignore"
-  elif ! ignored "$rel"; then
-    echo "lane:   $rel is not ignored in $name's tree: rebase it onto a trunk whose .gitignore has /$rel (adopt.sh adds it), then re-run lane link $name"; return 0
-  fi
-  ln -sfn -- "$target" "$ws/$rel"
-  echo "lane:   $rel -> $target"
-}
-
-link_all() {
-  for rel in AGENTS.md AGENTS.project.md .pi/agents .pi/skills; do
-    link_one "$rel"
-  done
-}
+[ -n "$cmd" ] && [ -n "$name" ] || die "usage: lane new <name> [rev] | lane retire <name>"
+if [ -f .pi/AGENTS.project.md ]; then dir=.pi/workspaces; else dir=.workspaces; fi
+ws="$dir/$name"
 
 case "$cmd" in
 new)
   rev=${3:-main}
   [ -e "$ws" ] && die "$ws already exists"
-  mkdir -p .workspaces
-  [ -f .workspaces/.gitignore ] || echo '*' > .workspaces/.gitignore
+  mkdir -p "$dir"
+  [ "$dir" != .workspaces ] || [ -f .workspaces/.gitignore ] || echo '*' > .workspaces/.gitignore
   jj workspace add "$ws" --name "$name" -r "$rev" </dev/null >/dev/null
   if [ -d target ]; then
     start=$(date +%s)
@@ -89,13 +42,6 @@ new)
   else
     echo "lane: $ws on $rev; no ./target to clone, the first build is cold"
   fi
-  link_all
-  ;;
-link)
-  [ -d "$ws" ] || die "no $ws"
-  jj workspace list </dev/null | grep -q "^$name:" || die "$ws is not a jj workspace of this repo (forgotten or retired?)"
-  echo "lane: links in $ws"
-  link_all
   ;;
 retire)
   [ -d "$ws" ] || die "no $ws"
@@ -104,7 +50,7 @@ retire)
     [ -z "$changes" ] || die "$ws has uncommitted changes ($changes …); commit or restore them first"
     jj workspace forget "$name" </dev/null >/dev/null
   fi
-  case "$ws" in .workspaces/?*) ;; *) die "refusing to delete $ws" ;; esac
+  case "$ws" in .workspaces/?*|.pi/workspaces/?*) ;; *) die "refusing to delete $ws" ;; esac
   rm -rf -- "$ws"
   echo "lane: $name forgotten, $ws deleted"
   ;;

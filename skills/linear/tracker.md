@@ -1,7 +1,7 @@
 ## Tracker
 
-linear — the plan lives in Linear, not in docs/ops (AGENTS.md §2, *Linear mode*;
-how-to: dev's `linear` skill).
+linear — the plan lives in Linear (AGENTS.md §2, *Linear mode*; how-to: dev's
+`linear` skill).
 
 - Initiative: <repo> — <initiative URL>
 - Team: AUDIO (workspace simply-audio, https://linear.app/simply-audio)
@@ -9,5 +9,3 @@ how-to: dev's `linear` skill).
   project, owner of the initiative
 - Backlog project: <repo> · Backlog — <project URL>
 - Decisions: issues labelled Decision; open ones block what waits on them
-- Still files, in docs/ops/ of the default workspace: ASKS.md, drafts/,
-  reports/

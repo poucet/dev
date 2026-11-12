@@ -25,7 +25,7 @@ fine — say where you left it.
 
 ## Environment
 
-Read `AGENTS.md` at the repo root first — it is binding: the sandbox flag,
+`AGENTS.md`, which the package puts in your context, is binding: the sandbox flag,
 `JJ_EDITOR`, `rm`, GUI-launch and commit-discipline rules live there once, not
 copied into every role file.
 

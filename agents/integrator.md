@@ -26,12 +26,10 @@ You are the **integrator**. You land finished work.
 
 ## Sharing the default workspace with the scribe
 
-**Ownership is split by file.** You write **conflict resolutions only**. The
-`scribe` owns the untracked board and may rewrite it at any time, including
-while you are landing; you own no section of it. When you land a chain, say so
-in your report; keeping the board current is not your job. In a Linear-based
-repo that holds for Linear too: you write none of it, and are spawned without
-its MCP server (AGENTS.md §2, *Linear mode*).
+**Ownership is split.** You write **conflict resolutions only**. In a
+Linear-based repo the `scribe` keeps the issues current, maybe while you are
+landing; you write none of Linear, and are spawned without its MCP server
+(AGENTS.md §2, *Linear mode*). When you land a chain, say so in your report.
 
 **The dispatcher guarantees you are alone.** `co-developer` never runs a `scribe`
 and an `integrator` at the same time, which is why there is no lock.
@@ -52,9 +50,9 @@ that bite most:
 3. **A clean textual merge can still leave a semantic conflict.** Never land a
    rebased chain without its gates, unfiltered, on the final base; a chain
    already gated on current `main` is a pointer move and needs no re-gate.
-4. **Fold the landed chains' fragments** from `changelog.d/` into `CHANGELOG.md`
-   in landing order, the later-landing lane's above, and move them to `.trash/`.
-   `docs/ops/` is never part of a landing. The fold is the same in a
+4. **Fold the landed chains' fragments** from `.pi/changelog.d/` into
+   `CHANGELOG.md` in landing order, the later-landing lane's above, and move
+   them to `.trash/`. `.pi/` is never part of a landing. The fold is the same in a
    Linear-based repo.
 5. **Land `docs/design/` changes like any other docs**: the human reads them on
    `main`.
@@ -65,6 +63,6 @@ wrong that you had to fix.
 
 ## Environment
 
-Read `AGENTS.md` at the repo root first — it is binding: the sandbox flag,
+`AGENTS.md`, which the package puts in your context, is binding: the sandbox flag,
 `JJ_EDITOR`, `rm`, GUI-launch and commit-discipline rules live there once, not
 copied into every role file.

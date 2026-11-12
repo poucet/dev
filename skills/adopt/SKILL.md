@@ -1,118 +1,103 @@
 ---
 name: adopt
-description: Bring an existing repo onto the simply/dev working system by running dev's adopt.sh and reconciling what the repo already has (its own AGENTS.md, changelog, todo or board files). Use when the human developer asks to adopt, onboard or "put dev on" a repo, or when a repo has no AGENTS.md / docs/ops yet.
+description: Bring an existing repo onto the simply/dev working system by running dev's adopt.sh and reconciling what the repo already has (its own AGENTS.md, changelog, todo or board files, an old docs/ops/). Use when the human developer asks to adopt, onboard or "put dev on" a repo, or when a repo has no AGENTS.project.md yet or still carries the old links and docs/ops/.
 ---
 
 # Adopt a repo onto the dev system
 
-`adopt.sh` lays the system down; this skill is the judgement around it: what
-the repo already has, what moves where, what gets committed. It is safe to
-re-run on a repo that was adopted before (`adopt.sh` is idempotent and never
-overwrites).
+The system itself (AGENTS.md, the roles, the skills) is a pi package installed
+once per machine (`pi install <dev repo>`); nothing of it goes into a repo.
+`adopt.sh` lays down the repo's own small part; this skill is the judgement
+around it: what the repo already has, what moves where, what gets committed.
+It is safe to re-run (`adopt.sh` is idempotent and never overwrites).
 
 ## What adoption gives a repo
 
 | path | what | tracked? |
 |---|---|---|
-| `AGENTS.md` | relative symlink to the dev repo's `AGENTS.md` (the system) | no: a `/AGENTS.md` line in the root `.gitignore` (the link dangles in a lane's workspace and in a public clone) |
-| `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks; default workspace only, `lane new` links it into each lane's workspace | no: a `/AGENTS.project.md` line in the root `.gitignore` (it can name private infrastructure, and some repos are public) |
-| `.pi/agents` / `.claude/agents` | symlink to `dev/agents` (the roles) | no: a `/.pi/agents` or `/.claude/agents` line in the root `.gitignore` (machine path) |
+| `AGENTS.project.md` | this repo's own rules: build, gates, branches, paths, quirks; default workspace only, found by the package from any directory below the root | no: a `/AGENTS.project.md` line in the root `.gitignore` (it can name private infrastructure, and some repos are public) |
 | `CHANGELOG.md` | user-facing, at the root | yes |
-| `ROADMAP.md` | what comes next, by version, at the root; cites no ops ids | yes |
-| `changelog.d/` | lanes' changelog fragments until folded in, in the default workspace | no: its own `.gitignore` holds `*` |
+| `ROADMAP.md` | what comes next, by version, at the root; cites no ops ids (file mode only) | yes |
+| `.pi/` | local state: `reports/`, `drafts/`, `changelog.d/`, pi's sessions, the agent tree | no: its own `.gitignore` holds `*` |
 | `docs/{design,research,guides,reference}/` | the tracked doc web; not made empty, a folder appears with its first file | yes |
-| `docs/ops/` | working state: BOARD, DECIDE, ASKS (the human's view); ISSUES, FIXED, DECISIONS, IDEAS (the record); `reports/` (lanes' final reports); `drafts/` (appears with the first draft). Linear mode: ASKS, `reports/`, `drafts/` only | no: its own `.gitignore` holds `*` |
 | `.workspaces/`, `.trash/` | lane workspaces, discarded files | no: each has its own `.gitignore` holding `*` |
 
-The starter files (`AGENTS.project.md`, `CHANGELOG.md`, `ROADMAP.md`,
-`docs/ops/*.md`) are copied from dev's `templates/`, each only where the repo
-has no file of that name. A changelog the repo already keeps (`CHANGELOG.md`
-at the root or in `docs/ops/`, any case) gets no template beside it, and no
-root `changelog.d/` is made when the fragments (or the changelog itself) live
-in `docs/ops/`; `adopt.sh` reports what it found.
+The starter files come from dev's `templates/`, each only where the repo has
+no file of that name; a changelog the repo already keeps gets no template
+beside it.
 
 **A repo whose plan lives in Linear** (AGENTS.md §2, *Linear mode*; opt-in,
-the human's call per repo) is adopted with `--tracker linear`: no `ROADMAP.md`
-and no `docs/ops/` BOARD, MILESTONES, ISSUES, FIXED, IDEAS, DECIDE or DECISIONS
-are made (decisions are Linear issues labelled Decision), and the untracked
-`AGENTS.project.md` gains a `## Tracker` section to fill in. A re-run keeps
+the human's call per repo) is adopted with `--tracker linear`: no `ROADMAP.md`,
+and `AGENTS.project.md` gains a `## Tracker` section to fill in. A re-run keeps
 Linear mode on its own once that section exists. Setting up the initiative and
-projects, backfilling an already-adopted repo and the cutover are the `linear`
-skill; the existing files stay until that cutover, and `adopt.sh` warns about
-each.
+projects and backfilling are the `linear` skill.
 
-**A repo adopted under the older layout** keeps its files: `adopt.sh` deletes
-nothing. Bring it in line by hand: `docs/ops/ROADMAP.md` moves to the root and
-is committed, with ops ids taken out (`adopt.sh` warns while it is there);
-`docs/ops/STATUS.md`'s live rows fold into `BOARD.md`, any standing rule in it
-goes to `AGENTS.project.md`, and the file goes to `.trash/`; closed rows in
-`ISSUES.md` move to `FIXED.md`; fragments already tracked in `changelog.d/`
-are folded or untracked (`jj file untrack`).
+**A shared repo you don't own** is adopted with `--theirs`: nothing a teammate
+could see, so no `.gitignore` line and no tracked file; the rules go in
+`.pi/AGENTS.project.md` and lanes in `.pi/workspaces/` (AGENTS.md §2, *A repo
+you don't own*).
 
 ## Steps
 
 1. **Look before touching.** Read the repo's README, any existing `AGENTS.md`,
-   `CLAUDE.md`, `CHANGELOG*`, `TODO*`, `docs/`, and its build (`Cargo.toml`,
-   `package.json`, …). Note the VCS: `jj st` (or `git status`). **Never adopt
-   over uncommitted work you don't own**: if the working copy is dirty, ask
-   the human developer first.
+   `CLAUDE.md`, `CHANGELOG*`, `TODO*`, `docs/` (an old `docs/ops/` above all),
+   and its build (`Cargo.toml`, `package.json`, …). Note the VCS: `jj st` (or
+   `git status`). **Never adopt over uncommitted work you don't own**: if the
+   working copy is dirty, ask the human developer first.
 2. **Run the installer:**
    ```sh
-   <dev repo>/adopt.sh <repo> --harness auto   # pi | claude | both
-   <dev repo>/adopt.sh <repo> --tracker linear # a repo whose plan lives in Linear
+   <dev repo>/adopt.sh <repo>                   # file mode
+   <dev repo>/adopt.sh <repo> --tracker linear  # plan in Linear
+   <dev repo>/adopt.sh <repo> --theirs          # a shared repo you don't own
    ```
-   (`<dev repo>` is wherever this system is cloned: the directory this skill's
-   `skills/` folder sits in.)
-   It creates only what is missing.
+   (`<dev repo>` is the directory this skill's `skills/` folder sits in.) It
+   creates only what is missing, and lists what the old setup left behind.
 3. **Reconcile what the repo had:**
    - an existing `AGENTS.md` / `CLAUDE.md` with project rules → their
      **project-specific** parts go into `AGENTS.project.md`; anything generic
-     that `dev/AGENTS.md` lacks is reported to the human as a backport candidate
-     (don't edit dev's file from here); then re-run `adopt.sh` with
-     `--replace-agents-md`, which moves the old copy to `.trash/` and makes
-     the link (without the flag a real `AGENTS.md` is reported and left
-     tracked: replacing it changes what the repo's agents read);
+     that dev's `AGENTS.md` lacks is reported to the human as a backport
+     candidate (don't edit dev's file from here); the old file to `.trash/`
+     and its tracking removed (`jj file untrack`), unless the team uses it;
+   - **the old links** (`AGENTS.md` → dev's, `.pi/agents`, `.pi/skills`,
+     `.claude/agents`) → `.trash/`; their root `.gitignore` lines go, except
+     `/AGENTS.project.md`;
+   - **an old `docs/ops/`**: there is no plan on disk any more (AGENTS.md §2,
+     *No plan on disk*). Its standing rules go into `AGENTS.project.md`; its
+     settled decisions into what they govern (a design doc, `AGENTS.project.md`);
+     its open decisions, open issues and ideas to the human in one round of
+     questions (Linear mode: the `linear` skill's backfill); its
+     `reports/` and `drafts/` into `.pi/reports/` and `.pi/drafts/`; then the
+     directory to `.trash/`;
+   - `changelog.d/` fragments → `.pi/changelog.d/`, the directory to `.trash/`;
    - an existing changelog anywhere else → `CHANGELOG.md` at the root, history
      kept;
-   - todo, board or issue files → their content into `docs/ops/` (untracked),
-     or into Linear in Linear mode (the `linear` skill's backfill), the old
-     files to `.trash/`;
-   - a `docs/scratch/` from before → its files into `docs/ops/`, the empty
-     folder to `.trash/`;
+   - todo, board or issue files → as an old `docs/ops/`;
    - design or research notes → the matching `docs/` folder.
-4. **Write `AGENTS.project.md`** if there isn't one: how to build and test (the
-   gates, as exact commands), branches and remotes, what never to run (GUIs,
-   real devices, pushes), paths, and the default workspace's absolute path
-   (lanes read `docs/ops/` by it). Short; facts only. It is
-   untracked: if the repo had it tracked, `adopt.sh` untracked it and its old
-   contents are still in history; say so in the report if the repo is public.
-   The same holds for a tracked `AGENTS.md` link or agent link.
+4. **Write `AGENTS.project.md`** if it is still the template: how to build and
+   test (the gates, as exact commands), branches and remotes, what never to run
+   (GUIs, real devices, pushes), paths, and the default workspace's absolute
+   path (lanes write their reports into its `.pi/` by it). Short; facts only.
+   It is untracked: if the repo had it tracked, `adopt.sh` untracked it and its
+   old contents are still in history; say so in the report if the repo is
+   public.
 5. **Verify:**
-   - `git check-ignore --no-index docs/ops/BOARD.md changelog.d/x.md
-     AGENTS.md AGENTS.project.md` all print (the path need not exist, so this
-     holds in Linear mode too);
-   - `jj file list AGENTS.md AGENTS.project.md .pi/agents .claude/agents`
-     prints nothing (a real `AGENTS.md` kept for now aside). A lane started
-     before the untracking rebases past it before landing, or its tip tracks
-     the file again; then `lane link <name>` gives it the links;
-   - `jj st` / `git status` shows no machine-specific path (the harness
-     symlinks) as added;
-   - the harness sees the roles (pi: `"projectPersonas": true` in
-     `~/.pi/agent/subagents.json`, and the project trusted on next launch: tell
-     the human if either is missing).
+   - `git check-ignore --no-index AGENTS.project.md .pi/reports/x.md` both
+     print;
+   - `jj file list AGENTS.project.md .pi` prints nothing;
+   - `jj st` / `git status` shows no machine-specific path as added;
+   - `pi list` shows the dev package (tell the human if it is missing:
+     `pi install <dev repo>`).
 6. **Commit only the tracked parts**, one commit, plain words, e.g.
    `Adopt the dev working system: changelog and roadmap at the root, the
-   local links and the project's own rules file kept untracked` (no internal ids).
-   Commit the files by path (`.gitignore`, `CHANGELOG.md`, `ROADMAP.md`, and
-   whatever `adopt.sh` says it untracked), so nobody else's uncommitted edits
-   ride along. Don't push.
+   project's own rules file kept untracked` (no internal ids). Commit the
+   files by path (`.gitignore`, `CHANGELOG.md`, `ROADMAP.md`, and whatever
+   `adopt.sh` says it untracked), so nobody else's uncommitted edits ride
+   along. Don't push.
 7. **Report:** what was created, what moved where, what was left for the human
-   (backport candidates, settings they must flip, anything ambiguous).
+   (backport candidates, anything ambiguous).
 
 ## Rules that still apply
 
 - Architecture is the human's: if the repo's layout or rules conflict with the
   system in a way that needs a choice, ask; don't pick.
 - Never `rm`: discarded files go to the repo's `.trash/`.
-- A repo you don't own (a shared work repo): don't adopt inside it; see
-  *A repo you don't own* in `dev/AGENTS.md`.

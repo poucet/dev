@@ -4,9 +4,9 @@ A reusable way of running agent work on a repo — roles, the documents they sha
 and the rules that keep them from stepping on each other.
 
 **[AGENTS.md](AGENTS.md) is the system.** Read that. This file is only how to
-adopt it.
+install and adopt it.
 
-## Requires Jujutsu (jj)
+## Requires Jujutsu (jj) and pi
 
 The system assumes **[jj](https://jj-vcs.github.io/jj/latest/)** as the
 version-control front end: every lane works in its own `jj workspace`,
@@ -18,90 +18,78 @@ landing moves a bookmark, and the roles' commands (`jj commit`, `jj rebase`,
     # https://jj-vcs.github.io/jj/latest/install-and-setup/
     cd <project> && jj git init --colocate # an existing git repo becomes a jj repo too
 
+The harness is **[pi](https://pi.dev)**, with the `subagent` tool from
+simply-pi (it reads the roles from this package's `pi.personas`).
+
+## Install it, once per machine
+
+This repo is a pi package:
+
+    pi install <path to this repo>
+
+A local path is loaded in place, so edits here reach every session on the next
+start or `/reload`. The package brings:
+
+- **the rules**: an extension puts `extension/default-agent.md` and
+  [AGENTS.md](AGENTS.md) in front of every session, then the repo's own
+  `AGENTS.project.md`, the nearest one at or above the working directory (so a
+  lane's workspace inside the repo finds its repo's). It also gives a repo's
+  `.pi/` its `.gitignore` of `*`;
+- **the eight roles** (`agents/`), as subagent personas, through `pi.personas`;
+- **the skills** (`skills/`).
+
+Nothing is linked into a repo, and no project trust or `projectPersonas` setting
+is needed for any of it.
+
+To keep pi's sessions with the repo they belong to, set in
+`~/.pi/agent/settings.json`:
+
+    "sessionDir": ".pi/sessions"
+
+(relative paths resolve from the directory pi starts in, so start pi at the repo
+root). The agent tree already lives in `<repo>/.pi/subagents`.
+
 ## Adopt it in a project
 
-Run the installer:
+    <path to this repo>/adopt.sh <project>                   # file mode
+    <path to this repo>/adopt.sh <project> --tracker linear  # plan in Linear
+    <path to this repo>/adopt.sh <project> --theirs          # a shared repo you don't own
 
-    <path to this repo>/adopt.sh <project>
+It is idempotent and never overwrites anything that already exists. It gives
+the repo an untracked `AGENTS.project.md` for its own rules (build, gates,
+branches, paths), a tracked `CHANGELOG.md` and, in file mode, `ROADMAP.md`, and
+the self-ignoring local directories `.pi/`, `.workspaces/` and `.trash/`. It
+lists what an older setup left behind (`AGENTS.md` links, `.pi/agents`,
+`docs/ops/`, `changelog.d/`).
 
-(Run it from wherever you cloned this repo; it finds its own templates and
-roles relative to itself.)
+**A repo can keep its plan in Linear** (AGENTS.md §2, *Linear mode*): the
+**`linear` skill** (`skills/linear/`) sets up the initiative and projects,
+backfills, and cuts over.
 
-It is idempotent and never overwrites anything that already exists. It:
+For a repo that already has its own `AGENTS.md`, changelog, todo files or an old
+`docs/ops/`, use the **`adopt` skill** (`skills/adopt/`): it runs the installer
+and moves what the repo had to where it belongs.
 
-- **links `AGENTS.md`** to this repo's (a relative symlink), and starts an
-  `AGENTS.project.md` for the project's own rules: build, gates, branches,
-  paths. Where the two disagree, the project file wins for that project. Both
-  are **untracked**, as are the agent links below (a line each in the root
-  `.gitignore`; a tracked one is untracked): they are local setup, the link
-  dangles in a lane's workspace and a public clone, and the project file can
-  name private infrastructure. A real `AGENTS.md` (an old copy of the
-  system) is left in place and reported; `--replace-agents-md` moves it to
-  `.trash/` and makes the link;
-- **symlinks the role definitions** for the harness (below);
-- lays out the doc web of §3 from `templates/`: `CHANGELOG.md` at the root
-  (tracked), and `docs/ops/`, the one **untracked** directory of working
-  state (board, decisions for the human, things for the human to run,
-  issues, decisions, ideas, roadmap, status, drafts);
-- makes each untracked directory (`docs/ops/`, `.workspaces/`, `.trash/`, …)
-  ignore itself with its own `.gitignore` holding `*`.
-
-**A repo can keep its plan in Linear instead** (board, roadmap, milestones,
-issues, ideas, decisions; AGENTS.md §2, *Linear mode*): `adopt.sh <project>
---tracker linear` skips those files and adds a `## Tracker` section to
-`AGENTS.project.md`. The **`linear` skill** (`skills/linear/`) sets up the
-initiative and projects, backfills, and cuts over.
-
-For a repo that already has its own `AGENTS.md`, changelog or todo files, use
-the **`adopt` skill** (`skills/adopt/`): it runs the installer and moves what
-the repo had to where it belongs.
-
-**The role definitions go in the directory your coding harness reads them
-from — pick the one that matches the harness.** The script auto-detects
-(`--harness pi|claude|both` to override):
-
-    # Claude Code — agents from .claude/agents
-    # pi.dev — personas from .pi/agents
-    #   (also needs `projectPersonas: true` in ~/.pi/agent/subagents.json,
-    #    and the project must be trusted — pi prompts on launch)
-
-The links are gitignored: their targets are machine-specific. A fresh clone runs
-the installer again; a lane's workspace gets absolute links from `lane new`
-(`skills/lane/`), and `lane link <name>` remakes them in an existing one.
-
-The role files are shared verbatim between harnesses, so their frontmatter must
-stay valid for every harness that reads them: **omit `tools`** (both harnesses
-then allow all tools — Claude Code by inheritance, pi because it has no
-allow-all token and treats a `tools:` list as literal names). Per-model or
-per-role tool restrictions are set by the harness config, not the role files.
-
-Lay the project out per the default structure in §3.
-
-## A repo you don't own
-
-For a shared repo you don't control (a work repo, reviewed by people who never
-opted into any of this), don't run the installer inside it. Run it into a
-sibling `ops/` directory instead, next to a plain clone of the shared repo —
-see *A repo you don't own* in [AGENTS.md](AGENTS.md) §2. Nothing of this
-system ever enters the shared repo except code, its tests, and a `CHANGELOG.md`
-if the team already keeps one.
+The role files' frontmatter omits `tools`, so a role inherits every tool;
+per-model or per-role tool restrictions are set by the harness config, not the
+role files.
 
 ## Layout
 
     AGENTS.md     the system: roles, the doc web, the directory structure, the rules
-    adopt.sh      the installer: links, templates, self-ignoring dirs; idempotent
-    templates/    the starter files adopt.sh copies (CHANGELOG.md,
-                  AGENTS.project.md, docs/ops/*.md)
-    agents/       the eight role definitions, symlinked into each project
-                  (.claude/agents for Claude Code, .pi/agents for pi.dev)
-    skills/       adopt (bring an existing repo onto the system),
-                  linear (keep a repo's plan in Linear),
-                  lane (lane workspaces), brainstorm (the co-developer's
-                  own method)
+    package.json  the pi package manifest: extension, skills, personas
+    extension/    the extension that loads the rules; default-agent.md
+    adopt.sh      the installer: AGENTS.project.md, starters, self-ignoring dirs
+    templates/    the starter files adopt.sh copies
+    agents/       the eight role definitions (subagent personas)
+    skills/       adopt (bring a repo onto the system), linear (keep a repo's
+                  plan in Linear), lane (lane workspaces), brainstorm (the
+                  co-developer's own method), rust-build-speed
 
 ## The eight roles
 
 `coder` · `researcher` · `tech-lead` · `designer` build in their own workspaces
 and never move trunk. `integrator` works in the default workspace and is the only
-one that lands. `scribe` keeps `BOARD.md` true, also in the default workspace and never at the
-same time as `integrator`. `co-developer` holds the conversation and the briefs.
+one that lands. `scribe` keeps a Linear-based repo's issues true, never at the
+same time as `integrator`. `foreman` drives a whole track. `co-developer` holds
+the conversation and the briefs.

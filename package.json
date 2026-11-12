@@ -1,0 +1,17 @@
+{
+  "name": "simply-dev",
+  "version": "0.1.0",
+  "description": "The working system for agent work on a repo: the rules every session reads, the eight roles as subagent personas, and the skills that run it.",
+  "private": true,
+  "type": "module",
+  "keywords": ["pi-package"],
+  "pi": {
+    "extensions": ["./extension/index.ts"],
+    "skills": ["./skills"],
+    "personas": ["./agents"],
+    "changelogPath": ""
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

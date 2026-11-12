@@ -1,18 +1,16 @@
 # The working system
 
 A reusable way of running agent work on a repo. Nothing here is specific to one
-project. A project adopts it with `adopt.sh` (idempotent: it creates the starter
-docs, links AGENTS.md relative to dev's, starts an untracked `AGENTS.project.md`
-beside it, and symlinks the agents and skills) or by hand. The harness is
-[pi](https://pi.dev): the role definitions go in `.pi/agents`, where it reads
-project personas, and the skills in `.pi/skills`:
+project. The harness is [pi](https://pi.dev), and the system is **one pi
+package, installed once per machine**:
 
-    # either: ./adopt.sh <project>
+    pi install <path to this repo>
 
-**These links are local setup, untracked in every repo**: a tracked relative
-link dangles inside a lane's workspace and in a public clone, an absolute one
-leaks a home path, and the system's text doesn't belong in a repo that ships.
-`lane new` gives each workspace its own absolute links.
+It puts this file, the eight roles (as subagent personas) and the skills in
+front of every session, in every repo, with nothing linked into the repo. A
+repo adopts the system with `adopt.sh` (idempotent: the `.gitignore` lines, a
+starter `AGENTS.project.md`, `CHANGELOG.md` and, in file mode, `ROADMAP.md`) or
+by hand.
 
 Every rule below came from a real failure. Where a rule carries its reason or a
 quote, keep it with the rule: a rule whose reason is stated gets followed.
@@ -20,14 +18,14 @@ quote, keep it with the rule: a rule whose reason is stated gets followed.
 **A project's own rules.** A project may keep its own rules in
 `AGENTS.project.md` at its root. It is binding, read right after this file, and
 wins where the two disagree. This file stays project-neutral: a project's names,
-paths, commands, gates and decision ids belong in its own file.
+paths, commands, gates and tracker belong in its own file.
 
-**`AGENTS.project.md` is untracked, in every repo**, like `AGENTS.md`: a line
-in the root `.gitignore` ignores it (a single file can't ignore itself the way a
-directory does, §3). Some repos are public while the tracker is private, and
-this file names private things: the tracker and its URLs, standing rules. It
-lives only in the default workspace, and **`lane new` links it into each lane's
-workspace** by absolute path, so a lane reads the one copy. It has no
+**`AGENTS.project.md` is untracked, in every repo**: a line in the root
+`.gitignore` ignores it (a single file can't ignore itself the way a directory
+does, §3). Some repos are public while the tracker is private, and this file
+names private things: the tracker and its URLs, standing rules. It lives only in
+the default workspace; the package finds it from any directory below the repo
+root, a lane's workspace included, so every lane reads the one copy. It has no
 history, so nothing irreplaceable lives only there; but it is where the human's
 standing rules live, and **a rule he wrote there is his to keep**: no agent
 rewrites the file wholesale. Edit it by hand, then re-read what you touched.
@@ -43,22 +41,21 @@ That is the whole model. Full definitions are in `agents/`.
 |---|---|---|---|
 | `coder` | own workspace | production code, its tests, its changelog fragment | no |
 | `researcher` | own workspace | `docs/research/` only; no production code | no |
-| `tech-lead` | the default workspace | `docs/design/` only; its open decisions go to the decisions file | its own docs commits only |
+| `tech-lead` | the default workspace | `docs/design/` only; its open questions go to the human | its own docs commits only |
 | `designer` | own workspace | UI, plus rendered before/after evidence | no |
 | `foreman` | own workspace, dispatches lanes | briefs and track state; little code | no |
-| `scribe` | the default workspace | `BOARD.md`, and rows in the other ops docs (untracked); in Linear mode, the issues | no |
+| `scribe` | the default workspace | Linear mode only: the issues, from lanes' reports | no |
 | `integrator` | the default workspace | conflict resolutions only | **yes — sole authority**, bar docs-only commits (§4) |
-| `co-developer` | the conversation | the board, the briefs | via `integrator`; docs-only commits itself |
+| `co-developer` | the conversation | the briefs; in Linear mode, the issues | via `integrator`; docs-only commits itself |
 
 **Why per-role and not per-task.** An agent roster is read once at session start,
 so a name invented for one task is always a session late. The eight roles are
 permanent and always available.
 
 **The human developer is not one of the eight.** They set direction and
-priorities, review, and **edit the board and the ideas inbox freely at any
-time**, so an agent re-reads those documents before acting on them rather than
-trusting an earlier copy. They launch the application themselves (*Evidence*,
-§4).
+priorities, review, and **edit the roadmap and the tracker freely at any
+time**, so an agent re-reads them before acting on them rather than trusting an
+earlier copy. They launch the application themselves (*Evidence*, §4).
 
 Two rules hold the model together.
 
@@ -84,7 +81,7 @@ small residue.
 of reversal. if it's a small contained thing, it's easy to change later."*).
 Every call is one of three:
 
-- **Expensive or risky to reverse → park it, never take it.** Anything that
+- **Expensive or risky to reverse → ask, never take it.** Anything that
   spreads:
   - a public API others build on; a wire, file, config or take format that
     reaches saved files or the network; an address scheme or protocol;
@@ -96,15 +93,16 @@ Every call is one of three:
     designs a lane, a review or a conflict puts in front of you.
 
   A lane that meets one **stops and asks** its coordinator, unless its brief
-  settles it. The coordinator **puts it in the decisions file** (*The human
-  channel*, §2) **and waits**. The work it blocks waits; nothing else does. When
-  unsure what a reversal would cost, park it.
-- **Small and contained → decide it, and list it** in the decisions file as
-  *taken without you*, with the alternative, so the human can reverse it.
+  settles it. The coordinator **asks the human** (*Asking the human*, §2) **and
+  waits**. The work it blocks waits; nothing else does. When unsure what a
+  reversal would cost, ask.
+- **Small and contained → decide it, and say so** in your next message to the
+  human, with the alternative, so he can reverse it (Linear mode: a Decision
+  issue created Done).
 - **Routine → just do it.** Landing locally, a number inside the agreed scope,
-  an internal name, cleanup: no question and no row; the lane's report says what
-  it chose. Every needless question costs the human a turn and buries the ones
-  that matter ([simply-chris](https://simplychris.ai): *"Please stop asking me
+  an internal name, cleanup: no question; the lane's report says what it chose.
+  Every needless question costs the human a turn and buries the ones that
+  matter ([simply-chris](https://simplychris.ai): *"Please stop asking me
   questions and focus on finishing roadmap"*).
 
 Bug fixes inside an existing design are not architecture.
@@ -124,173 +122,115 @@ sections at the top of what belongs in which doc … belong in AGENTS.md and
 pollute those docs"*). Each opens with one pointer line and, where its rows carry
 status marks, the legend: a key belongs beside its table, a policy does not.
 
-**Working state or history.** The documents that decay (the board, the human
-channel, the record, drafts) are **working state, not history**. They live in
-one untracked directory in the default workspace, **`docs/ops/`**, which ignores
-itself (§3): no commits, no rebase conflicts, one copy, always current. Two
-decaying documents are tracked at the repo root, because a reader of a clone
-needs them: **`CHANGELOG.md`**, which ships with the code it describes, and
+**No plan on disk.** There is no board, no decisions file, no issue or idea
+list kept as files. Ops files that decay with every landing cost more churn than
+they repay ([simply-chris](https://simplychris.ai): *"deprecate docs/ops it's
+causing too much churn"*). What they held goes where it is current by
+construction:
+
+| What | File mode (the default) | Linear mode |
+|---|---|---|
+| what runs, what's next | read off the system when asked: the agent list and `jj log` (*Status comes from a query*, §4) | the initiative's In Progress and Todo issues |
+| a decision for the human | asked live, in the conversation (*Asking the human*) | an issue labelled Decision, blocking what waits on it |
+| a settled decision | folded, the same turn, into what it governs: the design doc, `AGENTS.project.md`, the code's own rationale | the Done Decision issue, then folded the same way |
+| a defect or rough edge | fixed now, in the lane that found it; if it can't be, told to the human with a recommendation | an issue labelled Bug or Improvement |
+| an idea | told to the human; one he keeps becomes a `ROADMAP.md` row | an issue labelled Idea |
+| what shipped | `CHANGELOG.md` | `CHANGELOG.md`, and the completed projects |
+| what comes next | `ROADMAP.md`, tracked | the initiative's milestone projects |
+
+**Tracked at the repo root**, because a reader of a clone needs them:
+**`CHANGELOG.md`**, which ships with the code it describes, and, in file mode,
 **`ROADMAP.md`**, what comes next ([simply-chris](https://simplychris.ai): *"put
 roadmap.md at root dir, it should be tracked"*).
 
-| In `docs/ops/` | What goes in it | Who writes it | Pruned when |
-|---|---|---|---|
-| **The human's view** | | | |
-| `BOARD.md` | running, next, what waits on the human: line items | coordinator (or `scribe`); the human, freely | a row leaves the day its work lands; its roadmap row moves to `MILESTONES.md` |
-| `MILESTONES.md` | what shipped, milestone by milestone: each keeps its roadmap description and rows (✅, 🔶), then a generated index of the changelog's entries | coordinator; the index by script | never: it is the record of the work |
-| `DECIDE.md` | decisions for the human, one row each, with the context to answer | coordinator | answered → moved to `DECISIONS.md` |
-| `ASKS.md` | commands only the human can run, with the context to judge them | coordinator | once they have run it |
-| **The record** | | | |
-| `ISSUES.md` | open defects and rough edges, not scheduled | coordinator, from lane reports | fixed or won't fix → moved to `FIXED.md` |
-| `FIXED.md` | issues that left `ISSUES.md`, newest first, each with a one-line verdict | coordinator | never |
-| `DECISIONS.md` | settled decisions with their rationale | coordinator | never: a later row supersedes |
-| `IDEAS.md` | the ideas inbox | coordinator; the human, freely | never deleted: an idea moves down |
-| **Work in progress** | | | |
-| `drafts/` | proposals before they become a design doc, review aids, triage | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or answered → `.trash/` |
-| `reports/` | each lane's full final report, `<lane>.md` | the lane, its own file only | once the coordinator has recorded it → `.trash/` |
+**Local state lives in `<repo>/.pi/`**, in the default workspace: one directory
+that ignores itself (its own `.gitignore` of `*`, which the package creates when
+it is missing), so nothing in it dirties a working copy, conflicts in a rebase
+or reaches history. It moves with the repo.
 
-**Rows in the record** start with a short id, then **one** emoji status column,
-then the description; any other column (date, source, size) comes after. Ids are
-zero-padded so the first two columns line up, stable, never reused, and assigned
-by the coordinator. The prefixes live here and only here (in Linear mode only
-the files that stay use them; an issue's id is Linear's, *Linear mode* below):
+| In `.pi/` | What goes in it | Who writes it | Pruned when |
+|---|---|---|---|
+| `reports/<lane>.md` | each lane's full final report | the lane, its own file only | once the coordinator has acted on it → `.trash/` |
+| `drafts/` | proposals before they become a design doc, review aids, anything the human will paste | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or done with → `.trash/` |
+| `changelog.d/<LANE>.md` | a lane's changelog entry, until its landing folds it in | the lane, its own file only | folded → `.trash/` |
+| `sessions/`, `subagents/` | pi's sessions and the agent tree, transcripts included | pi | never by hand |
+| `AGENTS.project.md` | the project's rules, in a repo you don't own (*A repo you don't own*) | the human | never rewritten |
+
+**Lanes reach `.pi/` by the default workspace's absolute path** (their own
+workspace has none, so their brief names it). What a lane may write there is
+under *How a lane writes into shared documents*, below.
+
+**Rows in `ROADMAP.md`** start with a word label, then **one** emoji status
+column, then the description; any other column (size, needs) comes after:
 
 | Doc | Id | Status legend | Row |
 |---|---|---|---|
-| `MILESTONES.md` | the roadmap row's word label, e.g. `DEST-MIX` | ✅ shipped · 🔶 partly shipped | `\| DEST-MIX \| ✅ \| what you got \|` under its version's heading |
-| `ISSUES.md`, `FIXED.md` | `I-007` | 🐛 defect · 🔧 rough edge · 🔬 triaged · 🔄 being fixed · ✅ fixed · 🗑️ won't fix | `\| I-007 \| 🐛 \| what is wrong \| found \| verdict \|` |
-| `DECISIONS.md` | `D-042` | ✅ in force · ♻️ superseded · ❓ reopened | `\| D-042 \| ✅ \| decision \| rationale \| when · change id \|` |
-| `IDEAS.md` | `N-012` | 💡 open · 🔶 partly answered · 🎯 next up · 📋 queued · 🔄 in flight · 🔬 researched · ✅ shipped · 🗑️ declined | `\| N-012 \| 💡 \| idea \| notes \| added \|` |
-| `ROADMAP.md` (tracked) | a word label, e.g. `DEST-MIX` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| DEST-MIX \| 📋 \| what you get \| size \| needs \|` |
+| `ROADMAP.md` | a word label, e.g. `DEST-MIX` | 🔄 in flight · ⏸️ paused · 📋 queued · 🔶 partly shipped · 🎯 next up · ⬜ open | `\| DEST-MIX \| 📋 \| what you get \| size \| needs \|` |
 
-**Lanes read `docs/ops/` by the default workspace's absolute path** (their own
-workspace has none, so their brief names it); `AGENTS.project.md` reaches them
-through the link `lane new` makes (§3). What a lane
-may write there is under *How a lane writes into shared documents*, below.
+### Linear mode — the plan in Linear
 
-### Linear mode — the plan in Linear, not in files
-
-A repo may keep its plan in Linear instead of the files above. It is **opt-in,
-per repo**: files stay the default, and a repo is in Linear mode only when its
-`AGENTS.project.md` has a `## Tracker` section saying `linear`, with its
-initiative, team and Backlog project. Setup, everyday operations, backfill and
-cutover are the `linear` skill.
+A repo may keep its plan in Linear. It is **opt-in, per repo**: a repo is in
+Linear mode only when its `AGENTS.project.md` has a `## Tracker` section saying
+`linear`, with its initiative, team and Backlog project. Setup, everyday
+operations, backfill and cutover are the `linear` skill. Linear mode is for a
+plan that outlives a conversation; file mode keeps the plan in the conversation
+and `ROADMAP.md`.
 
 **The repo is an initiative; its team is named in its `## Tracker`.** Repos
 share a team by default, so there is one board and one id series; a repo gets a
-team of its own only when the human makes one (the Tracker says which). Ideas that fit no repo live in a shared
-`Ideas` initiative, in its `Ideas · Backlog` project, until one earns a repo.
-**Every project is named `<initiative> · <title>`**: one `<initiative> ·
-Backlog` per initiative, and a project per roadmap milestone with no version
-number in its name (a version is set at the cut, so nothing is renumbered). Every issue, project
-and initiative is assigned to the `## Tracker`'s owner, the human, whenever the
-coordinator creates or records it.
+team of its own only when the human makes one (the Tracker says which). Ideas
+that fit no repo live in a shared `Ideas` initiative, in its `Ideas · Backlog`
+project, until one earns a repo. **Every project is named `<initiative> ·
+<title>`**: one `<initiative> · Backlog` per initiative, and a project per
+roadmap milestone with no version number in its name (a version is set at the
+cut, so nothing is renumbered). Every issue, project and initiative is assigned
+to the `## Tracker`'s owner, the human, whenever the coordinator creates or
+records it.
 
-| File mode | Linear mode |
+| What | In Linear |
 |---|---|
-| `BOARD.md` running · next | a query: the initiative's issues In Progress (running; the lane noted in a comment) and Todo (next) |
-| `BOARD.md` waits on the human | the open-decisions view (issues labelled Decision, not Done) and `ASKS.md` |
-| `DECIDE.md` row | an issue labelled Decision, assigned to whoever decides (today always the owner), in the project it concerns, blocking the issues that wait on it |
-| `DECIDE.md` *Taken without you* | a Decision issue created Done, saying so; reopen it to reverse |
-| `DECISIONS.md` | the Done Decision issues, the answer and its rationale in the last comment; a saved view (label Decision, Done, newest first) is the log |
-| `ROADMAP.md` (tracked) | a project per roadmap milestone, `<repo> · <title>` (no version number), its description what the milestone means; each roadmap row an issue in it. The file leaves the repo; the README links the initiative |
-| `MILESTONES.md` | the completed projects, with their issues; each release a project milestone in the project it shipped from, `<x.y.z> · <title>`, carried by the issues that shipped in it |
-| `ISSUES.md` | issues labelled Bug (defect) or Improvement (rough edge), in `<repo> · Backlog` until scheduled |
-| `FIXED.md` | the same issue, Done (fixed) or Canceled (won't fix), with a one-line verdict comment |
-| `IDEAS.md` Inbox → In-flight → Done | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
-| one emoji status | the issue's state (Backlog · Todo · In Progress · Done · Canceled · Duplicate) and label (Bug · Improvement · Feature · Idea · Decision); a finer mark (triaged, partly shipped, paused) is a comment |
-| priority P1 · P2 · P3 | High · Medium · Low |
-| `I-007`, `N-012`, `D-042`, a roadmap row | the issue's Linear id (`AUDIO-123`), assigned by Linear |
+| running · next | a query: the initiative's issues In Progress (running; the lane noted in a comment) and Todo (next) |
+| waits on the human | the open-decisions view: issues labelled Decision, not Done |
+| a decision for the human | an issue labelled Decision, assigned to whoever decides (today always the owner), in the project it concerns, blocking the issues that wait on it |
+| a call taken without him | a Decision issue created Done, saying so; reopen it to reverse |
+| the decisions log | the Done Decision issues, the answer and its rationale in the last comment; a saved view (label Decision, Done, newest first) |
+| the roadmap | a project per roadmap milestone, `<repo> · <title>` (no version number), its description what the milestone means; each roadmap row an issue in it. `ROADMAP.md` leaves the repo; the README links the initiative |
+| what shipped | the completed projects, with their issues; each release a project milestone in the project it shipped from, `<x.y.z> · <title>`, carried by the issues that shipped in it |
+| defects and rough edges | issues labelled Bug or Improvement, in `<repo> · Backlog` until scheduled; fixed → Done, won't fix → Canceled, each with a one-line verdict comment |
+| ideas | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
+| status | the issue's state (Backlog · Todo · In Progress · Done · Canceled · Duplicate) and label (Bug · Improvement · Feature · Idea · Decision); a finer mark (triaged, partly shipped, paused) is a comment |
+| priority | High · Medium · Low |
 
-**What stays a file in Linear mode**: `ASKS.md`, `drafts/`, `reports/`, so in
-Linear mode `docs/ops/` holds only those. Commands for the human, drafts and
-lanes' reports are not tasks. `CHANGELOG.md` and `changelog.d/` are unchanged.
+**`.pi/` is unchanged in Linear mode**: reports, drafts and fragments are not
+tasks. `CHANGELOG.md` is unchanged.
 
 **Decisions are issues.** An open decision is an issue labelled Decision, and
 its **blocking relations** to the issues that wait on it make *nothing is built
 on an open question* (*`docs/design/`*) enforced, not remembered. Its
-description is what a `DECIDE.md` row holds (*A `DECIDE.md` row answers
-itself*): what is being decided, the options, the recommendation first, what
-it blocks. Answered, it goes Done with the answer and its rationale in the last
-comment; the *what* is folded into the design doc, this file or the skill text
-in the next commit, as in file mode. Wherever this file says *the decisions
-file* or `DECIDE.md`, read a Decision issue; wherever it says `DECISIONS.md`,
-read a Done one. Decisions about the working system itself live in the `dev`
-initiative, project `dev · Backlog`.
+description answers itself (*Asking the human*): what is being decided, the
+options, the recommendation first, what it blocks. Answered, it goes Done with
+the answer and its rationale in the last comment; the *what* is folded into the
+design doc, this file or the skill text in the next commit. Decisions about the
+working system itself live in the `dev` initiative, project `dev · Backlog`.
 
-**Reading this file in Linear mode.** A rule about the board, a row, the
-roadmap, a milestone, an issue or an idea applies to its issue or project in the
-table. The file mechanics do not: untracked, edited by hand, legends, padded
-ids, rows moving between files. Nothing is pruned: an issue is never deleted, it
-goes Done, Canceled or Duplicate. Live state the board would carry as a row
+**Nothing is pruned in Linear**: an issue is never deleted, it goes Done,
+Canceled or Duplicate. Live state the conversation would otherwise carry
 (*Standing* instructions, the local-model switch) goes under *Standing* in the
 initiative's description; trunk and ready chains come from `jj log`, as always.
 
 **The boundaries hold.**
 
-- **Lanes never write Linear**, as they never write `docs/ops/`: they report to
-  their file, and the coordinator (or `scribe`) records into Linear. A lane's
-  questions go in its report; the coordinator files the Decision issue. An agent
-  that must read Linear is spawned with `mcp_servers: ["linear"]` and reaches
-  the tools through codemode; one that needn't is spawned without it, its
-  brief carrying the issue text it needs.
+- **Lanes never write Linear**: they report to their file, and the coordinator
+  (or `scribe`) records into Linear. A lane's questions go in its report; the
+  coordinator files the Decision issue. An agent that must read Linear is
+  spawned with `mcp_servers: ["linear"]` and reaches the tools through
+  codemode; one that needn't is spawned without it, its brief carrying the
+  issue text it needs.
 - **Linear ids are ops ids.** The workspace is private, so `AUDIO-123` points at
   nothing in a clone: never in a commit message, code or a tracked doc (*What a
   commit message says*, §4).
 - **A roadmap issue keeps its word label** at the head of its title
   (`DEST-MIX · …`), so the changelog can still name it.
-
-### `BOARD.md` — the live board
-
-A **shared, live document every agent reads before acting**, and the human's
-primary view of what is happening and what needs them. In Linear mode it is a
-query, not a file (*Linear mode*): the rules below hold for the issues it shows.
-
-- **Line-items only.** Prose is what lanes collide on; line items don't.
-- **Lanes never write the board**, and no role owns a section of it: the
-  `integrator` writes none of it, so the `scribe` never waits for one.
-- **Short, and only the live work.** Sections: running · next · waits on the
-  human. Milestones and deferred work belong in the roadmap
-  ([simply-chris](https://simplychris.ai): *"board.md milestones shouldn't be
-  there, that belongs in roadmap … same with deferred"*).
-- **One live file.** Who runs what, which chains are ready and where trunk is
-  are rows here too; a second live file repeats the board and drifts from it
-  ([simply-chris](https://simplychris.ai): *"we should just have BOARD.md and not
-  2 files that repeat the same info"*).
-- **Not here**: rationale, discussion, anything addressed to the human. Those go
-  to the human channel. A board entry is a row, a state and a label.
-- **Kept current.** The coordinator updates it on every spawn, landing and plan
-  change, in the same turn (Linear mode: the issue's state and its lane comment).
-- **What landed is told in the changelog, never here.** A landed row leaves the
-  board the same day, and its roadmap row moves to `MILESTONES.md` (Linear mode:
-  the issue goes Done); a superseded one is deleted (Canceled or Duplicate) and
-  its successor says what it replaced.
-- **Whatever waits on the human is one hop from here.** The board names the
-  decisions file and the asks file (*The human channel*; Linear mode: the
-  open-decisions view and `ASKS.md`); not a commit message, not a banner on a
-  file.
-
-**Edit it by hand, not by script**: it is the file everyone navigates by. Read
-it, write the intended result, re-read the section you touched. What goes wrong when a shared document is
-merged is under *Landing*, rule 3.
-
-**Untracked is the point.** A gitignored file does not dirty the working copy,
-so the board can be rewritten *during* an integration, exactly when most is
-changing and the human most wants to look. The trade: a lane gets its context
-from its brief and reads the board by absolute path. What a lane must *build on*
-(code, design, research, the changelog) is tracked.
-
-**Nothing the human wrote lives in a file that gets rewritten.** An untracked
-file has no history. His review text goes in `drafts/`; a standing rule goes in
-`AGENTS.project.md`, which is untracked but never rewritten (*A project's own
-rules*), or a `DECISIONS.md` row.
-
-**A row's id is its label**: the lane's name (`flaky-2`, `ui-shell`), never a
-row number, which shifts as rows come and go. **A label is something the human
-types**, so never strike one through: a `~~LABEL~~` cannot be typed to fire a
-lane, and a struck row reads as *present but crossed out* when what is meant is
-*gone*. Status lives in the status column and the row's section, never in the
-label.
 
 ### `CHANGELOG.md` — tracked, at the repo root
 
@@ -306,20 +246,19 @@ backwards when both are dated the same day.
 
 The displaced material has homes: measurements, root causes and alternatives
 weighed → `docs/research/`; what a lane left undone, and a decision *made*
-rather than applied → the lane's report, from which the coordinator writes a
-board, issues or decisions row. **An entry that reads as a narrative is in the
-wrong document.**
+rather than applied → the lane's report, from which the coordinator tells the
+human or files an issue (Linear mode). **An entry that reads as a narrative is
+in the wrong document.**
 
 **Not here**: work that has not landed; roadmap intent.
 
 ### Dating an entry — clock *and* change id
 
 Many lanes land on one date, and a date says nothing about which came first.
-Every `CHANGELOG.md` entry and every `DECISIONS.md` row (Linear mode: a Decision
-issue's closing comment) carries **both**:
+Every `CHANGELOG.md` entry (and in Linear mode a Decision issue's closing
+comment) carries **both**:
 
     #### A preset that describes itself (`LIBFIN`) · YYYY-MM-DD HH:MM · oplmqxmn
-    | YYYY-MM-DD HH:MM · uvzmuvkl | **The analysis toolkit is a separate crate family…** |
 
 - **The clock** is for a human skimming. The lane writes it in its fragment at
   commit time, as the only party that knows. It is *not* the ordering authority.
@@ -331,46 +270,20 @@ issue's closing comment) carries **both**:
 **jj change ids survive rebase**, so a lane's id is still valid after five
 rebases onto a moving trunk. A commit hash would not be; do not use one.
 
-### `ISSUES.md`
-
-Defects and rough edges anyone notices in passing: file it, triage it, **don't
-interrupt a lane for it**. A **parking lot, not a queue**: nothing here is
-scheduled until promoted onto the board. Recorded by the coordinator from lane
-reports and **never silently closed**. A resolved issue moves to `FIXED.md` with
-a one-line verdict and a pointer to the changelog, so `ISSUES.md` reads as what
-is still open ([simply-chris](https://simplychris.ai): *"maybe we need a
-FIXED.md for fixed issues"*).
-
-**Not here**: features somebody would ask for by name (→ ideas), or work already
-scheduled (→ board).
-
-### `IDEAS.md`
-
-An inbox in three sections: **Inbox → In-flight → Done**. Ideas arrive raw and
-half-formed; append a row the moment one surfaces, promote it when it earns a
-lane. **An idea only ever moves down**: Inbox (no commitment) → In-flight (it has
-a board row) → Done (answered; the account is in the changelog). A row keeps its
-id as it moves.
-
 ### `ROADMAP.md` — tracked, at the repo root
 
-In Linear mode the roadmap is the initiative's milestone projects, and this file
-leaves the repo (*Linear mode*); what follows holds for the projects.
+File mode only; in Linear mode the roadmap is the initiative's milestone
+projects (*Linear mode*).
 
 Horizons and versions, and what a version *means* in the register of the ones
-before it, built from the ideas story lines plus the dependencies that gate
-them. Horizon numbers continue the version series. **Only what is not done**;
-milestones and work deferred by decision live here, not on the board. Tracked,
-so it **cites no ops ids**: its rows carry word labels. The coordinator edits it
-in the default workspace as a docs commit.
+before it, built from the ideas the human kept plus the dependencies that gate
+them. Horizon numbers continue the version series. **Only what is not done**:
+a shipped row leaves the day it lands, its account is the changelog's. Work
+deferred by decision lives here too. Tracked, so it **cites no ops ids**: its
+rows carry word labels. The coordinator edits it in the default workspace as a
+docs commit; the human, freely.
 
 **Not here**: finished work; that is the changelog.
-
-### `DECISIONS.md`
-
-Dated decisions with their rationale, so a settled question stays settled. One
-row, one decision, one date. In Linear mode there is no such file: a settled
-decision is a Done Decision issue (*Linear mode*).
 
 ### `docs/design/`
 
@@ -378,19 +291,18 @@ Proposals and the locked design. **Design documents always land on trunk**,
 proposals included: the human reviews on trunk, never in a lane's workspace
 ([simply-chris](https://simplychris.ai): *"I can't review design docs in
 workspaces, they need to be in main"*). **A design doc lands like any other
-doc**: no review banner, no review row; the human reads in passes of his own
+doc**: no review banner, no review request; the human reads in passes of his own
 choosing ([simply-chris](https://simplychris.ai): *"stop asking me to do doc
 reviews, I'll do passes as I see fit, adding these as line items is just
-noise"*). **What stays the human's is the decision**: it goes in the decisions
-file the same day, the doc marks that question open where it is asked, and
+noise"*). **What stays the human's is the decision**: he is asked the same day
+(*Asking the human*), the doc marks that question open where it is asked, and
 nothing is built on an open question. When the human answers, the next commit
 folds the answer in.
 
-**Changing what a design decides goes through the decisions file; recording that
-it was built does not.** Marking a stage as built, correcting a sketch to match
-the code, or adding a finding the design did not predict is **reporting, not
-proposing**. A lane that wants to *change* what was decided says so in its
-report.
+**Changing what a design decides goes to the human; recording that it was built
+does not.** Marking a stage as built, correcting a sketch to match the code, or
+adding a finding the design did not predict is **reporting, not proposing**. A
+lane that wants to *change* what was decided says so in its report.
 
 If a design's section numbers are cited from source code, **they are never
 renumbered.**
@@ -405,66 +317,53 @@ anything designed but not built**.
 elsewhere ([simply-chris](https://simplychris.ai): *"I kind of feel like
 DESIGN.md as a doc should not exist unless there are things that don't fit into
 the docs I just mentioned"*). An unlanded design is **a research note plus a
-queue row**: the note holds the argument and measurements, the row what a lane
-would do and what it costs. The decision it waits on lives where it can be
-answered: a board row's priority field, an ideas note, or a decisions row once
-answered. When it lands it moves into the design document.
+roadmap row** (Linear mode: an issue): the note holds the argument and
+measurements, the row what a lane would do and what it costs. When it lands it
+moves into the design document.
 
 ### `docs/guides/` · `docs/reference/`
 
 How to do a thing: build, run, release, use a tool. Generated references say so
 and are **regenerated, not edited**.
 
-### The human channel — `DECIDE.md` and `ASKS.md`
+### Asking the human
 
-Two files in `docs/ops/` for what passes between the human and the agents,
-**untracked so that conversation never enters history**. They give the narrative
-somewhere to go, which is what lets the board be line items. In Linear mode
-`DECIDE.md` is the open Decision issues and only `ASKS.md` is a file
-(*Linear mode*); a Decision issue's description keeps a row's shape, below.
+**File mode: ask him, live, in the conversation**, with the structured-question
+tool (`ask_user_question`) where the harness has one. A question in a file
+waits for a pass he may not make; a question asked now is answered now. **Linear
+mode: a Decision issue** (*Linear mode*), because there the plan outlives the
+conversation; say in chat that it was filed, with its link.
 
-Everything that waits on the human lives here, **never only in chat or a commit
-message**: chat scrolls away while lanes report.
-
-- **`DECIDE.md`**: decisions for the human, one row each, with a short answer
-  code. An answered row moves to `DECISIONS.md`.
-- **`ASKS.md`**: **commands only the human can run**, with the context to judge
-  each, **run or dry-run first** by the agent from the directory it names, and
-  pointed at the default workspace, never a running lane's working copy.
-  Deletions an agent cannot do land here (*Environment*, §4). **A block that
-  names paths names them explicitly**: an *"everything except…"* filter is
-  evaluated when the human runs it, in a world the agent could not see, which is
-  how a cleanup deletes a lane started after it was written.
-
-**A `DECIDE.md` row answers itself.** The human can reply from the row alone
+**A question answers itself.** The human can reply from the question alone
 ([simply-chris](https://simplychris.ai): *"expand on U and ASK-40, missing
 context"*; *"rec?"*, four times in two hours):
 
 - **what is being decided**, in one plain sentence, every term defined;
 - **the options**, each with what it changes for the human;
 - **your recommendation**, first among the options;
-- **what it blocks**, and where it lives.
+- **what it blocks**.
 
-`| D-66 | ❓ | decision | options (rec. first) | blocks · context |`. The file
-opens with *Open now*, newest first; calls taken without the human come after
-(*Architecture is the human's*, §1). Moot rows are pruned before he reads them
-(Linear mode: a moot Decision issue is Canceled, with a one-line comment).
+**One round, not a drip.** Group what you need into one ask, up to four
+questions; every round stops him. Ask before the work that depends on the
+answer starts, and keep running everything that doesn't.
 
-**No doc web yet is no excuse.** A repo without `docs/ops/` gets one the first
-time something needs recording, in that turn (`adopt.sh`, or at least
-`BOARD.md`, `DECIDE.md` and `ASKS.md`; Linear mode, `ASKS.md`). A question for
-the human goes in the file (Linear mode: its Decision issue) *before* chat
-mentions it ([simply-chris](https://simplychris.ai): *"the
-questions you ask me flow away as you react to agents"*).
+**Commands only the human can run** (a push, a deletion an agent cannot do, his
+own config) are run or dry-run first by the agent from the directory they name,
+pointed at the default workspace, never a running lane's working copy. **A block
+that names paths names them explicitly**: an *"everything except…"* filter is
+evaluated when the human runs it, in a world the agent could not see, which is
+how a cleanup deletes a lane started after it was written.
 
 **Anything the human will paste goes in a file; anything an agent can run, it
 runs** ([simply-chris](https://simplychris.ai): *"I can't copy paste from chat, I
-need a doc"*). A post, a blurb or a config block goes in `drafts/`, and the
-reply gives the path.
+need a doc"*). A command block, a post, a blurb or a config goes in
+`.pi/drafts/`, opened for him in the doc panel (`show_doc`) where the harness
+has one, otherwise by path.
 
-**The coordinator writes both files** (Linear mode: files the Decision issues). A
-lane puts its questions in its report: it cannot reserve a row id, and lanes
-numbering rows from their own counts collide.
+**Nothing the human wrote lives only in a file that gets rewritten.** `.pi/` has
+no history. A standing rule goes in `AGENTS.project.md`, which is never
+rewritten (*A project's own rules*); a settled decision is folded into what it
+governs.
 
 ### Where they live
 
@@ -472,11 +371,9 @@ As few top-level documents as possible ([simply-chris](https://simplychris.ai):
 *"where should the remaining top-level docs go? Ideally only one or 2 key ones
 remain"*):
 
-- **the repo root** holds `AGENTS.md` and `AGENTS.project.md` if any (both
-  untracked), and the tracked `CHANGELOG.md` and `ROADMAP.md` (file mode
-  only), with the untracked `changelog.d/` fragments beside them;
-- **`docs/ops/`** holds what decays, wrong the moment work lands, so it lives
-  and is maintained together, by the coordinator, in the default workspace;
+- **the repo root** holds `AGENTS.project.md` if any (untracked), and the
+  tracked `CHANGELOG.md` and `ROADMAP.md` (file mode only);
+- **`.pi/`** holds the local state, untracked by its own `.gitignore`;
 - everything else lives by kind: design, research, guides, reference. A folder
   appears when there is something to put in it.
 
@@ -484,28 +381,16 @@ Documentation lives in the docs tree, **never inside the source tree**.
 
 ### A repo you don't own
 
-A shared work repo, reviewed by people who never opted into any of this, gets a
-second adoption mode, not a variant of the first.
+A shared work repo, reviewed by people who never opted into any of this, takes
+nothing of the system that a teammate's `git status`, PR diff or repo search
+would surface: not a line in its `.gitignore`, not `AGENTS.project.md` at its
+root, not a `ROADMAP.md`.
 
-**Two repos, sibling, not nested.**
-
-    ~/work/<project>/
-      repo/           the shared repo — git, PR'd, reviewed, untouched by this system
-      ops/            a separate jj repo — AGENTS.md, docs/ops/, agents/, all of it
-
-`repo/` never contains a line of this system: not `AGENTS.md`, not `BOARD.md`,
-not a gitignore entry, nothing a teammate's `git status`, PR diff or repo search
-would surface. `ops/` is the doc web this file describes, laid out per §3,
-pointed at a different remote (or none).
-
-**Why sibling and not nested.** Nesting only works for *another working copy of
-the same repo* (a git worktree or jj workspace, which carries no history of its
-own): `repo/.worktrees/<lane>/` belongs inside,
-per §3. An independent repo with its own object store is different: git can
-gitlink it into a commit as an embedded repo, and only a per-clone
-`.git/info/exclude` entry, which a re-clone drops, would keep it off the shared
-remote. A sibling is safe structurally, not by discipline: nothing operating on
-`repo/`'s tree can reach it.
+**Everything goes in `repo/.pi/`.** A self-ignoring directory is invisible to
+git without touching the repo's own ignore files, and the package reads
+`.pi/AGENTS.project.md` there in place of a root one. Lanes' workspaces go in
+`.pi/workspaces/<lane>/` rather than `.workspaces/`, for the same reason. The
+system itself is the installed package, so nothing else is needed.
 
 **What still lands in `repo/`**: code, its tests, and a `CHANGELOG.md` if the
 team already keeps one (check, don't assume). Nothing else from the doc web.
@@ -513,24 +398,22 @@ team already keeps one (check, don't assume). Nothing else from the doc web.
 **Landing changes shape.** A lane still rebases and reports, but landing means a
 PR against `repo/` that passes the gates clean, not moving anyone's trunk; the
 changelog entry and the lane's report record the PR link or merge commit instead
-of a bookmark move. Review is the team's gate, not the integrator's.
-
-**Lanes don't write `ops/`**, as they don't write `docs/ops/`: they report, the
-coordinator records. A lane's fragment goes in `ops/changelog.d/`; the fold
-writes into `repo/`'s changelog, if the team keeps one.
+of a bookmark move. Review is the team's gate, not the integrator's. A lane's
+fragment still goes in `.pi/changelog.d/`; the fold writes into the team's
+changelog, if it keeps one.
 
 ### How a lane writes into shared documents
 
-- **It writes into the default workspace in exactly two places**, both
-  untracked, both its own file, both by absolute path: its changelog fragment,
-  `changelog.d/<LANE>.md`, and its report, `docs/ops/reports/<lane>.md` (*A
+- **It writes into the default workspace in exactly two places**, both in
+  `.pi/`, both its own file, both by absolute path: its changelog fragment,
+  `.pi/changelog.d/<LANE>.md`, and its report, `.pi/reports/<lane>.md` (*A
   lane's report is a file*, §4). Nothing else there, and never `CHANGELOG.md`.
 - **The fragment is staging, not history** ([simply-chris](https://simplychris.ai):
-  *"changelog.d should be untracked, as it's temporary staging"*): the directory
-  ignores itself, so a fragment never dirties the working copy an integrator
-  lands in.
+  *"changelog.d should be untracked, as it's temporary staging"*): it lives in
+  `.pi/`, so it never dirties the working copy an integrator lands in.
 - **Everything else goes in its report**: issues found and closed, decisions
-  taken, follow-up work with a priority. The coordinator records them.
+  taken, follow-up work with a priority, questions for the human. The
+  coordinator acts on them.
 - **On landing the fragment is folded into `CHANGELOG.md` and moved to
   `.trash/`.** A fragment whose lane has not landed stays.
 - **The changelog is user-facing**: what a person gets, not what the code did.
@@ -551,32 +434,24 @@ correctly. **A fragment that survives its fold gets applied twice**: retire it
 when you fold it.
 
 **Ids are the coordinator's.** A lane cannot see another lane's work in flight,
-so lanes counting on their own pick the same id. A lane names what it found in
-words; the coordinator assigns the id. In Linear mode Linear assigns it, when
+so lanes counting on their own pick the same label. A lane names what it found
+in words; the coordinator names it. In Linear mode Linear assigns the id, when
 the coordinator files the issue.
 
 ---
 
 ## 3. Default directory structure (a repo you own)
 
-    AGENTS.md                  this file: a symlink to it; untracked, by a root .gitignore line
     AGENTS.project.md          this project's own rules (optional; wins over this file);
                                untracked, by a root .gitignore line; default workspace only
-    .pi/                       the harness's project directory; its own .gitignore `*`
-      agents ->                symlink to <this system's repo>/agents (the roles)
-      skills ->                symlink to <this system's repo>/skills
-                               lane new links both into a workspace, with both
-                               AGENTS files, by absolute path
-    CHANGELOG.md               tracked, user-facing; folded from the fragments below
+    CHANGELOG.md               tracked, user-facing; folded from the fragments in .pi/changelog.d/
     ROADMAP.md                 tracked; what comes next, by version; no ops ids (file mode only)
-    changelog.d/<LANE>.md      untracked, default workspace only; a lane's entry until its landing folds it in
+    .pi/                       untracked local state, default workspace only (§2):
+                               reports/<lane>.md       lanes' final reports
+                               drafts/                 work in progress, what the human will paste
+                               changelog.d/<LANE>.md   a lane's entry until its landing folds it in
+                               sessions/ subagents/    pi's sessions and the agent tree
     docs/
-      ops/                     untracked working state, default workspace only (§2):
-                               BOARD.md MILESTONES.md DECIDE.md ASKS.md     the human's view
-                               ISSUES.md FIXED.md DECISIONS.md IDEAS.md     the record
-                               drafts/                                      work in progress
-                               reports/<lane>.md                            lanes' final reports
-                               (Linear mode: only ASKS.md drafts/ reports/; the rest is in Linear)
       design/                  the design, proposals included
       research/                investigations and measurements
       guides/                  how-to
@@ -589,17 +464,18 @@ the coordinator files the issue.
       baseline/<date>/         the full set after an integration; keeps everything
 
 **An untracked directory ignores itself**: its own `.gitignore` holds `*`
-(`docs/ops/.gitignore`, `changelog.d/.gitignore`, `.workspaces/.gitignore`,
-`.trash/.gitignore`…), not a path entry in the root `.gitignore`. The rule
-travels with the directory, and the root ignore file stays the project's. The
-exceptions are the two AGENTS links, which can't ignore themselves: each takes
-one anchored root line (`/AGENTS.md`, `/AGENTS.project.md`), which `adopt.sh`
-adds. `.pi/` is a directory, so it ignores itself like the rest.
+(`.pi/.gitignore`, `.workspaces/.gitignore`, `.trash/.gitignore`…), not a path
+entry in the root `.gitignore`. The rule travels with the directory, and the
+root ignore file stays the project's. The one exception is `AGENTS.project.md`,
+which can't ignore itself: it takes one anchored root line,
+`/AGENTS.project.md`, which `adopt.sh` adds.
+
+**Nothing of the system is linked into a repo.** The installed package brings
+the rules, the roles and the skills to every session, a lane's included, so a
+workspace needs no setup beyond its build cache.
 
 Workspaces go **inside** the repo, not `../` siblings, which pollute the
-directory the other repos live in. This is about extra working copies of *this*
-repo; the `ops/` sibling for a repo you don't own is a separate repo and a
-sibling on purpose (*A repo you don't own*).
+directory the other repos live in.
 
 ---
 
@@ -636,7 +512,7 @@ and not stuck"*).
   is read before it is reported, and reported as quiet since when.
 - **Where work stands: from `jj log`.** Ask what is unintegrated
   (`ancestors(<workspace>@) ~ ::<trunk> ~ empty()`) and count; check a fix is on
-  trunk before saying it landed. A board can record a lane as landed when it has
+  trunk before saying it landed. A record can call a lane landed when it has
   not been. An *empty* working copy means nothing: a finished lane's work sits in
   the ancestors.
 - **Sent is not received.** A message is in a lane's plan only once it answers.
@@ -692,17 +568,18 @@ one thing and nothing else runs, do it inline ([simply-chris](https://simplychri
 *"the cost of a workspace is also the rebase and regate"*). Lanes are for two or
 more things at once, or long work the human is not waiting on.
 
-1. Idea or direction lands → **docs first** (an ideas row, a board queue entry, a
-   decisions entry; in Linear mode, an issue) before engineering starts.
+1. Idea or direction lands → **settled first**: its open questions asked and
+   answered (a roadmap row if it is not for now; in Linear mode, an issue)
+   before engineering starts.
 2. Launch: `lane new <lane>` (*Spare the disk*), plus a brief.
 3. The lane works: incremental commits on its own chain, with the project's
    version control and **never git in a colocated repo** (a `git commit` after
    `jj new` lands on a detached head). Chains survive a dead agent; a
    replacement resumes from the same fence.
 4. **Every finishing lane writes its own record**: its changelog fragment and
-   its report file, with the board substance (what it finished, follow-up work
-   with a priority, issues and decisions). The coordinator records from the
-   report; reconstructing every lane's state by hand does not scale past a
+   its report file, with what the coordinator needs (what it finished,
+   follow-up work with a priority, issues and decisions). The coordinator acts
+   from the report; reconstructing every lane's state by hand does not scale past a
    handful.
 5. **The lane's last act is to rebase itself onto trunk**, resolve every
    conflict, **re-run the gates afterwards**, and report what conflicted and how
@@ -763,10 +640,10 @@ lane for one more turn, and that turn's short reply ("nothing to do, my report
 covers it") becomes the final result its parent sees. Three lanes' reports were
 lost this way in one afternoon, during a hotfix.
 
-- **Every lane writes its full report to `docs/ops/reports/<lane>.md`** in the
+- **Every lane writes its full report to `.pi/reports/<lane>.md`** in the
   default workspace, by absolute path, before its final message, and ends that
   message with the path. A later reply can no longer erase it.
-- **A recorded report moves to `.trash/`.**
+- **A report acted on moves to `.trash/`.**
 - **Never message a lane that may be finishing**, an FYI least of all ("trunk
   moved", a peer's name). What it needs goes in its brief, or the integrator's.
 - **The next ask is a `followup` after the report arrives**, never a message
@@ -815,8 +692,7 @@ lost this way in one afternoon, during a hotfix.
     The next command fails with "revision doesn't exist", which explains
     nothing.
 
-`docs/ops/` and `changelog.d/` are untracked: they never conflict and are never
-part of a landing.
+`.pi/` is untracked: it never conflicts and is never part of a landing.
 
 ### Repairing history, if it comes to that
 
@@ -869,32 +745,33 @@ two are why it usually waits.
 commit is immutable and review state changes, so "PROPOSAL" or "NEEDS REVIEW" is
 wrong within hours and stays wrong forever ([simply-chris](https://simplychris.ai):
 *"calling out for 'needs review' in commit messages is silly, that's what
-BOARD.md is for"*). No co-author lines.
+BOARD.md is for"*: review state lives in the conversation or the tracker). No
+co-author lines.
 
-**No internal ops references.** Issue, decision or idea ids, lane names, board
-or landed-index rows, Linear ids included (`I-106`, `N8`, `DEC-42`, `AUDIO-123`,
+**No internal ops references.** Issue, decision or idea ids, lane names, tracker
+rows, Linear ids included (`I-106`, `N8`, `DEC-42`, `AUDIO-123`,
 `LANE-x`, `ops: … landed`) mean
 nothing to a reader of the history, least of all in a public repo
 ([simply-chris](https://simplychris.ai), on `docs(ops): I-106 closed (N8–N11,
 N13); N12 filed as I-107; landed-index row`: *"random internal ops docs
 references as commit messages, they are meaningless"*). The subject says in plain
 words what changed and why; the body may explain more, still in plain words. A
-commit that only updates ops docs says what it records ("record the VST3
-inactive-parameter fix as done"), not which rows moved. This holds in every repo.
+commit that only updates the roadmap says what it records ("the VST3
+inactive-parameter fix is done"), not which rows moved. This holds in every repo.
 
 **Code and tracked docs never cite ops ids either**
 ([simply-chris](https://simplychris.ai): *"code and docs should NEVER reference
 issues and decisions and such by id"*). No issue, decision, idea, roadmap, ask or
-lane id (`I-007`, `X-151`, `N-12`, `AUDIO-123`, a board label) in source, comments,
-tests, design and research docs, guides, the changelog or a README: they live in
-untracked `docs/ops/` or a private Linear workspace, so in a clone they point at
-nothing, and the rows are
-pruned and superseded while the code keeps citing them. Drop the citation, and
+lane id (`I-007`, `X-151`, `N-12`, `AUDIO-123`, a lane's label) in source,
+comments, tests, design and research docs, guides, the changelog or a README:
+they live in a conversation, `.pi/` or a private Linear workspace, so in a clone
+they point at nothing, and they are superseded while the code keeps citing
+them. Drop the citation, and
 don't swap in the story behind it. **Code and docs are the *now* view**: they
 state **why, what and how, not how we got there**. The why is today's rationale
 ("a scene never creates a channel, so a scene file can't change the machine"),
 never what was decided, reversed or used to be; history lives in the changelog
-and `docs/ops/`. What may be cited: a design doc's section number (§2.3, never
+and the tracker. What may be cited: a design doc's section number (§2.3, never
 renumbered), a file or function by name, a jj change id in the changelog.
 
 ### Referring to the human's points
@@ -907,7 +784,7 @@ number ("3 (aligning OSC against the local transport)"), in chat and docs; a
 document that keeps the numbering lists the points with their numbers at the
 top.
 
-**In chat, and in reports and untracked ops docs, every Linear issue, project
+**In chat, and in reports and drafts, every Linear issue, project
 and initiative is a link the human can click**
 ([simply-chris](https://simplychris.ai): *"always hyperlink issues in chat so I
 can click on them"*): `[AUDIO-123](https://linear.app/<workspace>/issue/AUDIO-123)`,
@@ -964,7 +841,7 @@ issue's title and status; a URL link stays dead text.
   changes; if that cannot fix it, report it.
 - **Agents never push.** Pushing is the human's call; a project's own rules may
   name an exception. While the human is still talking a design through, nothing
-  is committed: the draft stays in the working copy or `drafts/`, and the
+  is committed: the draft stays in the working copy or `.pi/drafts/`, and the
   conclusion is committed once ([simply-chris](https://simplychris.ai): *"stop
   pushing things to github, I will decide when to push … when we're having a
   discussion, wait for our conversation to conclude before you commit to avoid
@@ -1061,12 +938,12 @@ it.
   off its brief; take the work back.
 - **Markdown tables**: short fixed-width columns first (an id, one emoji status),
   then the free-text description, then the rest (date, source, size), so
-  columns align in the human's editor (*Rows in the record*, §2).
+  columns align in the human's editor (*Rows in `ROADMAP.md`*, §2).
 - **When a bookkeeping loop repeats, script it**
   ([simply-chris](https://simplychris.ai): *"are there any things you do
   repeatedly that could be ops/scripts"*). A few shell calls per lane, times
   every lane, is most of a context window. The judgement stays human: a real
-  code conflict, and what a lane's board substance should say.
+  code conflict, and what a lane's report should lead to.
 
 ### Fences are advisory, not exclusive ([simply-chris](https://simplychris.ai))
 
@@ -1092,12 +969,12 @@ absorb rebases cheaply, long ones pay compound interest. **Work of a genuinely
 different kind** (research, surveys, design docs, measurement rounds) is the
 exception: it touches docs and cannot collide semantically with code lanes.
 
-**Fire long multi-stage code work when the board is quiet**, or stage it so each
+**Fire long multi-stage code work when little else runs**, or stage it so each
 stage is short. Prefer many small lanes otherwise.
 
 ### Lanes cannot address each other by label
 
-A board label is not an agent name: a message one lane sends another by label
+A lane's label is not an agent name: a message one lane sends another by label
 bounces. **The coordinator alone holds every lane's agent id**, so every
 cross-lane message routes through it, and cross-lane dependencies are the
 briefer's problem.
@@ -1184,7 +1061,8 @@ gets rewritten.
 **The switch goes both ways.** Pause it for laptop heat or GPU contention when
 the human needs the machine; prefer batching runs over keeping the server warm.
 **Re-enable it under quota pressure**: local latency beats no quota. Which way it
-is set *now* is live state, on the board.
+is set *now* is live state: say it when it changes (Linear mode: under
+*Standing* in the initiative's description).
 
 ### Constraint hygiene
 
@@ -1224,24 +1102,24 @@ Docs, reports and briefs reason **modally and constructively**, not classically:
 ## 6. The big question (periodic review ritual)
 
 When the human asks "the big question", or at any natural lull, run the pipeline
-review across the doc web, in this order:
+review, in this order:
 
-1. **What other ideas could we be looking into?** File new rows in the ideas
-   inbox (generalisations, gaps, adjacent envelope-pushes).
-2. **What ideas can we start to put into the roadmap and spec out?** Promote
-   mature rows: design rounds for the big ones, roadmap entries for the
-   committed.
-3. **What roadmap things can we pull onto the board?** Turn roadmap scope into
-   launch-ready queue entries, lanes permitting.
-4. **What board items can we conclude and mark done in the roadmap?** Close
-   finished lanes in both places; prune superseded queue entries.
+1. **What other ideas could we be looking into?** Put them to the human
+   (generalisations, gaps, adjacent envelope-pushes).
+2. **What can we start to put into the roadmap and spec out?** Design rounds
+   for the big ones, roadmap rows for the committed.
+3. **What roadmap rows can we start?** Turn roadmap scope into launch-ready
+   briefs, lanes permitting.
+4. **What can we mark done?** Shipped rows leave the roadmap; superseded ones
+   go.
 5. **What decisions can we be discussing?** Surface open calls (pending reviews,
-   design forks, go/no-go gates) with a recommendation each.
+   design forks, go/no-go gates) with a recommendation each, in one round of
+   questions.
 
-Answer all five explicitly, docs updated as you go (docs before eng).
+Answer all five explicitly, the roadmap updated as you go.
 
-In Linear mode the same five run over the initiative: the inbox is its Backlog
-issues labelled Idea; the roadmap, its milestone projects; the board, its Todo
+In Linear mode the same five run over the initiative: ideas are its Backlog
+issues labelled Idea; the roadmap, its milestone projects; what runs, its Todo
 and In Progress issues; concluding means Done and, for a finished milestone, a
 completed project; decisions are the open Decision issues.
 
@@ -1249,17 +1127,17 @@ completed project; decisions are the open Decision issues.
 
 ## 7. Recovery (crashed session / fresh context)
 
-1. Read the project's `AGENTS.project.md`, this file, and the board (Linear
-   mode: the board query, the open-decisions view and `ASKS.md`).
+1. Read the project's `AGENTS.project.md`, this file, and `.pi/reports/`
+   (Linear mode: also the board query and the open-decisions view).
 2. `jj log`: every lane's chain is committed incrementally; compare with the
-   board's running rows (Linear mode: In Progress issues and their lane
-   comments). `jj workspace list` plus a per-workspace `jj status`
-   finds uncommitted lane work.
+   agent list (Linear mode: In Progress issues and their lane comments).
+   `jj workspace list` plus a per-workspace `jj status` finds uncommitted lane
+   work.
 3. Finished unmerged chains → hand to an `integrator`. Dead agents → relaunch
-   with the fence from the board row; the chain survives.
+   with the brief from their transcript; the chain survives.
 4. **Salvage dead agents' transcripts.** A killed subagent's full transcript
-   survives at `~/.pi/agent/subagents/sessions/<parent-session>/<agent-id>/session.jsonl`
-   (`~/.pi/agent/subagents/registry.json` maps each name to its `sessionFile`),
+   survives at `.pi/subagents/sessions/<parent-session>/<agent-id>/session.jsonl`
+   (`.pi/subagents/registry.json` maps each name to its `sessionFile`),
    even when the harness says it "won't be resumed". Give the relaunched agent
    its predecessor's transcript path: the tail holds the exact plan and next
    step, finer-grained than the committed workspace state.
