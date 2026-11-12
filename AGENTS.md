@@ -3,9 +3,9 @@
 A reusable way of running agent work on a repo. Nothing here is specific to one
 project. A project adopts it with `adopt.sh` (idempotent: it creates the starter
 docs, links AGENTS.md relative to dev's, starts an untracked `AGENTS.project.md`
-beside it, and symlinks the agents) or by hand. The role definitions go in the directory
-the coding harness reads them from (Claude Code: `.claude/agents`; pi.dev:
-`.pi/agents`):
+beside it, and symlinks the agents and skills) or by hand. The harness is
+[pi](https://pi.dev): the role definitions go in `.pi/agents`, where it reads
+project personas, and the skills in `.pi/skills`:
 
     # either: ./adopt.sh <project>
 
@@ -500,7 +500,7 @@ pointed at a different remote (or none).
 
 **Why sibling and not nested.** Nesting only works for *another working copy of
 the same repo* (a git worktree or jj workspace, which carries no history of its
-own): `repo/.worktrees/<lane>/` (or `repo/.claude/.worktrees/`) belongs inside,
+own): `repo/.worktrees/<lane>/` belongs inside,
 per §3. An independent repo with its own object store is different: git can
 gitlink it into a commit as an embedded repo, and only a per-clone
 `.git/info/exclude` entry, which a re-clone drops, would keep it off the shared
@@ -562,9 +562,11 @@ the coordinator files the issue.
     AGENTS.md                  this file: a symlink to it; untracked, by a root .gitignore line
     AGENTS.project.md          this project's own rules (optional; wins over this file);
                                untracked, by a root .gitignore line; default workspace only
-    .claude/agents ->          symlink to <this system's repo>/agents, untracked
-                               (Claude Code; pi.dev uses .pi/agents instead)
-                               lane new links all three into a workspace, by absolute path
+    .pi/                       the harness's project directory; its own .gitignore `*`
+      agents ->                symlink to <this system's repo>/agents (the roles)
+      skills ->                symlink to <this system's repo>/skills
+                               lane new links .pi/agents and both AGENTS files into a
+                               workspace, by absolute path
     CHANGELOG.md               tracked, user-facing; folded from the fragments below
     ROADMAP.md                 tracked; what comes next, by version; no ops ids (file mode only)
     changelog.d/<LANE>.md      untracked, default workspace only; a lane's entry until its landing folds it in
@@ -590,9 +592,9 @@ the coordinator files the issue.
 (`docs/ops/.gitignore`, `changelog.d/.gitignore`, `.workspaces/.gitignore`,
 `.trash/.gitignore`…), not a path entry in the root `.gitignore`. The rule
 travels with the directory, and the root ignore file stays the project's. The
-exceptions are the local links, which can't ignore themselves: each takes one
-anchored root line (`/AGENTS.md`, `/AGENTS.project.md`, `/.claude/agents` or
-`/.pi/agents`), which `adopt.sh` adds.
+exceptions are the two AGENTS links, which can't ignore themselves: each takes
+one anchored root line (`/AGENTS.md`, `/AGENTS.project.md`), which `adopt.sh`
+adds. `.pi/` is a directory, so it ignores itself like the rest.
 
 Workspaces go **inside** the repo, not `../` siblings, which pollute the
 directory the other repos live in. This is about extra working copies of *this*
@@ -1256,7 +1258,8 @@ completed project; decisions are the open Decision issues.
 3. Finished unmerged chains → hand to an `integrator`. Dead agents → relaunch
    with the fence from the board row; the chain survives.
 4. **Salvage dead agents' transcripts.** A killed subagent's full transcript
-   survives at `~/.claude/projects/<project>/<session>/subagents/agent-<id>.jsonl`
+   survives at `~/.pi/agent/subagents/sessions/<parent-session>/<agent-id>/session.jsonl`
+   (`~/.pi/agent/subagents/registry.json` maps each name to its `sessionFile`),
    even when the harness says it "won't be resumed". Give the relaunched agent
    its predecessor's transcript path: the tail holds the exact plan and next
    step, finer-grained than the committed workspace state.
