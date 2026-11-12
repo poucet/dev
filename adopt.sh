@@ -8,60 +8,16 @@
 #   1. links AGENTS.md         -> dev's AGENTS.md, by a relative symlink
 #      (../dev/AGENTS.md when the repo sits beside dev), untracked (step 4),
 #      and starts an AGENTS.project.md for the repo's own rules, untracked
-#   2. symlinks the role definitions into the directory the coding harness
-#      in use reads them from:
-#        pi.dev       .pi/agents       (personas; needs projectPersonas: true
-#                                       in ~/.pi/agent/subagents.json and a
-#                                       trusted project)
-#        Claude Code  .claude/agents   (subagents)
-#   3. lays out the doc web per AGENTS.md §3:
-#        CHANGELOG.md and ROADMAP.md at the root, tracked
-#        changelog.d/  lanes' changelog fragments (untracked)
-#        docs/ops/   the one untracked directory of working state:
-#                    BOARD DECIDE ASKS  ISSUES FIXED DECISIONS IDEAS
-#                    reports/ (lanes' final reports)
-#                    (drafts/ appears when there is a draft)
-#        (docs/{design,research,guides,reference}/ are not made: a folder
-#        appears when there is something to put in it)
-#        .workspaces/  .trash/   (untracked)
-#      The starter files are copied from dev's templates/, each only where
-#      the project has no file of that name yet. Files of an older layout
-#      (docs/ops/STATUS.md, docs/ops/ROADMAP.md) are left where they are;
-#      a root ROADMAP.md is not added while docs/ops/ROADMAP.md exists.
-#      A repo that already keeps a changelog (CHANGELOG.md at the root or in
-#      docs/ops/, any case) gets no template CHANGELOG.md; one that keeps
-#      fragments (changelog.d/ at the root or in docs/ops/) or keeps its
-#      changelog only in docs/ops/ gets no root changelog.d/. Each is reported.
-#      A real AGENTS.md (an old copy) is left alone and reported: its rules
-#      move into AGENTS.project.md by hand (skills/adopt), then re-run with
-#      --replace-agents-md, which moves it to .trash/ and makes the link.
-#      With --tracker linear the repo keeps its plan in Linear (AGENTS.md
-#      §2, *Linear mode*): ROADMAP.md and docs/ops/'s BOARD MILESTONES
-#      ISSUES FIXED IDEAS DECIDE DECISIONS are not copied (a warning names any that already exist: they
-#      move at cutover, per skills/linear), and AGENTS.project.md gains a
-#      '## Tracker' section from skills/linear/tracker.md, once.
-#   4. ignores what must never be committed: each untracked directory above
-#      (and .claude/ or .pi/) gets its own .gitignore holding '*'. The symlink
-#      targets are machine-specific absolute paths, so they must never be
-#      committed either.
-#      AGENTS.md, AGENTS.project.md and the agent links are untracked in
-#      every repo, in both modes: they are local setup (the AGENTS.md link
-#      dangles in a lane's workspace and in a public clone). A single file
-#      can't ignore itself, so the root .gitignore gains an anchored line for
-#      each, once: '/AGENTS.md', '/AGENTS.project.md', '/.pi/agents' or
-#      '/.claude/agents'. Any already tracked is untracked (jj file untrack;
-#      git rm --cached in a git-only repo), staying on disk. Nothing is
-#      committed: the report prints the by-path commit command.
-#      A lane's workspace gets its own absolute links from `lane new`
-#      (skills/lane).
+#   2. Creates a .pi directory with
+#      - .gitignore = *
+#      - .pi/agents -> dev/agents
+#      - .pi/skills -> dev/skills
+#   3. Sets up the tracker + docweb
+#   4. Sets up the relevant .gitignore for the docweb and AGENTS.md
 #
 # Usage:
-#   ./adopt.sh <project-dir> [--harness pi|claude|both|auto]
-#                            [--tracker files|linear]
-#                            [--replace-agents-md]
+#   ./adopt.sh <project-dir> [--tracker files|linear] [--replace-agents-md]
 #
-#   --harness          which harness directory(s) to wire (default: auto —
-#                      .claude if the project has one, else .pi)
 #   --tracker          where the plan lives (default: files; linear also
 #                      when AGENTS.project.md already has '## Tracker')
 #   --replace-agents-md  a real AGENTS.md (an old copy of the system) goes to
@@ -76,14 +32,12 @@ echo "dev dir: $DEV_DIR"
 usage() { sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
-HARNESS="auto"
 TRACKER=""
 REPLACE_AGENTS_MD=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help) usage 0 ;;
-		--harness) HARNESS="${2:?}"; shift 2 ;;
 		--tracker) TRACKER="${2:?}"; shift 2 ;;
 		--replace-agents-md) REPLACE_AGENTS_MD=1; shift ;;
 		-*) echo "unknown option: $1" >&2; usage 1 >&2 ;;
@@ -95,16 +49,6 @@ done
 [ -n "$PROJECT" ] || usage 1 >&2
 [ -d "$PROJECT" ] || { echo "not a directory: $PROJECT" >&2; exit 1; }
 PROJECT="$(cd "$PROJECT" && pwd)"
-
-# Resolve the harness: explicit flag wins; auto picks .claude if the project
-# already has one, else .pi.
-if [ "$HARNESS" = "auto" ]; then
-	if [ -d "$PROJECT/.claude" ]; then HARNESS="claude"; else HARNESS="pi"; fi
-fi
-case "$HARNESS" in
-	pi|claude|both) ;;
-	*) echo "--harness must be pi, claude, both or auto (got: $HARNESS)" >&2; exit 1 ;;
-esac
 
 # Resolve the tracker: explicit flag wins; a project whose AGENTS.project.md
 # already declares '## Tracker' stays in Linear mode on a re-run.
@@ -124,7 +68,6 @@ moved_to_linear() { [ "$TRACKER" = "linear" ] && case " $LINEAR_MOVED " in *" $1
 
 # Create a directory (and parents) if absent.
 ensure_dir() { mkdir -p -- "$1"; }
-
 
 # Ensure dir contains a .gitignore with wild card to ignore that directory.
 ensure_untracked_dir() { ensure_dir "$1"; [ -e "$1/.gitignore" ] || echo '*' > "$1/.gitignore"; }
@@ -189,16 +132,11 @@ if [ -e "$PROJECT/AGENTS.md" ] && [ ! -L "$PROJECT/AGENTS.md" ]; then
 fi
 [ "$AGENTS_COPY" = "kept" ] || link_into "$AGENTS_LINK" "$PROJECT/AGENTS.md"
 
-# --- 2. harness agents symlink ------------------------------------------------
+# --- 2. agents + skills symlink ------------------------------------------------
 
-AGENT_DIRS=()
-[ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ] && AGENT_DIRS+=(".pi/agents")
-[ "$HARNESS" = "claude" ] || [ "$HARNESS" = "both" ] && AGENT_DIRS+=(".claude/agents")
-for dir in "${AGENT_DIRS[@]}"; do
-	ensure_dir "$PROJECT/$(dirname "$dir")"
-	ensure_untracked_dir "$PROJECT/$(dirname "$dir")"
-	link_into "$DEV_DIR/agents" "$PROJECT/$dir"
-done
+ensure_untracked_dir "$PROJECT/.pi"
+link_into "$DEV_DIR/agents" "$PROJECT/.pi/agents"
+link_into "$DEV_DIR/skills" "$PROJECT/.pi/skills"
 
 # --- 3. the doc web (AGENTS.md §3) --------------------------------------------
 
@@ -248,7 +186,7 @@ fi
 # the AGENTS.md link dangles in a lane's workspace and in a public clone, and
 # the agent links point into this machine. A single file can't ignore itself,
 # so each takes an anchored root .gitignore line.
-LOCAL_PATHS=("AGENTS.md" "AGENTS.project.md" "${AGENT_DIRS[@]}")
+LOCAL_PATHS=("AGENTS.md" "AGENTS.project.md")
 TO_COMMIT=()
 for rel in "${LOCAL_PATHS[@]}"; do
 	re="$(printf '%s' "$rel" | sed 's/[.]/\\./g')"
@@ -285,7 +223,7 @@ done
 
 # --- report -------------------------------------------------------------------
 
-echo "Adopted simply/dev into $PROJECT (harness: $HARNESS)."
+echo "Adopted simply/dev into $PROJECT."
 case "$AGENTS_COPY" in
 	kept) echo "  !! AGENTS.md is a real file (an old copy of the system), left tracked and in place:"
 	      echo "     move its project rules into AGENTS.project.md, then re-run with --replace-agents-md" ;;
@@ -293,9 +231,8 @@ case "$AGENTS_COPY" in
 esac
 [ "$AGENTS_COPY" = "kept" ] || echo "  AGENTS.md -> $AGENTS_LINK (untracked)"
 echo "  AGENTS.project.md (untracked)"
-for dir in "${AGENT_DIRS[@]}"; do
-	echo "  $dir -> $DEV_DIR/agents (untracked)"
-done
+echo "  $PROJECT/.pi/agents -> $DEV_DIR/agents (untracked)"
+echo "  $PROJECT/.pi/skills -> $DEV_DIR/skills (untracked)"
 if [ -n "$FOUND_CHANGELOG" ]; then
 	echo "  found an existing changelog, no template added: $FOUND_CHANGELOG"
 	CL=""
@@ -331,10 +268,8 @@ if [ ${#TO_COMMIT[@]} -gt 0 ]; then
 		echo "  git add .gitignore && git commit -m \"$msg\""
 	fi
 fi
-if [ "$HARNESS" = "pi" ] || [ "$HARNESS" = "both" ]; then
-	echo
-	echo "Reminders for pi:"
-	echo "  - set \"projectPersonas\": true in ~/.pi/agent/subagents.json"
-	echo "  - trust the project when pi prompts on next launch"
-fi
+echo
+echo "Reminders for pi:"
+echo "  - set \"projectPersonas\": true in ~/.pi/agent/subagents.json"
+echo "  - trust the project when pi prompts on next launch"
 echo
