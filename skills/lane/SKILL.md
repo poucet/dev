@@ -18,7 +18,7 @@ A lane's disk is almost all `target/`. `cp -c` makes an APFS clone: every block 
 
 ## Nothing to link
 
-A workspace needs no setup beyond its cache. The installed pi package brings the rules, the roles and the skills to every session, and a lane in `.workspaces/<name>` reads the repo's local `AGENTS.md` files (the root's, `.pi/AGENTS.md`) as ancestors, so every lane reads the same copy. In a repo you don't own (one with `.pi/workspaces/`, made by `adopt.sh --theirs`), workspaces go in `.pi/workspaces/<name>`, where nothing shows outside `.pi/`.
+A workspace needs no setup beyond its cache. The installed pi package brings the rules, the roles and the skills to every session, and a lane in `.workspaces/<name>` reads the repo's local `AGENTS.md` files (the root's, `.pi/AGENTS.md`) as ancestors, so every lane reads the same copy. In a repo you don't own (one with a `.pi/workspaces/`), workspaces go in `.pi/workspaces/<name>`, where nothing shows outside `.pi/`.
 
 ## Keeping the base warm
 

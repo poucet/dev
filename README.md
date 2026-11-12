@@ -52,26 +52,19 @@ root). The agent tree already lives in `<repo>/.pi/subagents`.
 
 ## Adopt it in a project
 
-    <path to this repo>/adopt.sh <project>                   # file mode
-    <path to this repo>/adopt.sh <project> --tracker linear  # plan in Linear
-    <path to this repo>/adopt.sh <project> --theirs          # a shared repo you don't own
-
-It is idempotent and never overwrites anything that already exists. It gives
+Ask the agent to adopt the repo; the **`adopt` skill** (`skills/adopt/`) gives
 the repo a starter `AGENTS.md` for its own rules (build, gates, branches,
 paths; tracked, or local if the root `.gitignore` has `/AGENTS.md`), a local
 `.pi/AGENTS.md` for the private ones (the tracker, standing rules), a tracked
 `CHANGELOG.md` and, in file mode, `ROADMAP.md`, and
-the self-ignoring local directories `.pi/`, `.workspaces/` and `.trash/`. It
-lists what an older setup left behind (`AGENTS.md` links, `.pi/agents`,
-`docs/ops/`, `changelog.d/`).
+moves what an older setup left behind (`AGENTS.md` links, `AGENTS.project.md`,
+`.pi/agents`, `docs/ops/`, `changelog.d/`) to where it belongs. Nothing else is
+needed: the package gives `.pi/` its `.gitignore` and `lane new` makes
+`.workspaces/`.
 
 **A repo can keep its plan in Linear** (AGENTS.md §2, *Linear mode*): the
 **`linear` skill** (`skills/linear/`) sets up the initiative and projects,
 backfills, and cuts over.
-
-For a repo that already has its own `AGENTS.md`, changelog, todo files or an old
-`docs/ops/`, use the **`adopt` skill** (`skills/adopt/`): it runs the installer
-and moves what the repo had to where it belongs.
 
 The role files' frontmatter omits `tools`, so a role inherits every tool;
 per-model or per-role tool restrictions are set by the harness config, not the
@@ -82,8 +75,7 @@ role files.
     package.json  the pi package manifest: extension, skills, personas
     extension/    the extension that loads the rules; AGENTS.md (the system),
                   default-agent.md
-    adopt.sh      the installer: starter AGENTS.md files, self-ignoring dirs
-    templates/    the starter files adopt.sh copies
+    templates/    the starter files the adopt skill copies
     agents/       the eight role definitions (subagent personas)
     skills/       adopt (bring a repo onto the system), linear (keep a repo's
                   plan in Linear), lane (lane workspaces), brainstorm (the

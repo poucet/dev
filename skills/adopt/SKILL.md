@@ -1,15 +1,15 @@
 ---
 name: adopt
-description: Bring an existing repo onto the simply/dev working system by running dev's adopt.sh and reconciling what the repo already has (its own AGENTS.md, changelog, todo or board files, an old docs/ops/). Use when the human developer asks to adopt, onboard or "put dev on" a repo, or when a repo still carries the old links, AGENTS.project.md or docs/ops/.
+description: Bring an existing repo onto the simply/dev working system by laying down its few files and reconciling what the repo already has (its own AGENTS.md, changelog, todo or board files, an old docs/ops/). Use when the human developer asks to adopt, onboard or "put dev on" a repo, or when a repo still carries the old links, AGENTS.project.md or docs/ops/.
 ---
 
 # Adopt a repo onto the dev system
 
 The system itself (its rules, the roles, the skills) is a pi package installed
 once per machine (`pi install <dev repo>`); nothing of it goes into a repo.
-`adopt.sh` lays down the repo's own small part; this skill is the judgement
-around it: what the repo already has, what moves where, what gets committed.
-It is safe to re-run (`adopt.sh` is idempotent and never overwrites).
+What a repo gets is small enough to lay down by hand, and this skill is the
+judgement around it: what the repo already has, what moves where, what gets
+committed. Never overwrite a file that exists; re-running changes nothing.
 
 ## What adoption gives a repo
 
@@ -28,12 +28,11 @@ no file of that name; a changelog the repo already keeps gets no template
 beside it.
 
 **A repo whose plan lives in Linear** (AGENTS.md §2, *Linear mode*; opt-in,
-the human's call per repo) is adopted with `--tracker linear`: no `ROADMAP.md`,
-and `.pi/AGENTS.md` gains a `## Tracker` section to fill in. A re-run keeps
-Linear mode on its own once that section exists. Setting up the initiative and
+the human's call per repo) gets no `ROADMAP.md`,
+and `.pi/AGENTS.md` gains a `## Tracker` section to fill in. Setting up the initiative and
 projects and backfilling are the `linear` skill.
 
-**A shared repo you don't own** is adopted with `--theirs`: nothing a teammate
+**A shared repo you don't own** gets nothing a teammate
 could see, so no root `AGENTS.md` and no tracked file; the rules go in
 `.pi/AGENTS.md` and lanes in `.pi/workspaces/` (AGENTS.md §2, *A repo
 you don't own*).
@@ -45,14 +44,17 @@ you don't own*).
    and its build (`Cargo.toml`, `package.json`, …). Note the VCS: `jj st` (or
    `git status`). **Never adopt over uncommitted work you don't own**: if the
    working copy is dirty, ask the human developer first.
-2. **Run the installer:**
-   ```sh
-   <dev repo>/adopt.sh <repo>                   # file mode
-   <dev repo>/adopt.sh <repo> --tracker linear  # plan in Linear
-   <dev repo>/adopt.sh <repo> --theirs          # a shared repo you don't own
-   ```
-   (`<dev repo>` is the directory this skill's `skills/` folder sits in.) It
-   creates only what is missing, and lists what the old setup left behind.
+2. **Lay down what is missing** (`<dev>` is the directory this skill's
+   `skills/` folder sits in), each only where nothing exists:
+   - `AGENTS.md` from `<dev>/templates/AGENTS.md` (not for a repo you don't
+     own);
+   - `.pi/AGENTS.md` from `<dev>/templates/local-AGENTS.md`, and in Linear mode
+     `<dev>/skills/linear/tracker.md` appended with `<repo>` filled in;
+   - `CHANGELOG.md` from the template, unless the repo keeps a changelog, and
+     in file mode `ROADMAP.md` (neither for a repo you don't own);
+   - `.pi/` needs nothing: the package gives it its `.gitignore` of `*` at the
+     first session, and `lane new` makes `.workspaces/` the same way. A repo
+     you don't own gets an empty `.pi/workspaces/`, so lanes go there.
 3. **Reconcile what the repo had:**
    - an existing `AGENTS.md` / `CLAUDE.md` with project rules → their
      **project-specific** parts stay in the repo's `AGENTS.md` (private ones
@@ -62,8 +64,9 @@ you don't own*).
      and its tracking removed (`jj file untrack`), unless the team uses it;
    - **the old links** (`AGENTS.md` → dev's, `.pi/agents`, `.pi/skills`,
      `.claude/agents`) → `.trash/`; their root `.gitignore` lines go, except
-     `/AGENTS.md` where the root `AGENTS.md` is to stay local. `adopt.sh` removes
-     an `AGENTS.md` link and moves `AGENTS.project.md` into place itself;
+     `/AGENTS.md` where the root `AGENTS.md` is to stay local;
+   - an old `AGENTS.project.md` → `AGENTS.md` when the root `.gitignore`
+     ignores `/AGENTS.md`, else `.pi/AGENTS.md`;
    - **an old `docs/ops/`**: there is no plan on disk any more (AGENTS.md §2,
      *No plan on disk*). Its standing rules go into `.pi/AGENTS.md`; its
      settled decisions into what they govern (a design doc, an `AGENTS.md`);
@@ -92,8 +95,8 @@ you don't own*).
 6. **Commit only the tracked parts**, one commit, plain words, e.g.
    `Adopt the dev working system: changelog and roadmap at the root, the
    project's own rules file kept untracked` (no internal ids). Commit the
-   files by path (`.gitignore`, `CHANGELOG.md`, `ROADMAP.md`, and whatever
-   `adopt.sh` says it untracked), so nobody else's uncommitted edits ride
+   files by path (`.gitignore`, `AGENTS.md` if tracked, `CHANGELOG.md`,
+   `ROADMAP.md`, anything you untracked), so nobody else's uncommitted edits ride
    along. Don't push.
 7. **Report:** what was created, what moved where, what was left for the human
    (backport candidates, anything ambiguous).

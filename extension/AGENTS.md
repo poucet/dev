@@ -10,8 +10,8 @@ It puts this file, the eight roles (as subagent personas) and the skills in
 front of every session, in every repo, with nothing linked into the repo. This
 file lives in the package as `extension/AGENTS.md`; here and in the role files,
 `AGENTS.md` with a section number, or *the system*, means this file. A repo
-adopts the system with `adopt.sh` (idempotent: a starter `AGENTS.md`,
-`CHANGELOG.md` and, in file mode, `ROADMAP.md`) or by hand.
+adopts the system with the `adopt` skill: a starter `AGENTS.md`,
+`CHANGELOG.md` and, in file mode, `ROADMAP.md`.
 
 Every rule below came from a real failure. Where a rule carries its reason or a
 quote, keep it with the rule: a rule whose reason is stated gets followed.

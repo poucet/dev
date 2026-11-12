@@ -115,9 +115,8 @@ In the repo's local `.pi/AGENTS.md` (untracked; AGENTS.md, *A project's own
 rules*), or a root `AGENTS.md` the repo keeps local: writing the block commits
 nothing. A subdirectory's own `.pi/AGENTS.md` may carry its own block: the
 nearest one up from where you work applies, so one repo can feed several
-initiatives, teams or projects. `adopt.sh --tracker linear` appends it from
-`tracker.md` beside this file, with `<repo>` filled in and the `Owner`
-defaulted; fill in the two URLs
+initiatives, teams or projects. Start it from `tracker.md` beside this file, with `<repo>` filled in and the
+`Owner` defaulted; fill in the two URLs
 once setup has made them. The block is the switch: without it the repo is in
 file mode.
 

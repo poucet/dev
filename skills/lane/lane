@@ -8,7 +8,7 @@
 #                           commits stay in the repo)
 #
 # <dir> is .workspaces/, or .pi/workspaces/ when that exists (a repo you don't
-# own, adopted with --theirs), where nothing may show outside .pi/.
+# own), where nothing may show outside .pi/.
 #
 # Run from the repo root (the default workspace). The clone (`cp -c`) shares every
 # block with the root's target/ until cargo rewrites a file, so dependencies are
