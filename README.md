@@ -19,7 +19,7 @@ landing moves a bookmark, and the roles' commands (`jj commit`, `jj rebase`,
     cd <project> && jj git init --colocate # an existing git repo becomes a jj repo too
 
 The harness is **[pi](https://pi.dev)**, with the `subagent` tool from
-simply-pi (it reads the roles from this package's `pi.personas`).
+simply-pi, a pi package installed the same way (it reads the roles from this package's `pi.personas`).
 
 ## Install it, once per machine
 
