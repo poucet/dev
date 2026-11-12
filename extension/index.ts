@@ -2,23 +2,23 @@
  * The working system, loaded into every pi session.
  *
  * Installed once (`pi install <path to dev>`), this puts the system's rules in
- * front of every agent, in every repo, with nothing linked into the repo:
+ * front of every agent, in every repo, with nothing linked into the repo, and
+ * orders them with the repo's own rules so the more specific always comes later:
  *
- *   - `default-agent.md` beside this file: who the agent is unless a project or
- *     persona says otherwise;
- *   - dev's `AGENTS.md`: the system itself;
- *   - the repo's own `AGENTS.project.md`, the nearest one at or above the
- *     working directory, so a lane's workspace inside the repo finds its repo's;
- *     at each level the root's file first, else `.pi/AGENTS.project.md` (where a
- *     repo you don't own keeps it, invisible to git).
+ *   1. whatever pi loads from its agent directory (`~/.pi/agent/AGENTS.md`);
+ *   2. `default-agent.md` beside this file: who the agent is unless a project or
+ *      persona says otherwise;
+ *   3. `AGENTS.md` beside this file: the system itself;
+ *   4. for each directory from the filesystem root down to the working
+ *      directory: its `AGENTS.md` (pi loads these itself), then its local
+ *      `.pi/AGENTS.md` (added here: rules kept out of the repo, untracked by
+ *      `.pi/`'s own `.gitignore`).
  *
- * They are added as context files on every run, after whatever pi loaded
- * itself, and never twice: a file pi already loaded (a repo that still links
- * dev's AGENTS.md at its root, say) is skipped by its real path.
+ * Every file appears once, by real path, wherever it was first loaded from.
  *
  * It also gives a repo's `.pi/` its `.gitignore` of `*` when it has none: that
- * directory holds local state (sessions, the agent tree, reports, drafts) and
- * never belongs in history.
+ * directory holds local state (sessions, the agent tree, reports, drafts, local
+ * rules) and never belongs in history.
  *
  * The roles and skills ship through the package manifest (`pi.personas`,
  * `pi.skills` in package.json), not from here.
@@ -27,16 +27,17 @@
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { type ExtensionAPI, getAgentDir } from "@earendil-works/pi-coding-agent";
+
+type ContextFile = { path: string; content: string };
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const DEV = resolve(HERE, "..");
 
 /** The system's own files, in the order an agent should read them. */
-const SYSTEM_FILES = [join(HERE, "default-agent.md"), join(DEV, "AGENTS.md")];
+const SYSTEM_FILES = [join(HERE, "default-agent.md"), join(HERE, "AGENTS.md")];
 
-/** Where a repo keeps its rules, in the order looked for at each level. */
-const PROJECT_RULES = ["AGENTS.project.md", join(".pi", "AGENTS.project.md")];
+/** A directory's local rules, beside its `AGENTS.md`. */
+const LOCAL_RULES = join(".pi", "AGENTS.md");
 
 function realpath(p: string): string {
 	try {
@@ -46,83 +47,93 @@ function realpath(p: string): string {
 	}
 }
 
-/** The nearest of `names` at or above `cwd`, earlier names first at each level. */
-export function findUp(cwd: string, names: readonly string[]): string | undefined {
+function read(path: string): ContextFile | undefined {
+	try {
+		return { path, content: readFileSync(path, "utf-8") };
+	} catch {
+		return undefined;
+	}
+}
+
+/** `cwd` and its ancestors, outermost first. */
+export function ancestry(cwd: string): string[] {
+	const dirs: string[] = [];
 	let current = resolve(cwd);
 	for (;;) {
-		for (const name of names) {
-			const candidate = join(current, name);
-			if (existsSync(candidate)) return candidate;
-		}
+		dirs.unshift(current);
 		const parent = dirname(current);
-		if (parent === current) return undefined;
+		if (parent === current) return dirs;
 		current = parent;
 	}
 }
 
 /** The nearest directory at or above `cwd` holding `.jj` or `.git`. */
 export function projectRoot(cwd: string): string | undefined {
-	let current = resolve(cwd);
-	for (;;) {
-		if (existsSync(join(current, ".jj")) || existsSync(join(current, ".git"))) return current;
-		const parent = dirname(current);
-		if (parent === current) return undefined;
-		current = parent;
+	for (const dir of [...ancestry(cwd)].reverse()) {
+		if (existsSync(join(dir, ".jj")) || existsSync(join(dir, ".git"))) return dir;
 	}
+	return undefined;
 }
 
 /** The nearest ancestor of `p` (or `p` itself) named `.pi`, if any. */
 export function enclosingPiDir(p: string): string | undefined {
-	let current = resolve(p);
-	for (;;) {
-		if (basename(current) === ".pi") return current;
-		const parent = dirname(current);
-		if (parent === current) return undefined;
-		current = parent;
-	}
+	return [...ancestry(p)].reverse().find((dir) => basename(dir) === ".pi");
 }
 
-/** Give `<project>/.pi` a `.gitignore` of `*` if it has none. Best effort. */
-export function ensureLocalStateIgnored(project: string): void {
-	const dir = join(project, ".pi");
-	const ignore = join(dir, ".gitignore");
+/** Give `<dir>/.pi` a `.gitignore` of `*` if it has none. Best effort. */
+export function ensureLocalStateIgnored(dir: string): void {
+	const pi = join(dir, ".pi");
+	const ignore = join(pi, ".gitignore");
 	if (existsSync(ignore)) return;
 	try {
-		mkdirSync(dir, { recursive: true });
+		mkdirSync(pi, { recursive: true });
 		writeFileSync(ignore, "*\n", { flag: "wx" });
 	} catch {
 		// An unwritable repo is not a reason to fail a session.
 	}
 }
 
-/** The files this extension contributes for `cwd`, in reading order. */
-export function contextFilesFor(cwd: string): { path: string; content: string }[] {
-	const paths = [...SYSTEM_FILES];
-	const rules = findUp(cwd, PROJECT_RULES);
-	if (rules) paths.push(rules);
-	const files: { path: string; content: string }[] = [];
-	for (const path of paths) {
-		try {
-			files.push({ path, content: readFileSync(path, "utf-8") });
-		} catch {
-			// A missing file contributes nothing.
-		}
-	}
-	return files;
-}
-
-/** Append `extra` to `existing`, skipping any file already there by real path. */
-export function mergeContextFiles(
-	existing: { path: string; content: string }[],
-	extra: { path: string; content: string }[],
-): void {
-	const seen = new Set(existing.map((file) => realpath(file.path)));
-	for (const file of extra) {
+/**
+ * The context files for a session in `cwd`, given what pi loaded itself
+ * (`loaded`: its agent directory's file first, then each ancestor's
+ * `AGENTS.md`, outermost first). Pure apart from reading files.
+ */
+export function orderContextFiles(
+	loaded: readonly ContextFile[],
+	cwd: string,
+	agentDir: string,
+): ContextFile[] {
+	const seen = new Set<string>();
+	const out: ContextFile[] = [];
+	const add = (file: ContextFile | undefined) => {
+		if (!file) return;
 		const key = realpath(file.path);
-		if (seen.has(key)) continue;
+		if (seen.has(key)) return;
 		seen.add(key);
-		existing.push(file);
+		out.push(file);
+	};
+
+	// 1. the agent directory's own file
+	const agentKey = realpath(agentDir);
+	const fromAgentDir = loaded.filter((f) => realpath(dirname(f.path)) === agentKey);
+	fromAgentDir.forEach(add);
+	// 2–3. the system
+	SYSTEM_FILES.forEach((path) => add(read(path)));
+	// 4. each directory, outermost first: its AGENTS.md, then its .pi/AGENTS.md
+	const byDir = new Map<string, ContextFile[]>();
+	for (const file of loaded) {
+		const dir = realpath(dirname(file.path));
+		byDir.set(dir, [...(byDir.get(dir) ?? []), file]);
 	}
+	for (const dir of ancestry(cwd)) {
+		(byDir.get(realpath(dir)) ?? []).forEach(add);
+		byDir.delete(realpath(dir));
+		const local = join(dir, LOCAL_RULES);
+		if (existsSync(local)) add(read(local));
+	}
+	// Anything pi loaded from elsewhere keeps its place at the end.
+	for (const files of byDir.values()) files.forEach(add);
+	return out;
 }
 
 export default function simplyDev(pi: ExtensionAPI): void {
@@ -138,7 +149,7 @@ export default function simplyDev(pi: ExtensionAPI): void {
 
 	pi.on("before_agent_start", (event, ctx) => {
 		const options = event.systemPromptOptions;
-		options.contextFiles ??= [];
-		mergeContextFiles(options.contextFiles, contextFilesFor(options.cwd ?? ctx.cwd));
+		const ordered = orderContextFiles(options.contextFiles ?? [], options.cwd ?? ctx.cwd, getAgentDir());
+		options.contextFiles = ordered;
 	});
 }

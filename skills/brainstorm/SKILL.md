@@ -3,7 +3,7 @@ name: brainstorm
 description: How the co-developer works an open-ended decision through with the human developer — asking the questions that separate the alternatives, never presenting the alternatives; diverging first, converging by pruning, reopening when an answer reveals a missed path. Done by the co-developer only, never a subagent.
 ---
 
-This is the **co-developer's own method** — [simply-chris](https://simplychris.ai): *"brainstorm
+This is the **co-developer's own method** — simplychris: *"brainstorm
 MUST be done by you, the top agent, never any of the subagents."* It is a
 skill, not a role: nothing is dispatched. The one who holds the conversation
 is the one who asks, because the questions come from everything in context —
@@ -23,7 +23,7 @@ what separates them is detail, and continuing to diverge would be inventing
 differences rather than finding them. Then present the survivor in enough detail that what is left is minor
 iteration.
 
-**The human answers the open-ended question. Always.** [simply-chris](https://simplychris.ai):
+**The human answers the open-ended question. Always.** simplychris:
 *"it's important the human answers the open-ended question — it leads to
 direct brainstorming between human and AI without group-think."* The agent's
 job is to *find* the axis; the human's job is to *answer* it. An agent that
@@ -38,7 +38,7 @@ of the agent's own thinking.
 
 ## Three phases, not one
 
-[simply-chris](https://simplychris.ai): *"sometimes it's important to diverge further at first; the
+simplychris: *"sometimes it's important to diverge further at first; the
 first few alternatives might not have covered everything, and suggestions from
 users to questions might lead down a different path. And sometimes the user
 might say yes but then a better refinement comes along, so decisions might get
@@ -64,7 +64,7 @@ So this is not a funnel. It is:
    original answer, the dimension that reopened it, and the revision, so the
    path is visible.
 
-   [simply-chris](https://simplychris.ai): *"it's not JUST pruning — surprising new dimensions to
+   simplychris: *"it's not JUST pruning — surprising new dimensions to
    questions need re-divergence through new candidate sets and new question
    extraction."*
 
@@ -102,13 +102,13 @@ alternative set is always honest about what is known so far.
 6. **Converge.** Convergence is a judgement, not a count: it is
    reached when the remaining candidates are the same *approach* and differ
    only in details that implementation would settle. More than one can
-   survive. [simply-chris](https://simplychris.ai): *"ends when solutions seem fairly similar to
+   survive. simplychris: *"ends when solutions seem fairly similar to
    the point that they are not drastically different approaches, and then
    it's more about nailing down the details rather than continuing
    divergence."* Present what survived as one approach with its open details.
-   No audit ceremony — [simply-chris](https://simplychris.ai): *"you don't need a full audit."*
+   No audit ceremony — simplychris: *"you don't need a full audit."*
    The sealed set is the agent's discipline, not evidence for a hearing.
-7. **Conclude with a high-level design summary.** Not a design doc. [simply-chris](https://simplychris.ai):
+7. **Conclude with a high-level design summary.** Not a design doc. simplychris:
    *"the end goal of a brainstorm is a high-level design summary
    — more like a technical requirements doc or a product doc, whatever fits.
    High-level, not in the details, with the decisions and overall
@@ -122,20 +122,20 @@ alternative set is always honest about what is known so far.
   call — and say the brainstorm is over.
 - **Never ask a binary question.** *"Chat or doc?"* is a menu of two — the
   failure mode with a smaller menu. Ask the axis: *"where should a round
-  happen, and what does it need from that place?"* [simply-chris](https://simplychris.ai): *"avoid
+  happen, and what does it need from that place?"* simplychris: *"avoid
   binary questions at all costs."* A yes/no answer cannot add a dimension;
   an open answer can, and that is the outcome the method is for.
 - **Never ask a question the tree or a past ruling already answers.**
 - **Never pad, never skip.** One question that splits the set well beats five
   that split it badly — but the ranked list is walked to its end, not
-  abandoned after the top three. [simply-chris](https://simplychris.ai): *"work your way down the
+  abandoned after the top three. simplychris: *"work your way down the
   top questions, two or three at a time."*
 - **Never treat a "yes" as closed.** Record it; keep asking; if something
   better arrives, say so and ask whether the earlier answer stands.
 - **Keep the ledger in the context window; checkpoint it to the doc, not
   every round.** Questions, answers, revisions, alternatives added and
   removed — held in the conversation as it runs, and written to the sealed
-  doc when a big decision lands or a section of questions closes. [simply-chris](https://simplychris.ai):
+  doc when a big decision lands or a section of questions closes. simplychris:
   *"it might be inefficient to keep an alternative trace — it's a
   lot of churn on the model for tool-calling. Ideally in context window and
   periodically saved, like if some big decisions are made or a section of
@@ -145,7 +145,7 @@ alternative set is always honest about what is known so far.
 
 ## Open in this file — what the method has not decided about itself
 
-Answered so far by [simply-chris](https://simplychris.ai):
+Answered so far by simplychris:
 - **Not a pure funnel** — diverge first, reopen when an answer reveals a
   missed path, decisions revisable. *(Written into "Three phases" above.)*
 - **Name** — brainstormer, not tunneler. Tunneling is the converging phase,

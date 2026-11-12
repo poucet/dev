@@ -7,16 +7,16 @@
 #                           (refuses if its working copy has changes; its
 #                           commits stay in the repo)
 #
-# <dir> is .workspaces/, or .pi/workspaces/ in a repo you don't own (one with
-# .pi/AGENTS.project.md), where nothing may show outside .pi/.
+# <dir> is .workspaces/, or .pi/workspaces/ when that exists (a repo you don't
+# own, adopted with --theirs), where nothing may show outside .pi/.
 #
 # Run from the repo root (the default workspace). The clone (`cp -c`) shares every
 # block with the root's target/ until cargo rewrites a file, so dependencies are
 # stored once however many lanes run. `du` counts clones in full; `df` doesn't.
 #
 # Nothing of the working system is linked into a workspace: the installed pi
-# package brings it to every session, and AGENTS.project.md is found from any
-# directory below the repo root.
+# package brings it to every session, and a lane's workspace inside the repo
+# reads the repo's local AGENTS.md files as ancestors.
 set -eu
 
 die() { echo "lane: $*" >&2; exit 1; }
@@ -25,7 +25,7 @@ export JJ_EDITOR=true GIT_EDITOR=true EDITOR=true
 
 cmd=${1:-}; name=${2:-}
 [ -n "$cmd" ] && [ -n "$name" ] || die "usage: lane new <name> [rev] | lane retire <name>"
-if [ -f .pi/AGENTS.project.md ]; then dir=.pi/workspaces; else dir=.workspaces; fi
+if [ -d .pi/workspaces ]; then dir=.pi/workspaces; else dir=.workspaces; fi
 ws="$dir/$name"
 
 case "$cmd" in

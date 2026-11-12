@@ -3,7 +3,7 @@
 A reusable way of running agent work on a repo — roles, the documents they share,
 and the rules that keep them from stepping on each other.
 
-**[AGENTS.md](AGENTS.md) is the system.** Read that. This file is only how to
+**[extension/AGENTS.md](extension/AGENTS.md) is the system.** Read that. This file is only how to
 install and adopt it.
 
 ## Requires Jujutsu (jj) and pi
@@ -30,11 +30,12 @@ This repo is a pi package:
 A local path is loaded in place, so edits here reach every session on the next
 start or `/reload`. The package brings:
 
-- **the rules**: an extension puts `extension/default-agent.md` and
-  [AGENTS.md](AGENTS.md) in front of every session, then the repo's own
-  `AGENTS.project.md`, the nearest one at or above the working directory (so a
-  lane's workspace inside the repo finds its repo's). It also gives a repo's
-  `.pi/` its `.gitignore` of `*`;
+- **the rules**: an extension puts `extension/default-agent.md` and the
+  system, [extension/AGENTS.md](extension/AGENTS.md), in front of every
+  session, then each directory's own `AGENTS.md` from the outermost down to the
+  working directory, each followed by its local `.pi/AGENTS.md`. The more
+  specific comes later and wins. It also gives a repo's `.pi/` its
+  `.gitignore` of `*`;
 - **the eight roles** (`agents/`), as subagent personas, through `pi.personas`;
 - **the skills** (`skills/`).
 
@@ -56,8 +57,10 @@ root). The agent tree already lives in `<repo>/.pi/subagents`.
     <path to this repo>/adopt.sh <project> --theirs          # a shared repo you don't own
 
 It is idempotent and never overwrites anything that already exists. It gives
-the repo an untracked `AGENTS.project.md` for its own rules (build, gates,
-branches, paths), a tracked `CHANGELOG.md` and, in file mode, `ROADMAP.md`, and
+the repo a starter `AGENTS.md` for its own rules (build, gates, branches,
+paths; tracked, or local if the root `.gitignore` has `/AGENTS.md`), a local
+`.pi/AGENTS.md` for the private ones (the tracker, standing rules), a tracked
+`CHANGELOG.md` and, in file mode, `ROADMAP.md`, and
 the self-ignoring local directories `.pi/`, `.workspaces/` and `.trash/`. It
 lists what an older setup left behind (`AGENTS.md` links, `.pi/agents`,
 `docs/ops/`, `changelog.d/`).
@@ -76,10 +79,10 @@ role files.
 
 ## Layout
 
-    AGENTS.md     the system: roles, the doc web, the directory structure, the rules
     package.json  the pi package manifest: extension, skills, personas
-    extension/    the extension that loads the rules; default-agent.md
-    adopt.sh      the installer: AGENTS.project.md, starters, self-ignoring dirs
+    extension/    the extension that loads the rules; AGENTS.md (the system),
+                  default-agent.md
+    adopt.sh      the installer: starter AGENTS.md files, self-ignoring dirs
     templates/    the starter files adopt.sh copies
     agents/       the eight role definitions (subagent personas)
     skills/       adopt (bring a repo onto the system), linear (keep a repo's

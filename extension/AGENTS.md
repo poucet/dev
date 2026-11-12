@@ -7,28 +7,40 @@ package, installed once per machine**:
     pi install <path to this repo>
 
 It puts this file, the eight roles (as subagent personas) and the skills in
-front of every session, in every repo, with nothing linked into the repo. A
-repo adopts the system with `adopt.sh` (idempotent: the `.gitignore` lines, a
-starter `AGENTS.project.md`, `CHANGELOG.md` and, in file mode, `ROADMAP.md`) or
-by hand.
+front of every session, in every repo, with nothing linked into the repo. This
+file lives in the package as `extension/AGENTS.md`; here and in the role files,
+`AGENTS.md` with a section number, or *the system*, means this file. A repo
+adopts the system with `adopt.sh` (idempotent: a starter `AGENTS.md`,
+`CHANGELOG.md` and, in file mode, `ROADMAP.md`) or by hand.
 
 Every rule below came from a real failure. Where a rule carries its reason or a
 quote, keep it with the rule: a rule whose reason is stated gets followed.
 
-**A project's own rules.** A project may keep its own rules in
-`AGENTS.project.md` at its root. It is binding, read right after this file, and
-wins where the two disagree. This file stays project-neutral: a project's names,
-paths, commands, gates and tracker belong in its own file.
+**A project's own rules are its `AGENTS.md` files**, plain `AGENTS.md` in any
+directory: the repo root, a subdirectory, a parent holding several repos. This
+file stays project-neutral: a project's names, paths, commands, gates and
+tracker belong in its own. Beside any of them, **`.pi/AGENTS.md` holds local
+rules**, kept out of the repo by `.pi/`'s own `.gitignore`.
 
-**`AGENTS.project.md` is untracked, in every repo**: a line in the root
-`.gitignore` ignores it (a single file can't ignore itself the way a directory
-does, §3). Some repos are public while the tracker is private, and this file
-names private things: the tracker and its URLs, standing rules. It lives only in
-the default workspace; the package finds it from any directory below the repo
-root, a lane's workspace included, so every lane reads the one copy. It has no
-history, so nothing irreplaceable lives only there; but it is where the human's
-standing rules live, and **a rule he wrote there is his to keep**: no agent
-rewrites the file wholesale. Edit it by hand, then re-read what you touched.
+**They read in one order, and the more specific wins.** First this file, then
+each directory from the outermost down to where you work: its `AGENTS.md`, then
+its `.pi/AGENTS.md`. Where two disagree, the later one wins for its directory
+and below. pi loads them from the working directory upward only, so **before
+working in a directory below where you were started, read the `AGENTS.md` and
+`.pi/AGENTS.md` files on the way down to it**; a lane started in that directory
+gets them on its own.
+
+**Tracked or local is the repo's choice.** A tracked `AGENTS.md` is shared with
+every contributor and every tool that reads the convention. Some repos are
+public while the tracker is private, so **anything private (the tracker and its
+URLs, standing rules) goes only in a local file**: `.pi/AGENTS.md`, or a root
+`AGENTS.md` the root `.gitignore` ignores (`/AGENTS.md`, as in repos adopted
+before this layout). A local file lives only in the default workspace; a lane's
+workspace inside the repo reads it as an ancestor, so every lane reads the one
+copy. It has no history, so nothing irreplaceable lives only there; but it is
+where the human's standing rules live, and **a rule he wrote there is his to
+keep**: no agent rewrites the file wholesale. Edit it by hand, then re-read what
+you touched.
 
 ---
 
@@ -72,12 +84,12 @@ after lanes report.
 
 **Anything over ~15 minutes of engineering leaves the conversation.** Long serial
 work done inline by the coordinator is dead time for the human
-([simply-chris](https://simplychris.ai): *"you're doing too much stuff in main
+(simplychris: *"you're doing too much stuff in main
 agent, I am blocked by you linearizing all this work"*). Spawn first, then do the
 small residue.
 
 **Architecture is the human's, and the test is the cost of reversing it**
-([simply-chris](https://simplychris.ai): *"depends on cost of reversal and risk
+(simplychris: *"depends on cost of reversal and risk
 of reversal. if it's a small contained thing, it's easy to change later."*).
 Every call is one of three:
 
@@ -102,7 +114,7 @@ Every call is one of three:
 - **Routine → just do it.** Landing locally, a number inside the agreed scope,
   an internal name, cleanup: no question; the lane's report says what it chose.
   Every needless question costs the human a turn and buries the ones that
-  matter ([simply-chris](https://simplychris.ai): *"Please stop asking me
+  matter (simplychris: *"Please stop asking me
   questions and focus on finishing roadmap"*).
 
 Bug fixes inside an existing design are not architecture.
@@ -117,14 +129,14 @@ belong as well as what does.
 
 **These documents carry no policy of their own.** What belongs in each is stated
 once, here; a document that restates it drifts and pollutes the content it
-exists to hold ([simply-chris](https://simplychris.ai): *"the operational
+exists to hold (simplychris: *"the operational
 sections at the top of what belongs in which doc … belong in AGENTS.md and
 pollute those docs"*). Each opens with one pointer line and, where its rows carry
 status marks, the legend: a key belongs beside its table, a policy does not.
 
 **No plan on disk.** There is no board, no decisions file, no issue or idea
 list kept as files. Ops files that decay with every landing cost more churn than
-they repay ([simply-chris](https://simplychris.ai): *"deprecate docs/ops it's
+they repay (simplychris: *"deprecate docs/ops it's
 causing too much churn"*). What they held goes where it is current by
 construction:
 
@@ -132,7 +144,7 @@ construction:
 |---|---|---|
 | what runs, what's next | read off the system when asked: the agent list and `jj log` (*Status comes from a query*, §4) | the initiative's In Progress and Todo issues |
 | a decision for the human | asked live, in the conversation (*Asking the human*) | an issue labelled Decision, blocking what waits on it |
-| a settled decision | folded, the same turn, into what it governs: the design doc, `AGENTS.project.md`, the code's own rationale | the Done Decision issue, then folded the same way |
+| a settled decision | folded, the same turn, into what it governs: the design doc, the project's `AGENTS.md`, the code's own rationale | the Done Decision issue, then folded the same way |
 | a defect or rough edge | fixed now, in the lane that found it; if it can't be, told to the human with a recommendation | an issue labelled Bug or Improvement |
 | an idea | told to the human; one he keeps becomes a `ROADMAP.md` row | an issue labelled Idea |
 | what shipped | `CHANGELOG.md` | `CHANGELOG.md`, and the completed projects |
@@ -140,7 +152,7 @@ construction:
 
 **Tracked at the repo root**, because a reader of a clone needs them:
 **`CHANGELOG.md`**, which ships with the code it describes, and, in file mode,
-**`ROADMAP.md`**, what comes next ([simply-chris](https://simplychris.ai): *"put
+**`ROADMAP.md`**, what comes next (simplychris: *"put
 roadmap.md at root dir, it should be tracked"*).
 
 **Local state lives in `<repo>/.pi/`**, in the default workspace: one directory
@@ -154,7 +166,7 @@ or reaches history. It moves with the repo.
 | `drafts/` | proposals before they become a design doc, review aids, anything the human will paste | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or done with → `.trash/` |
 | `changelog.d/<LANE>.md` | a lane's changelog entry, until its landing folds it in | the lane, its own file only | folded → `.trash/` |
 | `sessions/`, `subagents/` | pi's sessions and the agent tree, transcripts included | pi | never by hand |
-| `AGENTS.project.md` | the project's rules, in a repo you don't own (*A repo you don't own*) | the human | never rewritten |
+| `AGENTS.md` | local rules for its directory: the tracker, standing rules, anything private | the human; agents only as he asks | never rewritten |
 
 **Lanes reach `.pi/` by the default workspace's absolute path** (their own
 workspace has none, so their brief names it). What a lane may write there is
@@ -170,11 +182,14 @@ column, then the description; any other column (size, needs) comes after:
 ### Linear mode — the plan in Linear
 
 A repo may keep its plan in Linear. It is **opt-in, per repo**: a repo is in
-Linear mode only when its `AGENTS.project.md` has a `## Tracker` section saying
+Linear mode only when its rules have a `## Tracker` section saying
 `linear`, with its initiative, team and Backlog project. Setup, everyday
 operations, backfill and cutover are the `linear` skill. Linear mode is for a
 plan that outlives a conversation; file mode keeps the plan in the conversation
-and `ROADMAP.md`.
+and `ROADMAP.md`. **The nearest `## Tracker` going up from where you work
+applies**, so a subdirectory (a monorepo's component, say) can keep its own
+initiative, team and projects, or switch modes, in its own rules. The block
+names a private workspace, so it goes in a local file (`.pi/AGENTS.md`).
 
 **The repo is an initiative; its team is named in its `## Tracker`.** Repos
 share a team by default, so there is one board and one id series; a repo gets a
@@ -235,7 +250,7 @@ initiative's description; trunk and ready chains come from `jj log`, as always.
 ### `CHANGELOG.md` — tracked, at the repo root
 
 What got added, per landing, dated and tied to versions
-([simply-chris](https://simplychris.ai): *"what got added, not all the analysis
+(simplychris: *"what got added, not all the analysis
 and story"*): what a capability now is, what changed in behaviour (anything
 that alters saved files or an API above all), what was fixed, in a line. A few
 lines an entry.
@@ -289,10 +304,10 @@ docs commit; the human, freely.
 
 Proposals and the locked design. **Design documents always land on trunk**,
 proposals included: the human reviews on trunk, never in a lane's workspace
-([simply-chris](https://simplychris.ai): *"I can't review design docs in
+(simplychris: *"I can't review design docs in
 workspaces, they need to be in main"*). **A design doc lands like any other
 doc**: no review banner, no review request; the human reads in passes of his own
-choosing ([simply-chris](https://simplychris.ai): *"stop asking me to do doc
+choosing (simplychris: *"stop asking me to do doc
 reviews, I'll do passes as I see fit, adding these as line items is just
 noise"*). **What stays the human's is the decision**: he is asked the same day
 (*Asking the human*), the doc marks that question open where it is asked, and
@@ -314,7 +329,7 @@ argument; a paragraph of plausibility does not. Also **the argument behind
 anything designed but not built**.
 
 **There is no register of unlanded designs**: everything it would hold fits
-elsewhere ([simply-chris](https://simplychris.ai): *"I kind of feel like
+elsewhere (simplychris: *"I kind of feel like
 DESIGN.md as a doc should not exist unless there are things that don't fit into
 the docs I just mentioned"*). An unlanded design is **a research note plus a
 roadmap row** (Linear mode: an issue): the note holds the argument and
@@ -335,7 +350,7 @@ mode: a Decision issue** (*Linear mode*), because there the plan outlives the
 conversation; say in chat that it was filed, with its link.
 
 **A question answers itself.** The human can reply from the question alone
-([simply-chris](https://simplychris.ai): *"expand on U and ASK-40, missing
+(simplychris: *"expand on U and ASK-40, missing
 context"*; *"rec?"*, four times in two hours):
 
 - **what is being decided**, in one plain sentence, every term defined;
@@ -355,23 +370,23 @@ evaluated when the human runs it, in a world the agent could not see, which is
 how a cleanup deletes a lane started after it was written.
 
 **Anything the human will paste goes in a file; anything an agent can run, it
-runs** ([simply-chris](https://simplychris.ai): *"I can't copy paste from chat, I
+runs** (simplychris: *"I can't copy paste from chat, I
 need a doc"*). A command block, a post, a blurb or a config goes in
 `.pi/drafts/`, opened for him in the doc panel (`show_doc`) where the harness
 has one, otherwise by path.
 
 **Nothing the human wrote lives only in a file that gets rewritten.** `.pi/` has
-no history. A standing rule goes in `AGENTS.project.md`, which is never
+no history. A standing rule goes in the project's local `AGENTS.md`, which is never
 rewritten (*A project's own rules*); a settled decision is folded into what it
 governs.
 
 ### Where they live
 
-As few top-level documents as possible ([simply-chris](https://simplychris.ai):
+As few top-level documents as possible (simplychris:
 *"where should the remaining top-level docs go? Ideally only one or 2 key ones
 remain"*):
 
-- **the repo root** holds `AGENTS.project.md` if any (untracked), and the
+- **the repo root** holds its `AGENTS.md` (tracked or not), and the
   tracked `CHANGELOG.md` and `ROADMAP.md` (file mode only);
 - **`.pi/`** holds the local state, untracked by its own `.gitignore`;
 - everything else lives by kind: design, research, guides, reference. A folder
@@ -383,12 +398,12 @@ Documentation lives in the docs tree, **never inside the source tree**.
 
 A shared work repo, reviewed by people who never opted into any of this, takes
 nothing of the system that a teammate's `git status`, PR diff or repo search
-would surface: not a line in its `.gitignore`, not `AGENTS.project.md` at its
+would surface: not a line in its `.gitignore`, not an `AGENTS.md` at its
 root, not a `ROADMAP.md`.
 
 **Everything goes in `repo/.pi/`.** A self-ignoring directory is invisible to
 git without touching the repo's own ignore files, and the package reads
-`.pi/AGENTS.project.md` there in place of a root one. Lanes' workspaces go in
+`.pi/AGENTS.md` there like any local rules. Lanes' workspaces go in
 `.pi/workspaces/<lane>/` rather than `.workspaces/`, for the same reason. The
 system itself is the installed package, so nothing else is needed.
 
@@ -408,7 +423,7 @@ changelog, if it keeps one.
   `.pi/`, both its own file, both by absolute path: its changelog fragment,
   `.pi/changelog.d/<LANE>.md`, and its report, `.pi/reports/<lane>.md` (*A
   lane's report is a file*, §4). Nothing else there, and never `CHANGELOG.md`.
-- **The fragment is staging, not history** ([simply-chris](https://simplychris.ai):
+- **The fragment is staging, not history** (simplychris:
   *"changelog.d should be untracked, as it's temporary staging"*): it lives in
   `.pi/`, so it never dirties the working copy an integrator lands in.
 - **Everything else goes in its report**: issues found and closed, decisions
@@ -424,7 +439,7 @@ changelog, if it keeps one.
 - **A design change lands with its open points marked** and its questions in the
   lane's report. A lane never presents its own change to a design as decided.
 - **Fix it, do not file it.** A small defect found in passing is closed in the
-  lane ([simply-chris](https://simplychris.ai): *"I hate that issues keep piling
+  lane (simplychris: *"I hate that issues keep piling
   up instead of getting resolved."*).
 
 **Why fragments.** Two lanes editing one changelog is a merge conflict in prose,
@@ -442,8 +457,9 @@ the coordinator files the issue.
 
 ## 3. Default directory structure (a repo you own)
 
-    AGENTS.project.md          this project's own rules (optional; wins over this file);
-                               untracked, by a root .gitignore line; default workspace only
+    AGENTS.md                  this project's own rules (optional; wins over the system);
+                               tracked, or local by a root /AGENTS.md line; a subdirectory
+                               may have its own, more specific
     CHANGELOG.md               tracked, user-facing; folded from the fragments in .pi/changelog.d/
     ROADMAP.md                 tracked; what comes next, by version; no ops ids (file mode only)
     .pi/                       untracked local state, default workspace only (§2):
@@ -451,6 +467,7 @@ the coordinator files the issue.
                                drafts/                 work in progress, what the human will paste
                                changelog.d/<LANE>.md   a lane's entry until its landing folds it in
                                sessions/ subagents/    pi's sessions and the agent tree
+                               AGENTS.md               local rules: the tracker, standing rules
     docs/
       design/                  the design, proposals included
       research/                investigations and measurements
@@ -466,9 +483,9 @@ the coordinator files the issue.
 **An untracked directory ignores itself**: its own `.gitignore` holds `*`
 (`.pi/.gitignore`, `.workspaces/.gitignore`, `.trash/.gitignore`…), not a path
 entry in the root `.gitignore`. The rule travels with the directory, and the
-root ignore file stays the project's. The one exception is `AGENTS.project.md`,
-which can't ignore itself: it takes one anchored root line,
-`/AGENTS.project.md`, which `adopt.sh` adds.
+root ignore file stays the project's. The one exception is a root `AGENTS.md`
+kept local, which can't ignore itself: it takes one anchored root line,
+`/AGENTS.md`.
 
 **Nothing of the system is linked into a repo.** The installed package brings
 the rules, the roles and the skills to every session, a lane's included, so a
@@ -525,7 +542,7 @@ and not stuck"*).
 
 **`default@` is always an empty commit one above trunk.** The integrator's
 working copy is scratch, never the thing that ships. The loop
-([simply-chris](https://simplychris.ai)):
+(simplychris):
 
     jj new                      # @ is an empty child of main
     …edit…
@@ -543,7 +560,7 @@ in two ways, both invisible until someone reads the log:
 
 **The integrator does not run into a version.** When the last lane of a milestone
 lands, stop and hand back rather than continuing to the tag
-([simply-chris](https://simplychris.ai): *"don't go there automatically, let's
+(simplychris: *"don't go there automatically, let's
 take the opportunity for a human review and cleaning up old workspaces"*). Each
 lane was reviewed against its own brief and nobody has read the result as one
 thing; after a tag a correction changes something released. It is also the only
@@ -553,7 +570,7 @@ moment no lane is rebasing, which workspace cleanup and history repair need.
 
 **Docs-only changes need no workspace.** A markdown-only change, in any repo,
 never gets a workspace, a lane or an integrator
-([simply-chris](https://simplychris.ai): *"a worktree just for a .md update is a
+(simplychris: *"a worktree just for a .md update is a
 waste"*). It is edited in the default workspace and committed with the trunk
 loop above, committing only its own paths (`jj commit <paths> -m "…"`, never a
 bare `jj commit`: other work may be uncommitted there), moving trunk to it only
@@ -564,7 +581,7 @@ gated lane rebased over it needs no re-gate.
 
 **A lane buys parallelism.** With nothing to run beside it, a workspace, a
 rebase, a re-gate and an integrator are pure overhead: when the human waits on
-one thing and nothing else runs, do it inline ([simply-chris](https://simplychris.ai):
+one thing and nothing else runs, do it inline (simplychris:
 *"the cost of a workspace is also the rebase and regate"*). Lanes are for two or
 more things at once, or long work the human is not waiting on.
 
@@ -585,7 +602,7 @@ more things at once, or long work the human is not waiting on.
    conflict, **re-run the gates afterwards**, and report what conflicted and how
    it was resolved. Then stop.
 6. An `integrator` lands it. **Landing is a pointer move, not a rebuild**
-   ([simply-chris](https://simplychris.ai)):
+   (simplychris):
    - **The lane sits on current trunk and gated there** → `jj st` (refuse if
      `default@` is not empty: those edits are the human's), then `jj new <lane
      tip>` from the default workspace. **No re-gate**: it is the tree the lane
@@ -599,7 +616,7 @@ more things at once, or long work the human is not waiting on.
      log (its growth tells a slow run from a stuck one), then read `$?`. Set any
      timeout to about twice the gate's usual time, minutes not hours: a hung gate
      costs the whole ceiling, and no steering message reaches the agent until
-     the call returns ([simply-chris](https://simplychris.ai): *"using a 2h
+     the call returns (simplychris: *"using a 2h
      timeout, wtf"*). A run that hits its ceiling is a hang to investigate, not
      to re-run.
    - **Never sleep-poll a gate.** `sleep 600` waits the full ten minutes after
@@ -614,7 +631,7 @@ more things at once, or long work the human is not waiting on.
    workspace to `.trash/`: a pile of them is busy work for the human and a hazard
    when they clean up by hand.
 
-**Why the rebase belongs to the lane** ([simply-chris](https://simplychris.ai)):
+**Why the rebase belongs to the lane** (simplychris):
 
 - **The lane knows what its own change meant.** An integrator resolving someone
   else's conflict guesses at intent, and a wrong guess is silent: a plausible
@@ -719,12 +736,12 @@ two are why it usually waits.
   test that covers it, then run the full gates behind it, and say plainly it is
   ungated until they pass. Full gates protect trunk from a lane's unknowns; they
   are not a reason to keep a known fix from the person who needs it
-  ([simply-chris](https://simplychris.ai): *"PLEASE JUST LAND IT it's doing a
+  (simplychris: *"PLEASE JUST LAND IT it's doing a
   full test with 3600 timeout"*).
 - **Many lanes at once gate once, together.** When several lanes run on one
   trunk, each gating on its own means the first to land moves trunk and every
   other one re-gates, and under load the gates themselves crawl
-  ([simply-chris](https://simplychris.ai): *"one will win the race and rebase
+  (simplychris: *"one will win the race and rebase
   and then the other will have to regate"*). Lanes in such a batch run only
   their own tests, commit and report; the coordinator stacks them on trunk
   oldest-ready first and runs the full gates once on the result.
@@ -733,7 +750,7 @@ two are why it usually waits.
   concern listed beside it as an open question. A feature, milestone or design
   starts with the questions the human hasn't settled (scope, *done*, defaults,
   what to leave out), asked in one round with a recommendation each, before any
-  lane is briefed ([simply-chris](https://simplychris.ai): *"'clear order' only
+  lane is briefed (simplychris: *"'clear order' only
   applies to fixes, stuff like this should be more about asking me the right
   questions"*).
 - **Verify headlessly.** Never auto-launch the application to check something:
@@ -743,7 +760,7 @@ two are why it usually waits.
 
 **A commit message says what the commit did, never what it is waiting for.** A
 commit is immutable and review state changes, so "PROPOSAL" or "NEEDS REVIEW" is
-wrong within hours and stays wrong forever ([simply-chris](https://simplychris.ai):
+wrong within hours and stays wrong forever (simplychris:
 *"calling out for 'needs review' in commit messages is silly, that's what
 BOARD.md is for"*: review state lives in the conversation or the tracker). No
 co-author lines.
@@ -752,7 +769,7 @@ co-author lines.
 rows, Linear ids included (`I-106`, `N8`, `DEC-42`, `AUDIO-123`,
 `LANE-x`, `ops: … landed`) mean
 nothing to a reader of the history, least of all in a public repo
-([simply-chris](https://simplychris.ai), on `docs(ops): I-106 closed (N8–N11,
+(simplychris, on `docs(ops): I-106 closed (N8–N11,
 N13); N12 filed as I-107; landed-index row`: *"random internal ops docs
 references as commit messages, they are meaningless"*). The subject says in plain
 words what changed and why; the body may explain more, still in plain words. A
@@ -760,7 +777,7 @@ commit that only updates the roadmap says what it records ("the VST3
 inactive-parameter fix is done"), not which rows moved. This holds in every repo.
 
 **Code and tracked docs never cite ops ids either**
-([simply-chris](https://simplychris.ai): *"code and docs should NEVER reference
+(simplychris: *"code and docs should NEVER reference
 issues and decisions and such by id"*). No issue, decision, idea, roadmap, ask or
 lane id (`I-007`, `X-151`, `N-12`, `AUDIO-123`, a lane's label) in source,
 comments, tests, design and research docs, guides, the changelog or a README:
@@ -778,7 +795,7 @@ renumbered), a file or function by name, a jj change id in the changelog.
 
 **Never refer to the human's points by a number alone.** They may not have
 numbered them, may have added one later, or may not remember which was which
-([simply-chris](https://simplychris.ai): *"when you reference my ideas by number,
+(simplychris: *"when you reference my ideas by number,
 it's hard to know how you have numbered them"*). Say what the point *is* with the
 number ("3 (aligning OSC against the local transport)"), in chat and docs; a
 document that keeps the numbering lists the points with their numbers at the
@@ -786,7 +803,7 @@ top.
 
 **In chat, and in reports and drafts, every Linear issue, project
 and initiative is a link the human can click**
-([simply-chris](https://simplychris.ai): *"always hyperlink issues in chat so I
+(simplychris: *"always hyperlink issues in chat so I
 can click on them"*): `[AUDIO-123](https://linear.app/<workspace>/issue/AUDIO-123)`,
 with what it is beside it, never a bare id. Projects and initiatives link by the
 URL Linear returns. Tracked files still cite no ids (*What a commit message
@@ -794,7 +811,7 @@ says*).
 
 **Inside Linear it is the other way round: an issue's description or comment
 names another issue by its bare id** (`AUDIO-123`), never a markdown link or
-URL ([simply-chris](https://simplychris.ai): *"issue references in other issue
+URL (simplychris: *"issue references in other issue
 descriptions should not be URLs but using linear's syntax, so their status
 properly show"*). Linear turns a bare id into a live reference that shows the
 issue's title and status; a URL link stays dead text.
@@ -842,12 +859,12 @@ issue's title and status; a URL link stays dead text.
 - **Agents never push.** Pushing is the human's call; a project's own rules may
   name an exception. While the human is still talking a design through, nothing
   is committed: the draft stays in the working copy or `.pi/drafts/`, and the
-  conclusion is committed once ([simply-chris](https://simplychris.ai): *"stop
+  conclusion is committed once (simplychris: *"stop
   pushing things to github, I will decide when to push … when we're having a
   discussion, wait for our conversation to conclude before you commit to avoid
   commit spam and spam in the jj log"*).
 - **The human's machine is not yours.** This is a security boundary, not a
-  courtesy ([simply-chris](https://simplychris.ai): *"let me worry about the
+  courtesy (simplychris: *"let me worry about the
   config"*).
   - Never kill a process you did not start: kill by the pid you recorded, never
     `pkill` by pattern (one agent's `pkill` took out the human's running hub).
@@ -856,7 +873,7 @@ issue's title and status; a URL link stays dead text.
     it in a file, with the exact lines. Your own scratch files are the
     exception.
 
-### Spare the disk: builds are writes ([simply-chris](https://simplychris.ai))
+### Spare the disk: builds are writes (simplychris)
 
 Every build writes gigabytes to the human's SSD, and build caches are what fill
 it.
@@ -913,7 +930,7 @@ it.
   once the parent lands; the parent stays small and lands first.
 - **Steer rarely.** A message reaches a lane only between its turns, often long
   after it was sent, onto work that has moved on
-  ([simply-chris](https://simplychris.ai): *"stop steering agents too much, often
+  (simplychris: *"stop steering agents too much, often
   your messages land with them MUCH later after they've done a bunch of work"*).
   Give the whole brief up front, and spawn only once the ask has settled: while
   the human is still shaping it, converge in the conversation. **Before every
@@ -940,15 +957,15 @@ it.
   then the free-text description, then the rest (date, source, size), so
   columns align in the human's editor (*Rows in `ROADMAP.md`*, §2).
 - **When a bookkeeping loop repeats, script it**
-  ([simply-chris](https://simplychris.ai): *"are there any things you do
+  (simplychris: *"are there any things you do
   repeatedly that could be ops/scripts"*). A few shell calls per lane, times
   every lane, is most of a context window. The judgement stays human: a real
   code conflict, and what a lane's report should lead to.
 
-### Fences are advisory, not exclusive ([simply-chris](https://simplychris.ai))
+### Fences are advisory, not exclusive (simplychris)
 
 Briefs name the files or modules a lane may touch, but **do not gate a lane on
-finding files nobody else touches** ([simply-chris](https://simplychris.ai): *"we
+finding files nobody else touches** (simplychris: *"we
 don't need to work on things that are exclusively on free files — given we use
 workspaces we can sacrifice a little cleanup pre-merge and have more stuff work
 in parallel, as long as there's not massive refactors involved."*).
@@ -958,7 +975,7 @@ serialising is a **massive refactor**: ask *"is the file being restructured, or
 just extended?"* Extension parallelises; restructuring does not. Fences remain
 **ownership hints** ("if you need to change X, say so in your report").
 
-### Don't mix long work into a field of short work ([simply-chris](https://simplychris.ai))
+### Don't mix long work into a field of short work (simplychris)
 
 *"Long work parallelizes poorly with lots of short work, unless it's something
 really different like research."*
@@ -992,13 +1009,13 @@ new shared abstraction: assign it to exactly one lane, in writing, before either
 starts. **The lane that cannot do its own work without touching those lines owns
 them.**
 
-### Show the UI; don't make the human rebuild it ([simply-chris](https://simplychris.ai))
+### Show the UI; don't make the human rebuild it (simplychris)
 
 A UI change is rendered, not described, into a shared, dated, lane-labelled
 directory under the repo root, and the report says so. The lane has already paid
 the build and rendered the scenes to check its own work; redirecting the images
 costs one environment variable and saves the human a full rebuild
-([simply-chris](https://simplychris.ai): *"having to rebuild it from scratch
+(simplychris: *"having to rebuild it from scratch
 myself takes a while … and subagents are already doing all that work and
 screenshotting."*).
 
@@ -1076,7 +1093,7 @@ parallelise-and-merge-later.
 
 ---
 
-## 5. How we state claims — #SimplyAILogic ([simply-chris](https://simplychris.ai))
+## 5. How we state claims — #SimplyAILogic (simplychris)
 
 Docs, reports and briefs reason **modally and constructively**, not classically:
 
@@ -1127,7 +1144,7 @@ completed project; decisions are the open Decision issues.
 
 ## 7. Recovery (crashed session / fresh context)
 
-1. Read the project's `AGENTS.project.md`, this file, and `.pi/reports/`
+1. Read this file, the project's `AGENTS.md` files, and `.pi/reports/`
    (Linear mode: also the board query and the open-decisions view).
 2. `jj log`: every lane's chain is committed incrementally; compare with the
    agent list (Linear mode: In Progress issues and their lane comments).

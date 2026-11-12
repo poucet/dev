@@ -2,35 +2,39 @@
 #
 # adopt.sh — put a repo on the simply/dev working system.
 #
-# The system itself (AGENTS.md, the roles, the skills) is a pi package,
+# The system itself (its rules, the roles, the skills) is a pi package,
 # installed once per machine (`pi install <this repo>`); nothing of it is
 # linked into a repo. What a repo gets is its own small part, all idempotent
 # (safe to re-run; nothing existing is overwritten):
 #
-#   1. AGENTS.project.md for the repo's own rules, untracked by an anchored
-#      root .gitignore line (it can name private things: the tracker, its URLs)
+#   1. AGENTS.md for the repo's own rules (tracked, unless the root .gitignore
+#      ignores /AGENTS.md), and .pi/AGENTS.md for the private ones: the
+#      tracker, standing instructions (untracked, like all of .pi/)
 #   2. CHANGELOG.md (tracked), unless the repo keeps a changelog already, and
 #      ROADMAP.md (tracked) in file mode
 #   3. the self-ignoring local directories: .pi/ (reports, drafts, changelog
 #      fragments, sessions, the agent tree), .workspaces/, .trash/
-#   4. in Linear mode, the '## Tracker' section in AGENTS.project.md
+#   4. in Linear mode, the '## Tracker' section in .pi/AGENTS.md
+#
+# An old AGENTS.project.md becomes the root AGENTS.md when that is ignored,
+# else .pi/AGENTS.md; an old AGENTS.md symlink to dev's is removed first.
 #
 # With --theirs (a repo you don't own, AGENTS.md §2) it touches nothing a
-# teammate could see: no .gitignore line, no tracked file; the project rules go
-# in .pi/AGENTS.project.md and lanes in .pi/workspaces/.
+# teammate could see: no root AGENTS.md, no tracked file; lanes go in
+# .pi/workspaces/.
 #
 # Usage:
 #   ./adopt.sh <project-dir> [--tracker files|linear] [--theirs]
 #
 #   --tracker  where the plan lives (default: files; linear also when
-#              AGENTS.project.md already has '## Tracker')
+#              .pi/AGENTS.md or AGENTS.md already has '## Tracker')
 #   --theirs   a shared repo you don't own: everything stays inside .pi/
 #
 set -euo pipefail
 
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 PROJECT=""
 TRACKER=""
@@ -51,12 +55,13 @@ done
 [ -d "$PROJECT" ] || { echo "not a directory: $PROJECT" >&2; exit 1; }
 PROJECT="$(cd "$PROJECT" && pwd)"
 
-if [ -n "$THEIRS" ]; then RULES=".pi/AGENTS.project.md"; else RULES="AGENTS.project.md"; fi
+LOCAL=".pi/AGENTS.md"
 
 # Resolve the tracker: explicit flag wins; a project whose rules already
 # declare '## Tracker' stays in Linear mode on a re-run.
 if [ -z "$TRACKER" ]; then
-	if grep -qs '^## Tracker' "$PROJECT/$RULES"; then TRACKER="linear"; else TRACKER="files"; fi
+	if grep -qs '^## Tracker' "$PROJECT/$LOCAL" "$PROJECT/AGENTS.md" "$PROJECT/AGENTS.project.md"; then
+		TRACKER="linear"; else TRACKER="files"; fi
 fi
 case "$TRACKER" in
 	files|linear) ;;
@@ -85,6 +90,7 @@ find_ci() {
 
 CREATED=()
 TO_COMMIT=()
+MIGRATED=()
 
 # --- 1. local directories ------------------------------------------------------
 
@@ -99,33 +105,29 @@ fi
 
 # --- 2. the project's rules ----------------------------------------------------
 
-from_template AGENTS.project.md "$RULES"
-if [ "$TRACKER" = "linear" ] && ! grep -qs '^## Tracker' "$PROJECT/$RULES"; then
-	{ echo; sed "s/<repo>/$(basename "$PROJECT")/g" "$DEV_DIR/skills/linear/tracker.md"; } >> "$PROJECT/$RULES"
+root_ignored() { grep -qsxE '/?AGENTS\.md' "$PROJECT/.gitignore"; }
+
+# The old layout: AGENTS.md was a link to dev's, the rules in AGENTS.project.md.
+if [ -L "$PROJECT/AGENTS.md" ]; then
+	rm -- "$PROJECT/AGENTS.md"
+	MIGRATED+=("removed the AGENTS.md link to dev's")
+fi
+if [ -f "$PROJECT/AGENTS.project.md" ]; then
+	if [ -z "$THEIRS" ] && [ ! -e "$PROJECT/AGENTS.md" ] && root_ignored; then
+		mv -- "$PROJECT/AGENTS.project.md" "$PROJECT/AGENTS.md"
+		MIGRATED+=("AGENTS.project.md -> AGENTS.md (local: the root .gitignore ignores /AGENTS.md)")
+	elif [ ! -e "$PROJECT/$LOCAL" ]; then
+		mv -- "$PROJECT/AGENTS.project.md" "$PROJECT/$LOCAL"
+		MIGRATED+=("AGENTS.project.md -> $LOCAL")
+	else
+		MIGRATED+=("!! AGENTS.project.md left: both AGENTS.md and $LOCAL exist; merge it by hand")
+	fi
 fi
 
-# Untracked: a single file can't ignore itself, so it takes an anchored root
-# .gitignore line; one already tracked is untracked (the file stays). A
-# colocated repo is jj's, never git's (AGENTS.md §4).
-if [ -z "$THEIRS" ]; then
-	if ! grep -qsxE '/?AGENTS\.project\.md' "$PROJECT/.gitignore"; then
-		if [ -s "$PROJECT/.gitignore" ] && [ -n "$(tail -c1 "$PROJECT/.gitignore")" ]; then
-			echo >> "$PROJECT/.gitignore"
-		fi
-		echo "/AGENTS.project.md" >> "$PROJECT/.gitignore"
-		TO_COMMIT+=(".gitignore")
-	fi
-	if [ -d "$PROJECT/.jj" ]; then
-		if [ -n "$(cd "$PROJECT" && jj file list -- AGENTS.project.md </dev/null 2>/dev/null)" ]; then
-			(cd "$PROJECT" && jj file untrack -- AGENTS.project.md </dev/null)
-			TO_COMMIT+=("AGENTS.project.md")
-		fi
-	elif [ -d "$PROJECT/.git" ]; then
-		if git -C "$PROJECT" ls-files --error-unmatch -- AGENTS.project.md >/dev/null 2>&1; then
-			git -C "$PROJECT" rm --cached -q -- AGENTS.project.md
-			TO_COMMIT+=("AGENTS.project.md")
-		fi
-	fi
+[ -n "$THEIRS" ] || from_template AGENTS.md AGENTS.md
+from_template local-AGENTS.md "$LOCAL"
+if [ "$TRACKER" = "linear" ] && ! grep -qs '^## Tracker' "$PROJECT/$LOCAL" "$PROJECT/AGENTS.md"; then
+	{ echo; sed "s/<repo>/$(basename "$PROJECT")/g" "$DEV_DIR/skills/linear/tracker.md"; } >> "$PROJECT/$LOCAL"
 fi
 
 # --- 3. tracked starters -------------------------------------------------------
@@ -136,10 +138,19 @@ if [ -z "$THEIRS" ]; then
 	[ "$TRACKER" = "linear" ] || from_template ROADMAP.md ROADMAP.md
 fi
 
+# Of what was created, what git will see.
+for rel in ${CREATED[@]+"${CREATED[@]}"}; do
+	case "$rel" in
+		.pi/*) ;;
+		AGENTS.md) root_ignored || TO_COMMIT+=("$rel") ;;
+		*) TO_COMMIT+=("$rel") ;;
+	esac
+done
+
 # --- 4. what the old system left behind ----------------------------------------
 
 LEFTOVERS=()
-for rel in AGENTS.md .pi/agents .pi/skills .claude/agents changelog.d docs/ops; do
+for rel in .pi/agents .pi/skills .claude/agents changelog.d docs/ops; do
 	[ -e "$PROJECT/$rel" ] || [ -L "$PROJECT/$rel" ] || continue
 	LEFTOVERS+=("$rel")
 done
@@ -148,6 +159,11 @@ done
 
 echo "Adopted simply/dev into $PROJECT ($TRACKER mode${THEIRS:+, shared repo})."
 for rel in ${CREATED[@]+"${CREATED[@]}"}; do echo "  created $rel"; done
+for m in ${MIGRATED[@]+"${MIGRATED[@]}"}; do echo "  $m"; done
+if [ -z "$THEIRS" ] && [ -e "$PROJECT/AGENTS.md" ]; then
+	if root_ignored; then echo "  AGENTS.md is local (/AGENTS.md in .gitignore)"
+	else echo "  AGENTS.md is to be tracked: keep private rules in $LOCAL"; fi
+fi
 [ -n "$FOUND_CHANGELOG" ] && echo "  kept the existing changelog: $FOUND_CHANGELOG"
 echo "  .pi/ (untracked: reports/, drafts/, changelog.d/, sessions, the agent tree)"
 if [ -z "$THEIRS" ]; then echo "  .workspaces/, .trash/ (untracked)"; else echo "  .pi/workspaces/, .pi/trash/"; fi
@@ -156,11 +172,11 @@ if [ ${#LEFTOVERS[@]} -gt 0 ]; then
 	echo "Left from the old setup, now unused (the package replaces them):"
 	for rel in "${LEFTOVERS[@]}"; do echo "  $rel"; done
 	echo "  Move them to .trash/ once their content is elsewhere: docs/ops/ holds"
-	echo "  decisions and rules worth folding into AGENTS.project.md or a design"
+	echo "  decisions and rules worth folding into AGENTS.md, .pi/AGENTS.md or a design"
 	echo "  doc, changelog.d/ fragments move to .pi/changelog.d/."
 fi
 if [ ${#TO_COMMIT[@]} -gt 0 ]; then
-	msg="Keep AGENTS.project.md out of version control: it holds this machine's project rules"
+	msg="Start the repo's AGENTS.md, CHANGELOG.md and ROADMAP.md"
 	echo
 	echo "To commit, by path (nothing was committed): ${TO_COMMIT[*]}"
 	if [ -d "$PROJECT/.jj" ]; then
@@ -169,7 +185,16 @@ if [ ${#TO_COMMIT[@]} -gt 0 ]; then
 		echo "  git add ${TO_COMMIT[*]} && git commit -m \"$msg\""
 	fi
 fi
-if ! grep -qs "simply" "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/settings.json"; then
-	echo
-	echo "The package isn't installed for pi yet:  pi install $DEV_DIR"
+if command -v pi >/dev/null 2>&1; then
+	# pi list prints each package's installed path; dev may be reached by a symlink.
+	real="$(cd "$DEV_DIR" && pwd -P)"
+	installed=""
+	while IFS= read -r line; do
+		path="${line#"${line%%[![:space:]]*}"}"
+		[ -d "$path" ] && [ "$(cd "$path" && pwd -P)" = "$real" ] && installed=1
+	done < <(pi list 2>/dev/null </dev/null)
+	if [ -z "$installed" ]; then
+		echo
+		echo "The package isn't installed for pi yet:  pi install $DEV_DIR"
+	fi
 fi

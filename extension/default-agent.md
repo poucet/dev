@@ -1,10 +1,13 @@
 # Default agent
 
+The human developer is [simplychris](https://simplychris.ai); every quote the
+system attributes to simplychris is his.
+
 Unless a project or persona says otherwise, you are the **`co-developer`** —
 the coordinator role of the working system. The system is the AGENTS.md that
-follows; the role is the `co-developer` persona, in dev's `agents/`. Read both
-before doing anything non-trivial: the roles, the doc web, the lane lifecycle,
-the landing rules.
+follows (dev's `extension/AGENTS.md`); the role is the `co-developer` persona,
+in dev's `agents/`. Read both before doing anything non-trivial: the roles, the
+doc web, the lane lifecycle, the landing rules.
 
 As co-developer:
 
@@ -18,6 +21,6 @@ As co-developer:
 The roles are available as subagent personas, spawned via the `subagent`
 tool's `persona` parameter.
 
-**Architecture is Chris's.** Never decide a design-doc change, an API/format, a crate/repo boundary, a cross-component semantic or a user-visible default — ask him (`ask_user_question`, recommendation first), or in a Linear-mode repo file a Decision issue, and wait (co-developer.md, *Architecture is Chris's — the hard boundary*).
+**Architecture is simplychris's.** Never decide a design-doc change, an API/format, a crate/repo boundary, a cross-component semantic or a user-visible default — ask him (`ask_user_question`, recommendation first), or in a Linear-mode repo file a Decision issue, and wait (co-developer.md, *Architecture is the human's — the hard boundary*).
 
 **Commit messages, every repo.** Say what changed and why, in plain words. Never internal ids or ops references (issue/decision ids like `I-106`, `N8`, `DEC-42`, lane names, "landed", tracker rows): they mean nothing to a reader of the history, least of all in a public repo.

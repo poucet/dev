@@ -1,6 +1,6 @@
 ---
 name: linear
-description: Run a repo's plan in Linear — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its roadmap and any old docs/ops/ files into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query). Use when a repo's AGENTS.project.md has `## Tracker` saying `linear`, or the human asks to move a repo to Linear.
+description: Run a repo's plan in Linear — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its roadmap and any old docs/ops/ files into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query). Use when a repo's AGENTS.md files (the nearest `## Tracker` up from the working directory) say `linear`, or the human asks to move a repo to Linear.
 ---
 
 # Linear mode
@@ -111,8 +111,11 @@ log.
 
 ## The `## Tracker` block
 
-In the repo's `AGENTS.project.md`, which is untracked (AGENTS.md, *A project's
-own rules*): writing the block commits nothing. `adopt.sh --tracker linear` appends it from
+In the repo's local `.pi/AGENTS.md` (untracked; AGENTS.md, *A project's own
+rules*), or a root `AGENTS.md` the repo keeps local: writing the block commits
+nothing. A subdirectory's own `.pi/AGENTS.md` may carry its own block: the
+nearest one up from where you work applies, so one repo can feed several
+initiatives, teams or projects. `adopt.sh --tracker linear` appends it from
 `tracker.md` beside this file, with `<repo>` filled in and the `Owner`
 defaulted; fill in the two URLs
 once setup has made them. The block is the switch: without it the repo is in
@@ -138,8 +141,7 @@ Steps 1–3 set the `Owner`: initiative owner, project lead.
 3. **A project per roadmap milestone** still open, `<repo> · <title>`,
    description the milestone's paragraph from `ROADMAP.md`, state Planned (or
    In Progress for the one being built), linked to the initiative.
-4. **The `## Tracker` block** in `AGENTS.project.md` (untracked; re-run
-   `adopt.sh` first if the root `.gitignore` lacks `/AGENTS.project.md`).
+4. **The `## Tracker` block** in `.pi/AGENTS.md` (untracked).
 5. **The README links the initiative** where it used to point at `ROADMAP.md`
    ("What comes next: <initiative URL>").
 6. **Backfill** (below), then **cutover** (below).
@@ -199,11 +201,11 @@ Canceled), so the old ids stay findable.
       project milestone and a status update per release in it, and no project
       per release.
 - [ ] The backfill map is in the repo's own `.pi/drafts/`.
-- [ ] `AGENTS.project.md` is untracked: `jj file list AGENTS.project.md`
-      prints nothing (else run `adopt.sh` and commit what it names first).
-- [ ] `## Tracker` block in `AGENTS.project.md` (untracked: nothing to
+- [ ] The `## Tracker` block is in a local file: `jj file list` does not
+      list the file holding it.
+- [ ] `## Tracker` block in `.pi/AGENTS.md` (untracked: nothing to
       commit); README links the initiative.
-- [ ] Old ids left in `AGENTS.project.md` and `.pi/drafts/` (`D-042`,
+- [ ] Old ids left in the local `AGENTS.md` files and `.pi/drafts/` (`D-042`,
       `I-007`) rewritten to their Linear ids from the map.
 - [ ] Moved to `.trash/linear-cutover-<date>/`: what is left of an old
       `docs/ops/` (untracked: just `mv`; its `reports/` and `drafts/` go to
