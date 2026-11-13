@@ -1,0 +1,240 @@
+#!/usr/bin/env python3
+"""changelog-sync — mirror a repo's CHANGELOG.md into a Linear Document.
+
+    changelog-sync [--dry-run] [repo-dir]      (repo-dir defaults to .)
+
+Agents without access to the repo (a chat bot, say) read the changelog in
+Linear. The repo's tracked changelog stays the single source; this writes a
+generated copy of trunk's version into the document titled `Changelog` on the
+repo's initiative, creating it when there is none and overwriting it when the
+changelog changed. Nothing is written when it is unchanged, or with --dry-run.
+
+- Mode: the nearest `## Tracker` block, read from the repo root upwards
+  (in each directory `.pi/AGENTS.md` before `AGENTS.md`, the more specific
+  file winning, as in AGENTS.md *Linear mode*). A repo whose block does not
+  say `linear`, or that has none, is skipped (exit 0).
+- Changelog: trunk's copy (`main`, else `trunk()`), never the working copy;
+  the first of CHANGELOG.md, docs/CHANGELOG.md, docs/ops/CHANGELOG.md.
+- Initiative: the block's `Initiative:` line, by the slug in its URL, else by
+  its name; failing both, the repo directory's name.
+- Size: Linear refuses document content over 250,000 characters. A longer
+  changelog keeps its newest entries (it is newest first), cut at a heading,
+  and ends with a line naming the file that holds the rest.
+- Unchanged: the banner carries a hash of what was generated, so a rerun
+  compares hashes; Linear's markdown round trip never makes it rewrite.
+
+Talks to https://api.linear.app/graphql with $LINEAR_API_KEY. Python 3
+standard library only.
+"""
+
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+API = "https://api.linear.app/graphql"
+TITLE = "Changelog"
+ICON = "📜"
+LIMIT = 250_000  # Linear's maxLength on document content, in characters
+CANDIDATES = ("CHANGELOG.md", "docs/CHANGELOG.md", "docs/ops/CHANGELOG.md")
+HASH_RE = re.compile(r"source hash ([0-9a-f]{16})")
+
+
+def say(msg):
+    print(f"changelog-sync: {msg}")
+
+
+def die(msg):
+    print(f"changelog-sync: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def jj(root, *args):
+    env = dict(os.environ, JJ_EDITOR="true", GIT_EDITOR="true", EDITOR="true")
+    p = subprocess.run(["jj", "--no-pager", *args], cwd=root, env=env,
+                       stdin=subprocess.DEVNULL, capture_output=True, text=True)
+    return p.returncode, p.stdout
+
+
+def repo_root(start):
+    code, out = jj(start, "root")
+    if code != 0:
+        die(f"{start} is not in a jj repo")
+    return out.strip()
+
+
+def repo_name(root):
+    """The repo's directory name, from the default workspace even in a lane's."""
+    link = os.path.join(root, ".jj", "repo")
+    if os.path.isfile(link):  # a secondary workspace: points at <repo>/.jj/repo
+        with open(link) as f:
+            target = os.path.normpath(os.path.join(root, ".jj", f.read().strip()))
+        return os.path.basename(os.path.dirname(os.path.dirname(target)))
+    return os.path.basename(root)
+
+
+def tracker_block(root):
+    """The nearest `## Tracker` block from root upwards: (path, text) or None."""
+    d = os.path.abspath(root)
+    while True:
+        for rel in (".pi/AGENTS.md", "AGENTS.md"):
+            path = os.path.join(d, rel)
+            if not os.path.isfile(path):
+                continue
+            with open(path, encoding="utf-8") as f:
+                m = re.search(r"^## Tracker[ \t]*\n(.*?)(?=^## |\Z)", f.read(),
+                              re.M | re.S)
+            if m:
+                return path, m.group(1)
+        parent = os.path.dirname(d)
+        if parent == d:
+            return None
+        d = parent
+
+
+def initiative_ref(block):
+    """(slugId or None, name or None) from the block's Initiative line."""
+    m = re.search(r"^\s*[-*]?\s*\**Initiative\**\s*:\s*(.+)$", block, re.M | re.I)
+    if not m:
+        return None, None
+    line = m.group(1)
+    slug = re.search(r"linear\.app/[^/\s]+/initiative/[^\s)>]*?-([0-9a-f]{12})\b", line)
+    name = re.split(r"\s+[—–]\s+|\s+-\s+|\s*\(|\s+https?://|\s*<", line)[0]
+    name = name.strip(" `*_[]") or None
+    return (slug.group(1) if slug else None), name
+
+
+def trunk_rev(root):
+    code, _ = jj(root, "log", "-r", "main", "--no-graph", "-T", "change_id")
+    return "main" if code == 0 else "trunk()"
+
+
+def gql(query, variables=None):
+    key = os.environ.get("LINEAR_API_KEY")
+    if not key:
+        die("LINEAR_API_KEY is not set")
+    body = json.dumps({"query": query, "variables": variables or {}}).encode()
+    req = urllib.request.Request(API, data=body, headers={
+        "Authorization": key, "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            data = json.load(r)
+    except urllib.error.HTTPError as e:
+        data = json.loads(e.read() or b"{}")
+    if data.get("errors"):
+        die("Linear: " + "; ".join(e.get("message", "?") for e in data["errors"]))
+    return data["data"]
+
+
+def find_initiative(slug, name):
+    q = "query($f:InitiativeFilter){initiatives(filter:$f){nodes{id name url}}}"
+    tries = []
+    if slug:
+        tries.append({"slugId": {"eq": slug}})
+    if name:
+        tries.append({"name": {"eqIgnoreCase": name}})
+    for f in tries:
+        nodes = gql(q, {"f": f})["initiatives"]["nodes"]
+        if len(nodes) == 1:
+            return nodes[0]
+        if len(nodes) > 1:
+            die(f"{len(nodes)} initiatives match {f}; name it by URL in the Tracker block")
+    die(f"no initiative found for slug {slug!r} or name {name!r}")
+
+
+def find_document(initiative_id):
+    q = """query($i:ID){documents(filter:{initiative:{id:{eq:$i}},
+           title:{eq:"%s"}}, orderBy:createdAt){nodes{id url content createdAt}}}""" % TITLE
+    nodes = gql(q, {"i": initiative_id})["documents"]["nodes"]
+    nodes.sort(key=lambda n: n["createdAt"])
+    if len(nodes) > 1:
+        say(f"warning: {len(nodes)} '{TITLE}' documents on the initiative; using the oldest")
+    return nodes[0] if nodes else None
+
+
+def fit(text, room):
+    """Newest entries of a newest-first changelog, cut at a heading, within room."""
+    if len(text) <= room:
+        return text, False
+    cut = max(m.start() for m in re.finditer(r"^#{1,6} ", text[:room + 1], re.M))
+    return text[:cut].rstrip() + "\n", True
+
+
+def render(repo, path, source):
+    rest = (f"\n\n---\n\n*Older entries are not shown: Linear holds at most "
+            f"{LIMIT:,} characters. The full changelog is `{path}` in the "
+            f"{repo} repo, on trunk.*\n")
+    head = (f"> {ICON} Generated from `{path}` on trunk of the {repo} repo by "
+            f"changelog-sync; do not edit it here, the next sync overwrites it. "
+            f"(source hash 0000000000000000)\n\n")
+    body, cut = fit(source.strip() + "\n", LIMIT - len(head) - len(rest))
+    if cut:
+        body += rest
+    digest = hashlib.sha256(body.encode()).hexdigest()[:16]
+    return head.replace("0" * 16, digest) + body, digest, cut
+
+
+def main(argv):
+    dry = "--dry-run" in argv
+    args = [a for a in argv if a != "--dry-run"]
+    if any(a.startswith("-") for a in args) or len(args) > 1:
+        die("usage: changelog-sync [--dry-run] [repo-dir]")
+    root = repo_root(args[0] if args else ".")
+    repo = repo_name(root)
+
+    found = tracker_block(root)
+    if not found or not re.match(r"\s*linear\b", found[1], re.I):
+        say(f"{repo}: skipped: no linear tracker")
+        return 0
+    tracker_path, block = found
+
+    rev = trunk_rev(root)
+    path = source = None
+    for cand in CANDIDATES:
+        code, out = jj(root, "file", "show", "-r", rev, cand)
+        if code == 0:
+            path, source = cand, out
+            break
+    if path is None:
+        say(f"{repo}: skipped: no changelog on {rev} ({', '.join(CANDIDATES)})")
+        return 0
+
+    slug, name = initiative_ref(block)
+    if not slug and not name:
+        name = repo
+        say(f"{repo}: no Initiative line in {tracker_path}; trying '{name}'")
+    initiative = find_initiative(slug, name)
+    content, digest, cut = render(repo, path, source)
+    doc = find_document(initiative["id"])
+    old = HASH_RE.search(doc["content"] or "") if doc else None
+    changed = not (old and old.group(1) == digest)
+
+    size = (f"{len(content):,} characters"
+            + (f" (cut from {len(source):,}: newest entries only)" if cut else ""))
+    where = doc["url"] if doc else "new document"
+    say(f"{repo}: {path} on {rev} -> initiative '{initiative['name']}', "
+        f"'{TITLE}' {where}, {size}, {'changed' if changed else 'unchanged'}")
+    if dry:
+        say("dry run: nothing written")
+        return 0
+    if not changed:
+        return 0
+    if doc:
+        gql("""mutation($id:String!,$c:String!){documentUpdate(id:$id,
+               input:{content:$c}){success}}""", {"id": doc["id"], "c": content})
+        say(f"updated {doc['url']}")
+    else:
+        d = gql("""mutation($i:String!,$t:String!,$e:String!,$c:String!){
+                   documentCreate(input:{initiativeId:$i,title:$t,icon:$e,content:$c})
+                   {success document{url}}}""",
+                {"i": initiative["id"], "t": TITLE, "e": ICON, "c": content})
+        say(f"created {d['documentCreate']['document']['url']}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
