@@ -588,7 +588,12 @@ more things at once, or long work the human is not waiting on.
 1. Idea or direction lands → **settled first**: its open questions asked and
    answered (a roadmap row if it is not for now; in Linear mode, an issue)
    before engineering starts.
-2. Launch: `lane new <lane>` (*Spare the disk*), plus a brief.
+2. Launch: `lane new <lane>` (*Spare the disk*), plus a brief. **Linear mode:
+   no spawn without an issue.** Before any agent starts work (a lane, a
+   research survey, a design round), its issue exists: found, or filed now. It
+   goes In Progress with a `Lane <name> · <clock>` comment in the same turn as
+   the spawn, and the brief carries its text. Work spawned without one is
+   invisible on the board: nobody can see it ran, why, or what it decided.
 3. The lane works: incremental commits on its own chain, with the project's
    version control and **never git in a colocated repo** (a `git commit` after
    `jj new` lands on a detached head). Chains survive a dead agent; a

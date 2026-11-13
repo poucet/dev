@@ -241,7 +241,9 @@ mode. A call taken without the human is a Decision issue created Done, its
 description saying so with the alternative; he reverses it by reopening.
 
 **A lane starts**: its issue goes In Progress, with a comment
-`Lane <name> · <clock>`. No issue yet → file one first (docs before eng).
+`Lane <name> · <clock>`, in the same turn as the spawn. No issue yet → file
+one first (docs before eng). This holds for every spawned agent doing work,
+research and design rounds included.
 
 **A lane's report arrives** (`.pi/reports/<lane>.md`): for each line,
 - issue closed → Done, comment with the one-line verdict and the change id;

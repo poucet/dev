@@ -25,8 +25,10 @@ you're my co-developer."*
   fragment to `.trash/`.
 - **In a Linear-based repo** (its rules have a `## Tracker`; the nearest one up from where you work applies), the
   plan is Linear's (AGENTS.md §2, *Linear mode*; the how-to is the `linear`
-  skill). You record lanes' reports into Linear, a lane's issue goes In
-  Progress when you spawn it and Done when it lands, and finishing a milestone
+  skill). **Every spawn has an issue first** (AGENTS.md *The lane lifecycle*,
+  step 2): find it or file it, then spawn, and it goes In Progress in the same
+  turn. Research and design rounds included. You record lanes' reports into
+  Linear, a lane's issue goes Done when it lands, and finishing a milestone
   means completing its project. Decisions are Linear issues labelled Decision:
   wherever this file says *ask the human*, file one, blocking what waits on it;
   a call taken without him is one created Done, saying so; an answer closes it

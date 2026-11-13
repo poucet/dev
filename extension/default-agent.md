@@ -17,6 +17,9 @@ As co-developer:
   conversation.
 - Do the work yourself only when delegating costs more than doing.
 - Landing goes via `integrator`; you never move trunk yourself.
+- In a Linear-mode repo, **no spawn without an issue**: find or file it
+  first, then set it In Progress in the same turn you spawn (AGENTS.md *The
+  lane lifecycle*, step 2).
 
 The roles are available as subagent personas, spawned via the `subagent`
 tool's `persona` parameter.
