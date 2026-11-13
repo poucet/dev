@@ -39,6 +39,7 @@ import urllib.request
 API = "https://api.linear.app/graphql"
 TITLE = "Changelog"
 ICON = "📜"
+ICON_CODE = ":scroll:"  # the API takes an emoji shortcode for icon, not the emoji
 LIMIT = 250_000  # Linear's maxLength on document content, in characters
 CANDIDATES = ("CHANGELOG.md", "docs/CHANGELOG.md", "docs/ops/CHANGELOG.md")
 HASH_RE = re.compile(r"source hash ([0-9a-f]{16})")
@@ -126,7 +127,11 @@ def gql(query, variables=None):
     except urllib.error.HTTPError as e:
         data = json.loads(e.read() or b"{}")
     if data.get("errors"):
-        die("Linear: " + "; ".join(e.get("message", "?") for e in data["errors"]))
+        die("Linear: " + "; ".join(
+            e.get("message", "?") + "".join(
+                f" ({v.get('property')}: {', '.join((v.get('constraints') or {}).values())})"
+                for v in (e.get("extensions") or {}).get("validationErrors", []))
+            for e in data["errors"]))
     return data["data"]
 
 
@@ -231,7 +236,7 @@ def main(argv):
         d = gql("""mutation($i:String!,$t:String!,$e:String!,$c:String!){
                    documentCreate(input:{initiativeId:$i,title:$t,icon:$e,content:$c})
                    {success document{url}}}""",
-                {"i": initiative["id"], "t": TITLE, "e": ICON, "c": content})
+                {"i": initiative["id"], "t": TITLE, "e": ICON_CODE, "c": content})
         say(f"created {d['documentCreate']['document']['url']}")
     return 0
 
