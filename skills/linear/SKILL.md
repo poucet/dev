@@ -1,6 +1,6 @@
 ---
 name: linear
-description: Run a repo's plan in Linear — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its roadmap and any old docs/ops/ files into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query, publishing design and research documents and working the human's comments on them). Use when a repo's AGENTS.md files (the nearest `## Tracker` up from the working directory) say `linear`, or the human asks to move a repo to Linear.
+description: Run a repo's plan in Linear — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its roadmap and any old docs/ops/ files into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query, publishing design and research documents and working the human's comments on them, mirroring the changelog into Linear with the `changelog-sync` script). Use when a repo's AGENTS.md files (the nearest `## Tracker` up from the working directory) say `linear`, or the human asks to move a repo to Linear.
 ---
 
 # Linear mode
@@ -21,7 +21,8 @@ first use in a session; names and fields move.
 *Linear Documents*, *The boundaries hold*); issues, Decision issues, state
 changes and the attach-and-comment step stay the coordinator's (or `scribe`'s).
 Every other role never writes Linear: they report to their file in
-`.pi/reports/` and the coordinator records.
+`.pi/reports/` and the coordinator records, bar the integrator's changelog
+sync (*Changelog mirror*, below).
 
 ## The shape
 
@@ -150,6 +151,8 @@ Steps 1–3 set the `Owner`: initiative owner, project lead.
 5. **The README links the initiative** where it used to point at `ROADMAP.md`
    ("What comes next: <initiative URL>").
 6. **Backfill** (below), then **cutover** (below).
+7. **The first changelog sync**: `changelog-sync` from the repo (*Changelog
+   mirror*, below) creates the initiative's `Changelog` document.
 
 ## Backfill
 
@@ -262,7 +265,31 @@ research and design rounds included.
 - then the report moves to `.trash/`.
 
 **Landed**: the lane's issue goes Done the same day, verdict comment naming the
-changelog entry's heading and change id. The fragment fold is unchanged.
+changelog entry's heading and change id. The fragment fold is unchanged; after
+it, the integrator syncs the changelog mirror (below).
+
+## Changelog mirror
+
+The rule is AGENTS.md *The changelog mirror*: trunk's `CHANGELOG.md` is copied
+into a document titled `Changelog` on the initiative, generated and never
+edited in Linear. The script beside this file does it:
+
+    changelog-sync [--dry-run] [repo-dir]     # repo-dir defaults to .
+
+- **Skips, exit 0**, a repo whose nearest `## Tracker` doesn't say `linear`
+  (`skipped: no linear tracker`), or that has no changelog on trunk. It looks
+  for `CHANGELOG.md`, then `docs/CHANGELOG.md`, then `docs/ops/CHANGELOG.md`.
+- **The initiative** comes from the Tracker's `Initiative:` line, by the slug
+  in its URL, else by its name, else the repo directory's name.
+- **Idempotent**: the banner carries a hash of what was generated; the same
+  hash means `unchanged` and no write. A changed changelog overwrites the
+  whole document; a missing one is created, icon 📜.
+- **Size**: Linear refuses document content over 250,000 characters. A longer
+  changelog keeps its newest entries, cut at a heading, and ends with a line
+  naming the file that holds the rest.
+- `--dry-run` prints the initiative, whether the document exists, the size and
+  whether it changed, and writes nothing. It needs `$LINEAR_API_KEY` (GraphQL,
+  no `Bearer` prefix), not the MCP server.
 
 **Won't fix / superseded**: Canceled, or Duplicate of the issue that replaced it,
 with a one-line comment. Never delete an issue.

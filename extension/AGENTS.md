@@ -147,7 +147,7 @@ construction:
 | a settled decision | folded, the same turn, into what it governs: the design doc, the project's `AGENTS.md`, the code's own rationale | the Done Decision issue, then folded the same way |
 | a defect or rough edge | fixed now, in the lane that found it; if it can't be, told to the human with a recommendation | an issue labelled Bug or Improvement |
 | an idea | told to the human; one he keeps becomes a `ROADMAP.md` row | an issue labelled Idea |
-| what shipped | `CHANGELOG.md` | `CHANGELOG.md`, and the completed projects |
+| what shipped | `CHANGELOG.md` | `CHANGELOG.md`, mirrored to the initiative's `Changelog` document; and the completed projects |
 | what comes next | `ROADMAP.md`, tracked | the initiative's milestone projects |
 | a proposal, an open design, research | `docs/design/`, `docs/research/`, tracked | a Linear Document (*Linear Documents*, below); the repo keeps the system as it is now |
 
@@ -211,7 +211,7 @@ records it.
 | a call taken without him | a Decision issue created Done, saying so; reopen it to reverse |
 | the decisions log | the Done Decision issues, the answer and its rationale in the last comment; a saved view (label Decision, Done, newest first) |
 | the roadmap | a project per roadmap milestone, `<repo> · <title>` (no version number), its description what the milestone means; each roadmap row an issue in it. `ROADMAP.md` leaves the repo; the README links the initiative |
-| what shipped | the completed projects, with their issues; each release a project milestone in the project it shipped from, `<x.y.z> · <title>`, carried by the issues that shipped in it |
+| what shipped | the completed projects, with their issues; each release a project milestone in the project it shipped from, `<x.y.z> · <title>`, carried by the issues that shipped in it; and the `Changelog` document on the initiative, a generated mirror of trunk's `CHANGELOG.md` |
 | defects and rough edges | issues labelled Bug or Improvement, in `<repo> · Backlog` until scheduled; fixed → Done, won't fix → Canceled, each with a one-line verdict comment |
 | ideas | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
 | status | the issue's state (Backlog · Todo · In Progress · Done · Canceled · Duplicate) and label (Bug · Improvement · Feature · Idea · Decision); a finer mark (triaged, partly shipped, paused) is a comment |
@@ -219,7 +219,17 @@ records it.
 | design and research | Linear Documents, attached to the project they serve, status in the icon and a banner (*Linear Documents*, below) |
 
 **`.pi/` is unchanged in Linear mode**: reports, drafts and fragments are not
-tasks. `CHANGELOG.md` is unchanged.
+tasks. `CHANGELOG.md` is unchanged and stays the source; Linear gets a copy
+(*The changelog mirror*, below).
+
+**The changelog mirror.** Every Linear-mode repo's `CHANGELOG.md` is mirrored
+into a Linear Document titled `Changelog` on its initiative, so an agent with
+no access to the repo (a chat bot) can still read what shipped. It is
+**generated, never edited in Linear**: its banner says so, and each sync
+overwrites it from trunk's copy. The integrator runs the sync after each fold
+(*The lane lifecycle*, §4); the script is `changelog-sync`, beside the
+`linear` skill. A changelog over Linear's size limit is mirrored newest first,
+ending with a line naming the file that holds the rest.
 
 **Decisions are issues.** An open decision is an issue labelled Decision, and
 its **blocking relations** to the issues that wait on it make *nothing is built
@@ -250,7 +260,9 @@ initiative's description; trunk and ready chains come from `jj log`, as always.
   lane proposes it; the coordinator files the decisions and the lane or
   coordinator flips the marks. **Every other role** (coder, designer,
   integrator, foreman's lanes) **never writes Linear**: they report to their
-  file, and the coordinator (or `scribe`) records. An agent that must read
+  file, and the coordinator (or `scribe`) records. The one exception is the
+  integrator's `changelog-sync`, which writes only the generated changelog
+  mirror (above), through `$LINEAR_API_KEY`, not the MCP server. An agent that must read
   Linear is spawned with `mcp_servers: ["linear"]` and reaches the tools
   through codemode; one that needn't is spawned without it, its brief carrying
   the issue text it needs.
@@ -281,6 +293,11 @@ human or files an issue (Linear mode). **An entry that reads as a narrative is
 in the wrong document.**
 
 **Not here**: work that has not landed; roadmap intent.
+
+**In Linear mode it is mirrored, not moved**: the file stays the one source,
+and the initiative's `Changelog` document is a generated copy of trunk's, for
+agents that can't read the repo (*The changelog mirror*). An edit made there is
+lost at the next sync; fix the file.
 
 ### Dating an entry — clock *and* change id
 
@@ -695,6 +712,12 @@ more things at once, or long work the human is not waiting on.
    - **Fragment folds are batched** into one docs commit, at a natural pause or
      the version stamp, never one per landing: every trunk commit makes every
      running lane rebase again.
+   - **In Linear mode, sync the changelog mirror after the fold**: once trunk
+     is on the fold commit (a docs-only fold in the default workspace counts
+     too), run `changelog-sync` from the repo (the `linear` skill's script). It
+     reads trunk's `CHANGELOG.md`, never the working copy, so the mirror shows
+     only what landed; it writes nothing when the changelog is unchanged and
+     skips a repo not in Linear mode.
    - **One gate per tool call, foreground, with a tight ceiling.** Output to a
      log (its growth tells a slow run from a stuck one), then read `$?`. Set any
      timeout to about twice the gate's usual time, minutes not hours: a hung gate
