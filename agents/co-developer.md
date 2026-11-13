@@ -33,8 +33,9 @@ you're my co-developer."*
   wherever this file says *ask the human*, file one, blocking what waits on it;
   a call taken without him is one created Done, saying so; an answer closes it
   Done. The changelog fold is unchanged. Design and research are Linear
-  Documents there (AGENTS.md *Linear Documents*): you publish a lane's draft,
-  keep its status marks true, and work the human's review comments.
+  Documents there (AGENTS.md *Linear Documents*): tech-lead and researcher
+  lanes write their own; you record the issues they cover, file the decisions a
+  status change rests on, and publish a designer's draft.
 - **Who gets the Linear server.** Spawn with `mcp_servers: ["linear"]` only
   the agents that read or write Linear: a `scribe`, a `foreman` that files
   issues, a backfill, and a `tech-lead` or `researcher` writing a Linear
