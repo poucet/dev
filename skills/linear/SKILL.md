@@ -17,8 +17,11 @@ how-to. It needs the Linear MCP server: an agent doing any of this is spawned wi
 `list_comments`, `prepare_file_upload`, …). Read a tool's schema before its
 first use in a session; names and fields move.
 
-**Only the coordinator (or `scribe`) writes Linear.** Lanes never do: they
-report to their file in `.pi/reports/` and the coordinator records.
+**Tech-lead and researcher lanes write their own Linear Documents** (AGENTS.md
+*Linear Documents*, *The boundaries hold*); issues, Decision issues, state
+changes and the attach-and-comment step stay the coordinator's (or `scribe`'s).
+Every other role never writes Linear: they report to their file in
+`.pi/reports/` and the coordinator records.
 
 ## The shape
 
@@ -283,19 +286,26 @@ integrator still does not run into a version (AGENTS.md §4).
 ## Documents
 
 The rules are AGENTS.md *Linear Documents*: status in two marks, where a
-document attaches, lanes draft and the coordinator publishes. Here is how.
+document attaches. **Tech-lead and researcher lanes write documents directly**;
+the coordinator records their issues and attaches them.
 
-**Publish a lane's draft** (`.pi/drafts/<lane>.md`, named in its report):
+**A tech-lead or researcher lane** creates or revises its Linear Document:
 `list_documents` for the title first, so a rerun updates rather than
 duplicates; then `save_document` with the title, the markdown, the icon (the
-status emoji the draft's banner names) and the project (or the issue, or the
-initiative). Its first line is the banner, one sentence: `🎯 Proposed: waiting
-on AUDIO-140 (which encoder to ship).` Each issue it covers is @mentioned by
-bare id in the body, and each of those issues gets a comment naming the
-document, so the link shows on both sides. Figures the lane left as files go
-up with `prepare_file_upload` and are embedded in the markdown; Mermaid stays
-inline, Linear renders it. Then the draft moves to `.trash/`, and the human
-gets the document's link in chat.
+status emoji) and the project (or the issue, or the initiative). First line is
+the banner, one sentence: `🎯 Proposed: waiting on the encoder decision.` It
+@mentions each issue it covers by bare id in the body, uploads figures with
+`prepare_file_upload` and embeds them (Mermaid stays inline, Linear renders
+it), and puts the document's link in its report. The coordinator records: for
+each issue the lane lists, save_comment on that issue naming the document, so
+the link shows on both sides; then attach the document to the project with
+save_document's `projectIds` (or `issueIds`, or `initiativeId`).
+
+**Publish a designer's draft** (`.pi/drafts/<lane>.md`, named in its report):
+designers still draft because their docs are figures and before/after, not text.
+Same flow as above: list_documents, save_document, upload figures,
+attach, comment each issue, move the draft to `.trash/`, and the human gets the
+link in chat.
 
 **Change a status**: icon and banner together, in one `save_document`. The
 banner says what the status rests on:

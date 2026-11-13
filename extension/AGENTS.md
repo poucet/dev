@@ -238,12 +238,22 @@ initiative's description; trunk and ready chains come from `jj log`, as always.
 
 **The boundaries hold.**
 
-- **Lanes never write Linear**: they report to their file, and the coordinator
-  (or `scribe`) records into Linear. A lane's questions go in its report; the
-  coordinator files the Decision issue. An agent that must read Linear is
-  spawned with `mcp_servers: ["linear"]` and reaches the tools through
-  codemode; one that needn't is spawned without it, its brief carrying the
-  issue text it needs.
+- **Tech-lead and researcher lanes write their own Linear Documents** (each
+  review round takes one hop instead of two); issues, Decision issues, state
+  changes and the attach-and-comment step stay the coordinator's. They are
+  spawned with `mcp_servers: ["linear"]` and create or revise documents
+  (save_document, icon + banner status marks, prepare_file_upload for figures),
+  work "address my comments" themselves (list_comments, revise preferring
+  `patch`, reply with save_comment parentId, resolve with the GraphQL
+  commentResolve call), and put the document's link in their report. A status
+  change that rests on a decision (🧪→🎯 needs Decision issues filed) — the
+  lane proposes it; the coordinator files the decisions and the lane or
+  coordinator flips the marks. **Every other role** (coder, designer,
+  integrator, foreman's lanes) **never writes Linear**: they report to their
+  file, and the coordinator (or `scribe`) records. An agent that must read
+  Linear is spawned with `mcp_servers: ["linear"]` and reaches the tools
+  through codemode; one that needn't is spawned without it, its brief carrying
+  the issue text it needs.
 - **Linear ids are ops ids**, a Linear Document's id or URL included. The
   workspace is private, so `AUDIO-123` or a document link points at nothing in
   a clone: never in a commit message, code or a tracked doc (*What a commit
@@ -389,11 +399,14 @@ The how-to is the `linear` skill.
   `docs/research/` moves to a Linear Document, with a status, the next time work
   touches it; whatever in it describes the system as it is now is split out into
   the repo's docs, in the same pass.
-- **Lanes still never write Linear** (*The boundaries hold*). A researcher or
-  tech-lead writes its document to `.pi/drafts/<lane>.md` in the default
-  workspace, by absolute path, and names it in its report; the coordinator (or
-  `scribe`) publishes it, sets its status and attaches it. A revision comes back
-  the same way.
+- **Tech-lead and researcher lanes write their own Linear Documents**,
+  directly. They create or revise them (save_document), set status marks,
+  upload figures (prepare_file_upload), work the human's review comments
+  (list_comments, save, reply, resolve), and put the link in their report.
+  Issues, Decision issues, state changes and the attach-and-comment step stay
+  the coordinator's (or `scribe`'s): the lane lists issues in its report and
+  the coordinator records them. **Every other role never writes Linear** (*The
+  boundaries hold*).
 
 ### `docs/guides/` · `docs/reference/`
 
@@ -483,10 +496,11 @@ changelog, if it keeps one.
   `.pi/`, both its own file, both by absolute path: its changelog fragment,
   `.pi/changelog.d/<LANE>.md`, and its report, `.pi/reports/<lane>.md` (*A
   lane's report is a file*, §4). Nothing else there, and never `CHANGELOG.md`.
-  The exceptions are documents: a file-mode research or design doc is
-  committed in the default workspace (*Docs-only changes need no workspace*,
-  §4), and in Linear mode it is a third own file, `.pi/drafts/<lane>.md`,
-  with its figures beside it as `<lane>-<name>.png` (*Linear Documents*).
+  The exception is a file-mode research or design doc, committed in the default
+  workspace (*Docs-only changes need no workspace*, §4). Linear-mode design and
+  research lanes write Linear Documents directly; a designer's design doc
+  (figures, before/after) is still a third own file, `.pi/drafts/<lane>.md`,
+  with its figures beside it as `<lane>-<name>.png`.
 - **The fragment is staging, not history** (simplychris:
   *"changelog.d should be untracked, as it's temporary staging"*): it lives in
   `.pi/`, so it never dirties the working copy an integrator lands in.

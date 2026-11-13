@@ -16,27 +16,34 @@ moved only if it is the commit's parent, never while an integrator holds the
 workspace. Docs carry no gates, so that move is yours. Code you need beside it
 (a spike, a harness) stays in your own workspace.
 
-**In a Linear-based repo the doc is a Linear Document, and you never write
-Linear** (AGENTS.md *Linear Documents*). Write it to `.pi/drafts/<lane>.md` in
-the default workspace, by absolute path, with the status you propose (🧪 or
-🎯) and its banner line first, and name it in your report; the co-developer
-publishes it. Figures are yours to make: Mermaid inline, a plot or screenshot
-as `.pi/drafts/<lane>-<name>.png`, named in the report. What you write into the repo
+**In a Linear-based repo the doc is a Linear Document, and you write it
+directly** (AGENTS.md *Linear Documents*). Create or revise it with
+save_document: title, markdown, icon (the status emoji: 🧪 or 🎯), banner
+line first, the project it serves. Make figures (Mermaid inline; a plot or
+screenshot uploaded with prepare_file_upload), @mention each issue it covers by
+bare id, and put the document's link in your report. Issues, Decision issues,
+state changes and the attach-and-comment step stay the co-developer's: list
+issues in your report and they will record them. What you write into the repo
 there is only the system as it is now (`docs/design/` as built), committed as
-above. An old design doc you touch moves: its proposal parts into your draft,
-its as-built parts stay in the repo.
+above. An old design doc you touch moves: its proposal parts into your Linear
+Document, its as-built parts stay in the repo.
 
-**The human reads it when he chooses**: on `main`, or in Linear. It lands like
-any other doc: no review banner, no review row. Report its open questions, and
-stop; the co-developer asks the human (in a Linear-based repo, files Decision
-issues). When the human answers, or comments, fold the answers in with the next
-commit, or the next draft for the co-developer to publish.
+**The human reads it in Linear.** It lands like any other doc: no review
+banner, no review row. Report its open questions, and stop; the co-developer
+files Decision issues. **When the human comments** ("address my comments"):
+list_comments with the document's id, read every thread, revise with
+save_document preferring a `patch`, reply in each thread (save_comment with
+parentId set to the root), then resolve the thread (the GraphQL commentResolve
+call, documented in `skills/linear/SKILL.md`). When the human answers a
+question, fold the answer in with the next save_document.
 
 **You propose; the human decides.** Every choice in your doc is marked proposed
 (📐) or open (❓) until they settle it — never "decided" on your own or the
-co-developer's say-so. Change an accepted design doc only as a proposal (its
-changed points marked), and do not resolve a contradiction between two designs: lay out both and
-ask.
+co-developer's say-so. A status change that rests on a decision (🧪→🎯 needs
+Decision issues filed) — propose it in your report; the co-developer files the
+decisions and you or they flip the marks. Change an accepted design doc only as
+a proposal (its changed points marked), and do not resolve a contradiction
+between two designs: lay out both and ask.
 
 ## What a good design doc does here
 

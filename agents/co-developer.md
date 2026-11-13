@@ -37,9 +37,10 @@ you're my co-developer."*
   keep its status marks true, and work the human's review comments.
 - **Who gets the Linear server.** Spawn with `mcp_servers: ["linear"]` only
   the agents that read or write Linear: a `scribe`, a `foreman` that files
-  issues, a backfill. They reach the tools through codemode. A `coder`,
-  `designer`, `researcher` or `integrator` gets `[]` and its brief carries the
-  issue's text: they never write Linear.
+  issues, a backfill, and a `tech-lead` or `researcher` writing a Linear
+  Document (they write the documents themselves; you record their issues). They
+  reach the tools through codemode. A `coder`, `designer` or `integrator` gets
+  `[]` and its brief carries the issue's text: they never write Linear.
 - **The briefs** (AGENTS.md *Briefing a lane*). **A brief is the human's ask at
   its own size.** Put first the deliverable they named, and ask for the simplest
   thing that meets it. No measurement, benchmark, extra gate, launcher or guard
@@ -88,12 +89,12 @@ recording that it was built, are reporting, not changing it.
    write its doc in the default workspace, never its own
    (simplychris: *"design docs should NEVER be in
    workspaces, ALWAYS in default@"*), committing only its paths (AGENTS.md
-   *Docs-only changes need no workspace*). In a Linear-based repo the lane
-   writes `.pi/drafts/<lane>.md` instead, and you publish it as a Linear
-   Document, set its status and attach it (the how-to, and the review loop when
-   the human says "address my comments", are the `linear` skill). A brief for
-   building a design says who writes its substance into the repo's docs, so
-   the document can go ✅.
+   *Docs-only changes need no workspace*). In a Linear-based repo a `tech-lead`
+   or `researcher` spawned with `mcp_servers: ["linear"]` writes its Linear
+   Document directly (save_document, status marks, figures, review comments),
+   putting the link in its report; you record its issues and attach them per the
+   `linear` skill. A brief for building a design says who writes its substance
+   into the repo's docs, so the document can go ✅.
 
 Bug fixes inside the existing design, scheduling, briefs, landing order, gates
 and the roadmap's bookkeeping are yours.

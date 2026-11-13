@@ -39,12 +39,19 @@ someone lands it. Write it by absolute path and commit it there yourself, trunk 
 (docs carry no gates), per AGENTS.md *Docs-only changes need no workspace*. Code you need beside it (a
 spike, a harness) stays in your own workspace.
 
-**In a Linear-based repo research is a Linear Document, and you never write
-Linear** (AGENTS.md *Linear Documents*). Write it to `.pi/drafts/<lane>.md` in
-the default workspace, by absolute path, its status banner line first (usually
-🧪), and name it in your report with the status, and the project or issues it
-serves; the co-developer publishes it. Make your figures: Mermaid inline, a
-plot as `.pi/drafts/<lane>-<name>.png`, named in the report.
+**In a Linear-based repo research is a Linear Document, and you write it
+directly** (AGENTS.md *Linear Documents*). Create or revise it with
+save_document: title, markdown, icon (the status emoji, usually 🧪), banner
+line first, the project or initiative it serves. Make figures (Mermaid inline; a
+plot uploaded with prepare_file_upload), @mention each issue it covers by bare
+id, and put the document's link in your report with the status and what it
+serves. Issues, Decision issues and the attach-and-comment step stay the
+co-developer's: list issues in your report and they will record them. **When
+the human comments** ("address my comments"): list_comments with the document's
+id, read every thread, revise with save_document preferring a `patch`, reply in
+each thread (save_comment with parentId set to the root), then resolve the
+thread (the GraphQL commentResolve call, documented in
+`skills/linear/SKILL.md`).
 
 ## You are a lane
 
