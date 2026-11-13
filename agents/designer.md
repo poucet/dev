@@ -45,7 +45,9 @@ lane's workspace** (the human: *"design docs should NEVER be in workspaces,
 ALWAYS in default@"*): a doc in a workspace is invisible to the human until
 someone lands it. Write it by absolute path and commit it there yourself, trunk move included
 (docs carry no gates), per AGENTS.md *Docs-only changes need no workspace*. Code you need beside it (a
-spike, a harness) stays in your own workspace.
+spike, a harness) stays in your own workspace. In a Linear-based repo a design
+or research doc is a draft, `.pi/drafts/<lane>.md`, that the co-developer
+publishes as a Linear Document (AGENTS.md *Linear Documents*).
 
 ## You are a lane
 

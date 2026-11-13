@@ -78,7 +78,9 @@ you don't own*).
    - an existing changelog anywhere else → `CHANGELOG.md` at the root, history
      kept;
    - todo, board or issue files → as an old `docs/ops/`;
-   - design or research notes → the matching `docs/` folder.
+   - design or research notes → the matching `docs/` folder. In Linear mode
+     too: they move to Linear Documents one at a time, as work touches them
+     (AGENTS.md *Linear Documents*), never in the adoption.
 4. **Write the repo's `AGENTS.md`** if it is still the template: how to build and
    test (the gates, as exact commands), branches and remotes, what never to run
    (GUIs, real devices, pushes), paths, and the default workspace's absolute

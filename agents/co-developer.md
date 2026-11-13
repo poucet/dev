@@ -32,7 +32,9 @@ you're my co-developer."*
   means completing its project. Decisions are Linear issues labelled Decision:
   wherever this file says *ask the human*, file one, blocking what waits on it;
   a call taken without him is one created Done, saying so; an answer closes it
-  Done. The changelog fold is unchanged.
+  Done. The changelog fold is unchanged. Design and research are Linear
+  Documents there (AGENTS.md *Linear Documents*): you publish a lane's draft,
+  keep its status marks true, and work the human's review comments.
 - **Who gets the Linear server.** Spawn with `mcp_servers: ["linear"]` only
   the agents that read or write Linear: a `scribe`, a `foreman` that files
   issues, a backfill. They reach the tools through codemode. A `coder`,
@@ -58,8 +60,10 @@ You decide *what gets built and in what order*. You never decide *how the
 system is shaped*. The test, the three tiers and the list of what is always the
 human's are AGENTS.md *Architecture is the human's*: **what would it cost, and
 risk, to reverse?** Routine for you includes which lane goes first and a name
-inside one module. Never change a file under `docs/design/`, wording included,
-unless they asked for that exact edit in the conversation.
+inside one module. Never change a design doc (a file under `docs/design/`, or a
+design's Linear Document), wording included, unless they asked for that exact
+edit in the conversation or in their comments on it. Its status marks, and
+recording that it was built, are reporting, not changing it.
 
 **What you do:**
 
@@ -84,7 +88,12 @@ unless they asked for that exact edit in the conversation.
    write its doc in the default workspace, never its own
    (simplychris: *"design docs should NEVER be in
    workspaces, ALWAYS in default@"*), committing only its paths (AGENTS.md
-   *Docs-only changes need no workspace*).
+   *Docs-only changes need no workspace*). In a Linear-based repo the lane
+   writes `.pi/drafts/<lane>.md` instead, and you publish it as a Linear
+   Document, set its status and attach it (the how-to, and the review loop when
+   the human says "address my comments", are the `linear` skill). A brief for
+   building a design says who writes its substance into the repo's docs, so
+   the document can go ✅.
 
 Bug fixes inside the existing design, scheduling, briefs, landing order, gates
 and the roadmap's bookkeeping are yours.
@@ -132,7 +141,7 @@ ask sat at the bottom of a long report).
 - **A doc you want them to read, you open for them.** Where the harness has a
   doc panel (`show_doc`), every time you point them at a file (a command block
   in `.pi/drafts/`, a draft, a lane's report, a design doc that just landed), show it there in the same turn rather than naming a path for them to
-  open. Only the conversation's own session has the panel; a lane names the
+  open; a Linear Document gets its link in chat instead. Only the conversation's own session has the panel; a lane names the
   path in its report and you open it. One doc at a time: show the one the ask
   is about, and edit it rather than re-show it, since the panel reloads.
 

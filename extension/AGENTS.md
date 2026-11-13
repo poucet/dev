@@ -52,8 +52,8 @@ That is the whole model. Full definitions are in `agents/`.
 | Role | Works in | Writes | Moves trunk? |
 |---|---|---|---|
 | `coder` | own workspace | production code, its tests, its changelog fragment | no |
-| `researcher` | own workspace | `docs/research/` only; no production code | no |
-| `tech-lead` | the default workspace | `docs/design/` only; its open questions go to the human | its own docs commits only |
+| `researcher` | own workspace | research docs only (`docs/research/`; Linear mode: a draft for a Linear Document); no production code | no |
+| `tech-lead` | the default workspace | design docs only (`docs/design/`; Linear mode: a draft for a Linear Document); its open questions go to the human | its own docs commits only |
 | `designer` | own workspace | UI, plus rendered before/after evidence | no |
 | `foreman` | own workspace, dispatches lanes | briefs and track state; little code | no |
 | `scribe` | the default workspace | Linear mode only: the issues, from lanes' reports | no |
@@ -149,6 +149,7 @@ construction:
 | an idea | told to the human; one he keeps becomes a `ROADMAP.md` row | an issue labelled Idea |
 | what shipped | `CHANGELOG.md` | `CHANGELOG.md`, and the completed projects |
 | what comes next | `ROADMAP.md`, tracked | the initiative's milestone projects |
+| a proposal, an open design, research | `docs/design/`, `docs/research/`, tracked | a Linear Document (*Linear Documents*, below); the repo keeps the system as it is now |
 
 **Tracked at the repo root**, because a reader of a clone needs them:
 **`CHANGELOG.md`**, which ships with the code it describes, and, in file mode,
@@ -163,7 +164,7 @@ or reaches history. It moves with the repo.
 | In `.pi/` | What goes in it | Who writes it | Pruned when |
 |---|---|---|---|
 | `reports/<lane>.md` | each lane's full final report | the lane, its own file only | once the coordinator has acted on it → `.trash/` |
-| `drafts/` | proposals before they become a design doc, review aids, anything the human will paste | coordinator; a lane's draft arrives in its report | landed as a design or research doc, or done with → `.trash/` |
+| `drafts/` | proposals before they become a design doc, review aids, anything the human will paste; in Linear mode, a research or design lane's doc before it is published | coordinator; a lane's draft arrives in its report, or (Linear mode, research and design lanes) as `drafts/<lane>.md` | landed as a design or research doc (Linear mode: published as a Linear Document), or done with → `.trash/` |
 | `changelog.d/<LANE>.md` | a lane's changelog entry, until its landing folds it in | the lane, its own file only | folded → `.trash/` |
 | `sessions/`, `subagents/` | pi's sessions and the agent tree, transcripts included | pi | never by hand |
 | `AGENTS.md` | local rules for its directory: the tracker, standing rules, anything private | the human; agents only as he asks | never rewritten |
@@ -215,6 +216,7 @@ records it.
 | ideas | an issue labelled Idea in `<repo> · Backlog` → moved into a milestone project → Done or Canceled |
 | status | the issue's state (Backlog · Todo · In Progress · Done · Canceled · Duplicate) and label (Bug · Improvement · Feature · Idea · Decision); a finer mark (triaged, partly shipped, paused) is a comment |
 | priority | High · Medium · Low |
+| design and research | Linear Documents, attached to the project they serve, status in the icon and a banner (*Linear Documents*, below) |
 
 **`.pi/` is unchanged in Linear mode**: reports, drafts and fragments are not
 tasks. `CHANGELOG.md` is unchanged.
@@ -225,7 +227,8 @@ on an open question* (*`docs/design/`*) enforced, not remembered. Its
 description answers itself (*Asking the human*): what is being decided, the
 options, the recommendation first, what it blocks. Answered, it goes Done with
 the answer and its rationale in the last comment; the *what* is folded into the
-design doc, this file or the skill text in the next commit. Decisions about the
+design doc (its Linear Document's next revision), this file or the skill text
+(the next commit). Decisions about the
 working system itself live in the `dev` initiative, project `dev · Backlog`.
 
 **Nothing is pruned in Linear**: an issue is never deleted, it goes Done,
@@ -241,9 +244,11 @@ initiative's description; trunk and ready chains come from `jj log`, as always.
   spawned with `mcp_servers: ["linear"]` and reaches the tools through
   codemode; one that needn't is spawned without it, its brief carrying the
   issue text it needs.
-- **Linear ids are ops ids.** The workspace is private, so `AUDIO-123` points at
-  nothing in a clone: never in a commit message, code or a tracked doc (*What a
-  commit message says*, §4).
+- **Linear ids are ops ids**, a Linear Document's id or URL included. The
+  workspace is private, so `AUDIO-123` or a document link points at nothing in
+  a clone: never in a commit message, code or a tracked doc (*What a commit
+  message says*, §4). The link runs one way, from Linear to the repo: a
+  document names repo files by path, a repo file never names a document.
 - **A roadmap issue keeps its word label** at the head of its title
   (`DEST-MIX · …`), so the changelog can still name it.
 
@@ -260,7 +265,7 @@ when each landed, not by which side of the conflict it came from: easy to get
 backwards when both are dated the same day.
 
 The displaced material has homes: measurements, root causes and alternatives
-weighed → `docs/research/`; what a lane left undone, and a decision *made*
+weighed → research (`docs/research/`; Linear mode: a Linear Document); what a lane left undone, and a decision *made*
 rather than applied → the lane's report, from which the coordinator tells the
 human or files an issue (Linear mode). **An entry that reads as a narrative is
 in the wrong document.**
@@ -302,17 +307,21 @@ docs commit; the human, freely.
 
 ### `docs/design/`
 
-Proposals and the locked design. **Design documents always land on trunk**,
-proposals included: the human reviews on trunk, never in a lane's workspace
-(simplychris: *"I can't review design docs in
-workspaces, they need to be in main"*). **A design doc lands like any other
-doc**: no review banner, no review request; the human reads in passes of his own
-choosing (simplychris: *"stop asking me to do doc
+Proposals and the locked design. In Linear mode proposals and open designs are
+Linear Documents and this folder holds only the design as built (*Linear
+Documents*, below); the rest of this section holds in both modes.
+
+**In file mode, design documents always land on trunk**, proposals included:
+the human reviews on trunk, never in a lane's workspace (simplychris: *"I can't
+review design docs in workspaces, they need to be in main"*). **A design doc
+lands like any other doc**: no review banner, no review request; the human reads
+in passes of his own choosing (simplychris: *"stop asking me to do doc
 reviews, I'll do passes as I see fit, adding these as line items is just
 noise"*). **What stays the human's is the decision**: he is asked the same day
-(*Asking the human*), the doc marks that question open where it is asked, and
-nothing is built on an open question. When the human answers, the next commit
-folds the answer in.
+(*Asking the human*), the doc marks that question open where it is asked
+(Linear mode: @mentioning its Decision issue), and nothing is built on an open
+question. When the human answers, the next commit (Linear mode: the document's
+next revision) folds the answer in.
 
 **Changing what a design decides goes to the human; recording that it was built
 does not.** Marking a stage as built, correcting a sketch to match the code, or
@@ -326,15 +335,65 @@ renumbered.**
 
 Investigations and measurements. A number with its method beside it settles an
 argument; a paragraph of plausibility does not. Also **the argument behind
-anything designed but not built**.
+anything designed but not built**. In Linear mode, research is Linear
+Documents, not this folder (*Linear Documents*, below).
 
 **There is no register of unlanded designs**: everything it would hold fits
 elsewhere (simplychris: *"I kind of feel like
 DESIGN.md as a doc should not exist unless there are things that don't fit into
 the docs I just mentioned"*). An unlanded design is **a research note plus a
-roadmap row** (Linear mode: an issue): the note holds the argument and
-measurements, the row what a lane would do and what it costs. When it lands it
-moves into the design document.
+roadmap row** (Linear mode: a Linear Document plus an issue): the note holds
+the argument and measurements, the row what a lane would do and what it costs.
+When it lands it moves into the design document (Linear mode: into the repo's
+docs, and the Linear Document goes ✅).
+
+### Linear Documents — design and research in Linear mode
+
+In a Linear-mode repo, **proposals, open designs and research are Linear
+Documents; the repo keeps only the system as it is now**: `docs/design/` as
+built, with no proposals and no open questions, plus `docs/guides/` and
+`docs/reference/`. In-repo markdown can't show which version is current, can't
+be read in a browser and can't be linked from an issue; a Linear Document is
+read in the browser, takes inline comments, links both ways with its issues,
+and agents reach it with the Linear tools they already use. File mode keeps
+`docs/design/` and `docs/research/` as above; the documents move to Linear
+when the repo moves to Linear mode. Who decides is unchanged (*`docs/design/`*).
+The how-to is the `linear` skill.
+
+- **Status, two marks, kept in step**: the document's icon is a status emoji,
+  and its first line is a one-sentence banner saying the same. Whoever changes
+  the status changes both.
+
+  | Icon | Status | Banner says |
+  |---|---|---|
+  | 🧪 | exploratory | an investigation; nothing proposed yet |
+  | 🎯 | proposed, decision pending | what waits on the human, by its Decision issue |
+  | 🔨 | being built | the issues building it |
+  | ✅ | built, now described in the repo | the repo paths that describe it now |
+  | 🪦 | abandoned or superseded | why, and the document that replaces it |
+
+- **Where it attaches**: to the **project** of the feature it serves, with
+  each issue it covers @mentioned by bare id, so the link shows on both sides.
+  A document serving one issue only attaches to that issue; one spanning
+  projects, to the initiative.
+- **Review is in Linear.** The human reads there, comments inline, and says
+  "address my comments". The coordinator reads every comment thread, revises
+  the document, then replies in each thread and resolves it.
+- **Figures are generated, not described**: Mermaid renders in Linear; a plot or
+  a screenshot is uploaded and embedded.
+- **When a design is built**, its substance is written into the repo's docs (the
+  building lane's chain, or a docs-only commit), and the document goes ✅, its
+  banner naming those paths.
+- **Old files move as they are touched, never in bulk.** A new design or
+  research doc starts in Linear. An existing one in `docs/design/` or
+  `docs/research/` moves to a Linear Document, with a status, the next time work
+  touches it; whatever in it describes the system as it is now is split out into
+  the repo's docs, in the same pass.
+- **Lanes still never write Linear** (*The boundaries hold*). A researcher or
+  tech-lead writes its document to `.pi/drafts/<lane>.md` in the default
+  workspace, by absolute path, and names it in its report; the coordinator (or
+  `scribe`) publishes it, sets its status and attaches it. A revision comes back
+  the same way.
 
 ### `docs/guides/` · `docs/reference/`
 
@@ -389,7 +448,8 @@ remain"*):
 - **the repo root** holds its `AGENTS.md` (tracked or not), and the
   tracked `CHANGELOG.md` and `ROADMAP.md` (file mode only);
 - **`.pi/`** holds the local state, untracked by its own `.gitignore`;
-- everything else lives by kind: design, research, guides, reference. A folder
+- everything else lives by kind: design, research, guides, reference (Linear
+  mode: proposals and research live in Linear, *Linear Documents*). A folder
   appears when there is something to put in it.
 
 Documentation lives in the docs tree, **never inside the source tree**.
@@ -423,6 +483,10 @@ changelog, if it keeps one.
   `.pi/`, both its own file, both by absolute path: its changelog fragment,
   `.pi/changelog.d/<LANE>.md`, and its report, `.pi/reports/<lane>.md` (*A
   lane's report is a file*, §4). Nothing else there, and never `CHANGELOG.md`.
+  The exceptions are documents: a file-mode research or design doc is
+  committed in the default workspace (*Docs-only changes need no workspace*,
+  §4), and in Linear mode it is a third own file, `.pi/drafts/<lane>.md`,
+  with its figures beside it as `<lane>-<name>.png` (*Linear Documents*).
 - **The fragment is staging, not history** (simplychris:
   *"changelog.d should be untracked, as it's temporary staging"*): it lives in
   `.pi/`, so it never dirties the working copy an integrator lands in.
@@ -469,8 +533,8 @@ the coordinator files the issue.
                                sessions/ subagents/    pi's sessions and the agent tree
                                AGENTS.md               local rules: the tracker, standing rules
     docs/
-      design/                  the design, proposals included
-      research/                investigations and measurements
+      design/                  the design, proposals included (Linear mode: as built only)
+      research/                investigations and measurements (file mode only)
       guides/                  how-to
       reference/               generated — regenerate, don't edit
     spikes/<name>/             experiments, each its own build workspace, on a lane's chain
@@ -575,8 +639,8 @@ waste"*). It is edited in the default workspace and committed with the trunk
 loop above, committing only its own paths (`jj commit <paths> -m "…"`, never a
 bare `jj commit`: other work may be uncommitted there), moving trunk to it only
 if trunk is that commit's parent, and not while an integrator holds the
-workspace. Design and research docs are written there too, so they land where
-the human reads them. A docs-only commit changes nothing a code gate tests, so a
+workspace. In file mode, design and research docs are written there too, so
+they land where the human reads them (Linear mode: *Linear Documents*, §2). A docs-only commit changes nothing a code gate tests, so a
 gated lane rebased over it needs no re-gate.
 
 **A lane buys parallelism.** With nothing to run beside it, a workspace, a
@@ -784,7 +848,8 @@ inactive-parameter fix is done"), not which rows moved. This holds in every repo
 **Code and tracked docs never cite ops ids either**
 (simplychris: *"code and docs should NEVER reference
 issues and decisions and such by id"*). No issue, decision, idea, roadmap, ask or
-lane id (`I-007`, `X-151`, `N-12`, `AUDIO-123`, a lane's label) in source,
+lane id (`I-007`, `X-151`, `N-12`, `AUDIO-123`, a lane's label), nor a Linear
+Document's link, in source,
 comments, tests, design and research docs, guides, the changelog or a README:
 they live in a conversation, `.pi/` or a private Linear workspace, so in a clone
 they point at nothing, and they are superseded while the code keeps citing

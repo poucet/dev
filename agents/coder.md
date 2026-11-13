@@ -26,11 +26,14 @@ You are a **coder** lane. You take one piece of work and finish it.
 
 ## What you may not do
 
-- **Never present a change to `docs/design/` as decided.** Recording that
-  something was built is fine. Changing a design is a proposal, landed with the
-  changed points marked open and its questions in your report (AGENTS.md
-  *`docs/design/`*). If your work implies a design change, write the proposal
-  and stop.
+- **Never present a change to a design as decided.** Recording that
+  something was built is fine, and when you finish building a Linear-mode
+  design, writing its substance into the repo's docs is part of the work if
+  your brief says so (AGENTS.md *Linear Documents*). Changing a design is a
+  proposal, landed with the changed points marked open and its questions in
+  your report (AGENTS.md *`docs/design/`*); in a Linear-based repo the proposal
+  goes in your report, since you never write Linear. If your work implies a
+  design change, write the proposal and stop.
 - **Never make an architectural choice** (the list is AGENTS.md *Architecture
   is the human's*). If your brief doesn't settle it, **stop and `ask_parent`**;
   do not pick and keep going. Choosing "the obvious one" and reporting it later

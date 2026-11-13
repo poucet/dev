@@ -1,6 +1,6 @@
 ---
 name: linear
-description: Run a repo's plan in Linear — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its roadmap and any old docs/ops/ files into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query). Use when a repo's AGENTS.md files (the nearest `## Tracker` up from the working directory) say `linear`, or the human asks to move a repo to Linear.
+description: Run a repo's plan in Linear — set a repo up (initiative, Backlog and milestone projects, the `## Tracker` block, the README link), backfill its roadmap and any old docs/ops/ files into Linear, cut over, and do the everyday recording (a lane's report, opening and closing issues, filing and closing decisions, promoting ideas, starting and finishing a milestone, the board query, publishing design and research documents and working the human's comments on them). Use when a repo's AGENTS.md files (the nearest `## Tracker` up from the working directory) say `linear`, or the human asks to move a repo to Linear.
 ---
 
 # Linear mode
@@ -13,7 +13,9 @@ how-to. It needs the Linear MCP server: an agent doing any of this is spawned wi
 `mcp__linear__*`
 (`list_issues`, `get_issue`, `save_issue`, `save_comment`, `list_projects`,
 `save_project`, `list_initiatives`, `save_initiative`, `list_issue_statuses`,
-`list_issue_labels`, …).
+`list_issue_labels`, `list_documents`, `get_document`, `save_document`,
+`list_comments`, `prepare_file_upload`, …). Read a tool's schema before its
+first use in a session; names and fields move.
 
 **Only the coordinator (or `scribe`) writes Linear.** Lanes never do: they
 report to their file in `.pi/reports/` and the coordinator records.
@@ -30,6 +32,7 @@ report to their file in `.pi/reports/` and the coordinator records.
 | project, backlog | unscheduled issues and ideas; exactly one per initiative | `<repo> · Backlog` |
 | initiative `Ideas`, project `Ideas · Backlog` | ideas that fit no repo yet | |
 | initiative `dev`, project `dev · Backlog` | changes to and decisions about the working system itself | |
+| document | a proposal, open design or research (AGENTS.md *Linear Documents*); in the project it serves, an issue when it serves one only, the initiative when it spans projects; icon its status emoji | what it is about, sentence case: `Mixing to any destination` |
 
 **Every project is `<initiative> · <title>`**, and nothing else goes before the
 `·`: not a version (`0.9`), a horizon (`H7`) or a word like `next`. A version
@@ -277,6 +280,62 @@ Never a project of its own.
 Completed. That is the milestone's record; the changelog has the account. The
 integrator still does not run into a version (AGENTS.md §4).
 
+## Documents
+
+The rules are AGENTS.md *Linear Documents*: status in two marks, where a
+document attaches, lanes draft and the coordinator publishes. Here is how.
+
+**Publish a lane's draft** (`.pi/drafts/<lane>.md`, named in its report):
+`list_documents` for the title first, so a rerun updates rather than
+duplicates; then `save_document` with the title, the markdown, the icon (the
+status emoji the draft's banner names) and the project (or the issue, or the
+initiative). Its first line is the banner, one sentence: `🎯 Proposed: waiting
+on AUDIO-140 (which encoder to ship).` Each issue it covers is @mentioned by
+bare id in the body, and each of those issues gets a comment naming the
+document, so the link shows on both sides. Figures the lane left as files go
+up with `prepare_file_upload` and are embedded in the markdown; Mermaid stays
+inline, Linear renders it. Then the draft moves to `.trash/`, and the human
+gets the document's link in chat.
+
+**Change a status**: icon and banner together, in one `save_document`. The
+banner says what the status rests on:
+
+- 🧪 → 🎯: the Decision issues it waits on, filed first and @mentioned;
+- 🎯 → 🔨: the decisions answered and folded into the text; the issues building
+  it;
+- 🔨 → ✅: the repo paths that now describe it (below);
+- any → 🪦: why, and the document that replaces it, @mentioned or linked.
+
+**"Address my comments"**: `list_comments` with the document's id; an inline
+comment carries `quotedText`, the passage it is about. Read every open thread
+before changing anything, then revise with `save_document`, preferring a
+`patch` to a whole-body rewrite so the human's other anchors survive. Reply in
+each thread (`save_comment` with `parentId` set to the thread's root) with
+what changed (or why not, which is a question back to him, not a refusal).
+Then resolve the thread. The MCP has no tool for it, so it is one GraphQL
+call with `$LINEAR_API_KEY` (no `Bearer` prefix):
+
+    curl -s https://api.linear.app/graphql -H "Authorization: $LINEAR_API_KEY" \
+      -H 'Content-Type: application/json' \
+      -d '{"query":"mutation($id:String!){commentResolve(id:$id){success}}","variables":{"id":"<root comment id>"}}'
+
+Leave a thread open when your reply asks him something. A comment that settles what the design decides
+is his decision: fold it in. One that opens a question he must answer goes
+back to him as a Decision issue, @mentioned where the question sits. A revision big enough to need a tech-lead
+goes to one as a `followup`, the thread texts in the brief; its revised draft
+comes back and you save, reply and resolve.
+
+**A design is built**: the building lane's report says which repo docs now
+describe it (`docs/design/` as built, guides, reference), or a docs-only commit
+writes them; then the document goes ✅, its banner naming those paths, and
+its issues are Done as usual. Nothing in the repo links back.
+
+**An old in-repo doc is touched**: whatever describes the system as it is now
+stays in, or moves into, the repo's docs; the rest (proposals, open questions,
+research) becomes a document with a status, and the file's moved parts go in
+the same docs-only commit. One doc at a time, as work reaches it; never a bulk
+migration.
+
 ## Gotchas
 
 - **The free plan caps a workspace at 250 issues**, Done and Canceled ones
@@ -304,8 +363,9 @@ integrator still does not run into a version (AGENTS.md §4).
 - **Agents are not Linear users.** The lane goes in a comment; the assignee is
   always the `Owner`. Pass it on every create, and set it on update when it is
   missing.
-- **No ids in commits, code or tracked docs**, Linear ids included: the
-  workspace is private and a clone can't follow them.
+- **No ids in commits, code or tracked docs**, Linear ids and document links
+  included: the workspace is private and a clone can't follow them. A document
+  names repo files by path; the repo never names a document.
 - **The Linear tools live behind codemode.** They are not in the direct tool
   list, for the coordinator or a child spawned with `mcp_servers:
   ["linear"]`: call `await searchTools("linear")`, then `tools.mcp__linear__…`

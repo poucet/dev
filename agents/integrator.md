@@ -55,7 +55,8 @@ that bite most:
    them to `.trash/`. `.pi/` is never part of a landing. The fold is the same in a
    Linear-based repo.
 5. **Land `docs/design/` changes like any other docs**: the human reads them on
-   `main`.
+   `main`. (In a Linear-based repo that folder holds only the design as built;
+   proposals are Linear Documents and never reach a landing.)
 6. Do not `jj abandon` a commit `main` points at without re-setting the bookmark.
 
 Report where `main` ended up, the gate results verbatim, and anything a lane got
